@@ -9,7 +9,19 @@ import {
   addAttachment,
 } from '@/lib/tasksApi'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
-import { Play, Pause, Clock, Tag, List, FileText, Paperclip, Eye, Loader2, ArrowRight, X } from 'lucide-react'
+import {
+  Play,
+  Pause,
+  Clock,
+  Tag,
+  List,
+  FileText,
+  Paperclip,
+  Eye,
+  Loader2,
+  ArrowRight,
+  X,
+} from 'lucide-react'
 
 export default function TaskDetailsPanel({
   task,
@@ -30,6 +42,7 @@ export default function TaskDetailsPanel({
   const [uploadError, setUploadError] = useState('')
   const [localAttachments, setLocalAttachments] = useState([])
   const reachedAttachmentLimit = (localAttachments?.length || 0) >= 3
+  const [previewUrl, setPreviewUrl] = useState(null)
 
   useEffect(() => {
     setLocalAttachments(task?.attachments || [])
@@ -97,8 +110,8 @@ export default function TaskDetailsPanel({
     (task.priority || 'Medium') === 'High'
       ? 'bg-red-100 text-red-800'
       : (task.priority || 'Medium') === 'Low'
-      ? 'bg-green-100 text-green-800'
-      : 'bg-yellow-100 text-yellow-800'
+        ? 'bg-green-100 text-green-800'
+        : 'bg-yellow-100 text-yellow-800'
 
   return (
     <div className="space-y-5">
@@ -107,7 +120,9 @@ export default function TaskDetailsPanel({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-lg">{task.title}</h3>
-            <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded ${priorityBadgeClass}`}>
+            <span
+              className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded ${priorityBadgeClass}`}
+            >
               {task.priority || 'Medium'}
             </span>
           </div>
@@ -118,7 +133,9 @@ export default function TaskDetailsPanel({
             onChange={(e) => updateTask(task.id, { completed: e.target.checked })}
             aria-label="Mark as complete"
           />
-          <span className={task.completed ? 'line-through text-[var(--neutral-700)]' : ''}>Done</span>
+          <span className={task.completed ? 'line-through text-[var(--neutral-700)]' : ''}>
+            Done
+          </span>
         </label>
       </div>
 
@@ -400,9 +417,7 @@ export default function TaskDetailsPanel({
                   <span className="text-sm flex-1 truncate">{attachment.name}</span>
                   <button
                     onClick={() => {
-                      if (attachment.url) {
-                        window.open(attachment.url, '_blank', 'noopener')
-                      }
+                      if (attachment.url) setPreviewUrl(attachment.url)
                     }}
                     className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-[var(--muted1)] text-blue-600"
                     title="View"
@@ -452,6 +467,25 @@ export default function TaskDetailsPanel({
                   Shift Task
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Attachment Preview Modal */}
+      {previewUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setPreviewUrl(null)} />
+          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
+            <button
+              className="absolute top-2 right-2 p-1 rounded-md border border-[var(--border)] hover:bg-[var(--muted1)]"
+              aria-label="Close"
+              onClick={() => setPreviewUrl(null)}
+            >
+              <X size={16} />
+            </button>
+            <div className="p-2 flex items-center justify-center">
+              <img src={previewUrl} alt="Attachment preview" className="max-h-[85vh] w-auto object-contain" />
             </div>
           </div>
         </div>
