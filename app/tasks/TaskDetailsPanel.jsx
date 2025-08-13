@@ -7,6 +7,10 @@ import {
   stopWorkSession,
   shiftTaskToTomorrow,
   addAttachment,
+  shiftTaskToDate,
+  addManualWorkSession,
+  createTask,
+  deleteTask,
 } from '@/lib/tasksApi'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
 import {
@@ -22,6 +26,11 @@ import {
   ArrowRight,
   X,
   Plus,
+  MoreVertical,
+  Calendar,
+  Clock as ClockIcon,
+  Copy as CopyIcon,
+  Trash2,
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -45,6 +54,23 @@ export default function TaskDetailsPanel({
   const [localAttachments, setLocalAttachments] = useState([])
   const reachedAttachmentLimit = (localAttachments?.length || 0) >= 3
   const [previewItem, setPreviewItem] = useState(null) // { url, name }
+  const [showActions, setShowActions] = useState(false)
+  const [showChangeDate, setShowChangeDate] = useState(false)
+  const [targetDate, setTargetDate] = useState('')
+  const [targetReason, setTargetReason] = useState('')
+  const [isSubmittingChangeDate, setIsSubmittingChangeDate] = useState(false)
+  const [showAddTime, setShowAddTime] = useState(false)
+  const [manualStart, setManualStart] = useState('') // datetime-local
+  const [manualEnd, setManualEnd] = useState('') // datetime-local
+  const [isSubmittingTime, setIsSubmittingTime] = useState(false)
+  const [showCopyModal, setShowCopyModal] = useState(false)
+  const [copyTitle, setCopyTitle] = useState('')
+  const [copyDate, setCopyDate] = useState('')
+  const [copyDescription, setCopyDescription] = useState('')
+  const [copyPriority, setCopyPriority] = useState('Medium')
+  const [copyLabels, setCopyLabels] = useState(true)
+  const [copyChecklist, setCopyChecklist] = useState(true)
+  const [isSubmittingCopy, setIsSubmittingCopy] = useState(false)
 
   function normalizeDateLocal(input) {
     if (!input) return null
@@ -161,16 +187,80 @@ export default function TaskDetailsPanel({
             </div>
           )}
         </div>
-        <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none">
-          <Checkbox
-            checked={!!task.completed}
-            onChange={(e) => updateTask(task.id, { completed: e.target.checked })}
-            aria-label="Mark as complete"
-          />
-          <span className={task.completed ? 'line-through text-[var(--neutral-700)]' : ''}>
-            Done
-          </span>
-        </label>
+        <div className="flex items-center gap-2 relative">
+          <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none">
+            <Checkbox
+              checked={!!task.completed}
+              onChange={(e) => updateTask(task.id, { completed: e.target.checked })}
+              aria-label="Mark as complete"
+            />
+            <span className={task.completed ? 'line-through text-[var(--neutral-700)]' : ''}>
+              Done
+            </span>
+          </label>
+          <button
+            className="p-1 rounded hover:bg-[var(--muted1)]"
+            aria-label="More actions"
+            onClick={() => setShowActions((v) => !v)}
+          >
+            <MoreVertical size={18} />
+          </button>
+          {showActions && (
+            <div className="absolute right-0 top-7 z-10 w-52 bg-[var(--bg-card)] border border-[var(--border)] rounded-md shadow-soft py-1">
+              <button
+                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] flex items-center gap-2"
+                onClick={() => {
+                  setShowActions(false)
+                  setTargetDate('')
+                  setTargetReason('')
+                  setShowChangeDate(true)
+                }}
+              >
+                <Calendar size={14} /> Change date
+              </button>
+              <button
+                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] flex items-center gap-2"
+                onClick={() => {
+                  setShowActions(false)
+                  setManualStart('')
+                  setManualEnd('')
+                  setShowAddTime(true)
+                }}
+              >
+                <ClockIcon size={14} /> Add time
+              </button>
+              <button
+                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] flex items-center gap-2"
+                onClick={() => {
+                  setShowActions(false)
+                  setCopyTitle(task.title || '')
+                  setCopyDate('')
+                  setCopyDescription(task.description || '')
+                  setCopyPriority(task.priority || 'Medium')
+                  setCopyLabels(true)
+                  setCopyChecklist(true)
+                  setShowCopyModal(true)
+                }}
+              >
+                <CopyIcon size={14} /> Copy task
+              </button>
+              <button
+                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] text-red-600 flex items-center gap-2"
+                onClick={async () => {
+                  setShowActions(false)
+                  if (!confirm('Delete this task? This cannot be undone.')) return
+                  try {
+                    await deleteTask(task.id)
+                  } catch (e) {
+                    console.error('Delete failed', e)
+                  }
+                }}
+              >
+                <Trash2 size={14} /> Delete task
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Properties */}
@@ -500,6 +590,214 @@ export default function TaskDetailsPanel({
                   className="px-3 py-2 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
                 >
                   Shift Task
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change Date Modal */}
+      {showChangeDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowChangeDate(false)} />
+          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
+            <h3 className="font-semibold mb-3">Change Date</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-[var(--neutral-700)] mb-1">New date</label>
+                <input
+                  type="date"
+                  value={targetDate}
+                  onChange={(e) => setTargetDate(e.target.value)}
+                  className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--neutral-700)] mb-1">Reason (optional)</label>
+                <textarea
+                  rows={3}
+                  value={targetReason}
+                  onChange={(e) => setTargetReason(e.target.value)}
+                  className="w-full rounded-md border border-[var(--border)] bg-[var(--bg-card)] p-2 text-sm"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button className="px-3 py-2 border border-[var(--border)] rounded text-sm" onClick={() => setShowChangeDate(false)}>
+                  Cancel
+                </button>
+                <button
+                  disabled={!targetDate || isSubmittingChangeDate}
+                  onClick={async () => {
+                    if (!targetDate) return
+                    setIsSubmittingChangeDate(true)
+                    try {
+                      // Construct Date from yyyy-mm-dd
+                      const parts = targetDate.split('-')
+                      const dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+                      await shiftTaskToDate(task.id, dt, targetReason)
+                      setShowChangeDate(false)
+                      setTargetDate('')
+                      setTargetReason('')
+                    } catch (e) {
+                      console.error('Change date failed', e)
+                    } finally {
+                      setIsSubmittingChangeDate(false)
+                    }
+                  }}
+                  className="px-3 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-60"
+                >
+                  {isSubmittingChangeDate ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Time Modal */}
+      {showAddTime && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowAddTime(false)} />
+          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
+            <h3 className="font-semibold mb-3">Add Manual Time</h3>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3">
+                <div>
+                  <label className="block text-xs text-[var(--neutral-700)] mb-1">Start</label>
+                  <input
+                    type="datetime-local"
+                    value={manualStart}
+                    onChange={(e) => setManualStart(e.target.value)}
+                    className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--neutral-700)] mb-1">End</label>
+                  <input
+                    type="datetime-local"
+                    value={manualEnd}
+                    onChange={(e) => setManualEnd(e.target.value)}
+                    className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button className="px-3 py-2 border border-[var(--border)] rounded text-sm" onClick={() => setShowAddTime(false)}>
+                  Cancel
+                </button>
+                <button
+                  disabled={!manualStart || !manualEnd || isSubmittingTime}
+                  onClick={async () => {
+                    if (!manualStart || !manualEnd) return
+                    setIsSubmittingTime(true)
+                    try {
+                      await addManualWorkSession(task.id, new Date(manualStart), new Date(manualEnd))
+                      setShowAddTime(false)
+                      setManualStart('')
+                      setManualEnd('')
+                    } catch (e) {
+                      console.error('Add time failed', e)
+                    } finally {
+                      setIsSubmittingTime(false)
+                    }
+                  }}
+                  className="px-3 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-60"
+                >
+                  {isSubmittingTime ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Copy Task Modal */}
+      {showCopyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowCopyModal(false)} />
+          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
+            <h3 className="font-semibold mb-3">Copy Task</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-[var(--neutral-700)] mb-1">Title</label>
+                <input
+                  type="text"
+                  value={copyTitle}
+                  onChange={(e) => setCopyTitle(e.target.value)}
+                  className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--neutral-700)] mb-1">Date</label>
+                <input
+                  type="date"
+                  value={copyDate}
+                  onChange={(e) => setCopyDate(e.target.value)}
+                  className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--neutral-700)] mb-1">Priority</label>
+                <select
+                  value={copyPriority}
+                  onChange={(e) => setCopyPriority(e.target.value)}
+                  className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                >
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--neutral-700)] mb-1">Description</label>
+                <textarea
+                  rows={3}
+                  value={copyDescription}
+                  onChange={(e) => setCopyDescription(e.target.value)}
+                  className="w-full rounded-md border border-[var(--border)] bg-[var(--bg-card)] p-2 text-sm"
+                />
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <label className="inline-flex items-center gap-2">
+                  <input type="checkbox" checked={copyLabels} onChange={(e) => setCopyLabels(e.target.checked)} />
+                  Copy labels
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input type="checkbox" checked={copyChecklist} onChange={(e) => setCopyChecklist(e.target.checked)} />
+                  Copy checklist
+                </label>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button className="px-3 py-2 border border-[var(--border)] rounded text-sm" onClick={() => setShowCopyModal(false)}>
+                  Cancel
+                </button>
+                <button
+                  disabled={!copyTitle || isSubmittingCopy}
+                  onClick={async () => {
+                    setIsSubmittingCopy(true)
+                    try {
+                      const d = copyDate
+                        ? new Date(Number(copyDate.split('-')[0]), Number(copyDate.split('-')[1]) - 1, Number(copyDate.split('-')[2]))
+                        : new Date()
+                      await createTask({
+                        title: copyTitle,
+                        description: copyDescription,
+                        date: d,
+                        priority: copyPriority,
+                        labels: copyLabels ? task.labels || [] : [],
+                        checklist: copyChecklist ? task.checklist || [] : [],
+                      })
+                      setShowCopyModal(false)
+                    } catch (e) {
+                      console.error('Copy task failed', e)
+                    } finally {
+                      setIsSubmittingCopy(false)
+                    }
+                  }}
+                  className="px-3 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-60"
+                >
+                  {isSubmittingCopy ? 'Creating...' : 'Create task'}
                 </button>
               </div>
             </div>
