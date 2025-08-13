@@ -86,6 +86,16 @@ export default function TaskDetailsPanel({
     return isNaN(d.getTime()) ? null : d
   }
 
+  function formatDateTimeLocal(d) {
+    const pad = (n) => String(n).padStart(2, '0')
+    const yyyy = d.getFullYear()
+    const mm = pad(d.getMonth() + 1)
+    const dd = pad(d.getDate())
+    const hh = pad(d.getHours())
+    const mi = pad(d.getMinutes())
+    return `${yyyy}-${mm}-${dd}T${hh}:${mi}`
+  }
+
   const isShifted = (() => {
     const od = normalizeDateLocal(task?.originalDate)
     const cd = normalizeDateLocal(task?.date)
@@ -222,8 +232,10 @@ export default function TaskDetailsPanel({
                 className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] flex items-center gap-2"
                 onClick={() => {
                   setShowActions(false)
-                  setManualStart('')
-                  setManualEnd('')
+                  const now = new Date()
+                  const end = new Date(now.getTime() + 30 * 60000)
+                  setManualStart(formatDateTimeLocal(now))
+                  setManualEnd(formatDateTimeLocal(end))
                   setShowAddTime(true)
                 }}
               >
@@ -614,7 +626,9 @@ export default function TaskDetailsPanel({
                 />
               </div>
               <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">Reason (optional)</label>
+                <label className="block text-xs text-[var(--neutral-700)] mb-1">
+                  Reason (optional)
+                </label>
                 <textarea
                   rows={3}
                   value={targetReason}
@@ -623,7 +637,10 @@ export default function TaskDetailsPanel({
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <button className="px-3 py-2 border border-[var(--border)] rounded text-sm" onClick={() => setShowChangeDate(false)}>
+                <button
+                  className="px-3 py-2 border border-[var(--border)] rounded text-sm"
+                  onClick={() => setShowChangeDate(false)}
+                >
                   Cancel
                 </button>
                 <button
@@ -683,7 +700,10 @@ export default function TaskDetailsPanel({
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <button className="px-3 py-2 border border-[var(--border)] rounded text-sm" onClick={() => setShowAddTime(false)}>
+                <button
+                  className="px-3 py-2 border border-[var(--border)] rounded text-sm"
+                  onClick={() => setShowAddTime(false)}
+                >
                   Cancel
                 </button>
                 <button
@@ -692,7 +712,11 @@ export default function TaskDetailsPanel({
                     if (!manualStart || !manualEnd) return
                     setIsSubmittingTime(true)
                     try {
-                      await addManualWorkSession(task.id, new Date(manualStart), new Date(manualEnd))
+                      await addManualWorkSession(
+                        task.id,
+                        new Date(manualStart),
+                        new Date(manualEnd)
+                      )
                       setShowAddTime(false)
                       setManualStart('')
                       setManualEnd('')
@@ -760,16 +784,27 @@ export default function TaskDetailsPanel({
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <label className="inline-flex items-center gap-2">
-                  <input type="checkbox" checked={copyLabels} onChange={(e) => setCopyLabels(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={copyLabels}
+                    onChange={(e) => setCopyLabels(e.target.checked)}
+                  />
                   Copy labels
                 </label>
                 <label className="inline-flex items-center gap-2">
-                  <input type="checkbox" checked={copyChecklist} onChange={(e) => setCopyChecklist(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={copyChecklist}
+                    onChange={(e) => setCopyChecklist(e.target.checked)}
+                  />
                   Copy checklist
                 </label>
               </div>
               <div className="flex justify-end gap-2">
-                <button className="px-3 py-2 border border-[var(--border)] rounded text-sm" onClick={() => setShowCopyModal(false)}>
+                <button
+                  className="px-3 py-2 border border-[var(--border)] rounded text-sm"
+                  onClick={() => setShowCopyModal(false)}
+                >
                   Cancel
                 </button>
                 <button
@@ -778,7 +813,11 @@ export default function TaskDetailsPanel({
                     setIsSubmittingCopy(true)
                     try {
                       const d = copyDate
-                        ? new Date(Number(copyDate.split('-')[0]), Number(copyDate.split('-')[1]) - 1, Number(copyDate.split('-')[2]))
+                        ? new Date(
+                            Number(copyDate.split('-')[0]),
+                            Number(copyDate.split('-')[1]) - 1,
+                            Number(copyDate.split('-')[2])
+                          )
                         : new Date()
                       await createTask({
                         title: copyTitle,
