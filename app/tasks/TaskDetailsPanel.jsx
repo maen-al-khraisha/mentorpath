@@ -22,6 +22,7 @@ import {
   ArrowRight,
   X,
 } from 'lucide-react'
+import { format } from 'date-fns'
 
 export default function TaskDetailsPanel({
   task,
@@ -59,8 +60,8 @@ export default function TaskDetailsPanel({
   }
 
   const isShifted = (() => {
-    const od = normalizeDateLocal(task.originalDate)
-    const cd = normalizeDateLocal(task.date)
+    const od = normalizeDateLocal(task?.originalDate)
+    const cd = normalizeDateLocal(task?.date)
     if (!od || !cd) return false
     return od.getTime() < cd.getTime()
   })()
@@ -152,6 +153,11 @@ export default function TaskDetailsPanel({
               </span>
             )}
           </div>
+          {isShifted && (
+            <div className="mt-1 text-xs text-[var(--neutral-700)]">
+              Original date: {format(normalizeDateLocal(task?.originalDate) || new Date(), 'MMM dd, yyyy')}
+            </div>
+          )}
         </div>
         <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none">
           <Checkbox
