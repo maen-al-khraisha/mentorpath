@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Theme tokens per Phase 1 */
+  --color-primary: #c0db11;
+  --color-accent: #11d72d;
+  --color-danger: #ce4233;
+  --neutral-900: #0b0b0c;
+  --neutral-700: #636257;
+  --bg-page: #f5f6ea;
+  --bg-card: #ffffff;
+  --border: #e6e8d8;
+
+  /* Back-compat tokens used by Tailwind theme extension */
+  --primary: var(--color-primary);
+  --accent: var(--color-accent);
+  --danger: var(--color-danger);
+  --page: var(--bg-page);
+  --card: var(--bg-card);
+
+  --muted1: #e9eedb;
+  --muted2: #d0d3b9;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --soft-shadow: 0 6px 18px rgba(12, 15, 20, 0.06);
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  background: var(--page);
+  color: var(--neutral-900);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Simple dark mode using data-theme attribute */
+html[data-theme='dark'] {
+  --bg-page: #0d0f12;
+  --bg-card: #12161b;
+  --border: #222933;
+  --neutral-900: #f4f6fb;
+  --neutral-700: #c3c9d1;
+}
+
+/* Basic shadcn/radix resets if needed */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
