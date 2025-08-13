@@ -349,18 +349,56 @@ export default function TaskDetailsPanel({
         </div>
         <div className="space-y-2">
           <div className="pt-1">
-            <input id={attachmentInputId} type="file" accept="image/*,text/plain" className="hidden" disabled />
+            <input
+              id={attachmentInputId}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                if (reachedAttachmentLimit) {
+                  setUploadError('Attachment limit reached (max 3 per task)')
+                  if (e.target) e.target.value = ''
+                  return
+                }
+                setUploadError('')
+                setPendingAttachmentName(file.name)
+                setIsUploading(true)
+                try {
+                  const url = await addAttachment(task.id, file)
+                  setPendingAttachmentName('')
+                  setLocalAttachments((prev) => [...(prev || []), { name: file.name, url }])
+                } catch (err) {
+                  console.error('Attachment upload failed:', err)
+                  const message = err?.message || 'Failed to upload. Please try again.'
+                  setUploadError(message)
+                } finally {
+                  setIsUploading(false)
+                  if (e.target) e.target.value = ''
+                }
+              }}
+            />
             <label
-              htmlFor={undefined}
+              htmlFor={isUploading || reachedAttachmentLimit ? undefined : attachmentInputId}
               className={`inline-flex items-center gap-2 px-3 py-2 border border-dashed border-[var(--border)] rounded-md text-sm transition-colors ${
-                'opacity-70 cursor-not-allowed'
+                isUploading || reachedAttachmentLimit
+                  ? 'opacity-70 cursor-not-allowed'
+                  : 'cursor-pointer hover:bg-[var(--muted1)] hover:border-[var(--neutral-600)]'
               }`}
-              aria-disabled
+              aria-disabled={isUploading}
             >
-              <>
-                <Paperclip size={14} />
-                File uploads disabled
-              </>
+              {isUploading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Paperclip size={14} />
+                  {reachedAttachmentLimit ? 'Max 3 attachments' : 'Attach file'}
+                </>
+              )}
             </label>
             {pendingAttachmentName && (
               <span className="ml-2 text-xs text-[var(--neutral-700)]">

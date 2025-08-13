@@ -47,7 +47,12 @@ Required in `.env.local`:
 ## Firebase Setup
 
 1. Create a Firebase project and a Web App. Copy the config to `.env.local`.
-2. (Optional) Supabase integration was removed. If you plan to use a different storage, provide its env vars and update `lib/tasksApi.js` and `app/tasks/TaskDetailsPanel.jsx` accordingly.
+2. Storage (ImageKit)
+   - Set env vars in `.env.local`:
+     - `NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY`
+     - `NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT`
+     - `IMAGEKIT_PRIVATE_KEY` (server only)
+   - The app exposes an auth endpoint at `/api/imagekit/auth` for upload signatures.
 2. Enable Firestore (Native mode) and Storage.
 3. Enable Authentication providers:
    - Google: enable and set app name/logo.
