@@ -73,6 +73,15 @@ export default function TasksPage() {
   const completed = tasks.filter((t) => t.completed)
   const selectedTask = useMemo(() => tasks.find((t) => t.id === selectedId), [tasks, selectedId])
 
+  // Auto-select first task (prefer first To Do) when list loads
+  useEffect(() => {
+    if (!selectedId && tasks.length > 0) {
+      const firstTodo = tasks.find((t) => !t.completed)
+      const first = firstTodo || tasks[0]
+      if (first) setSelectedId(first.id)
+    }
+  }, [tasks, selectedId])
+
   // Timer tick for live counter
   useEffect(() => {
     let interval
@@ -145,9 +154,9 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-3 lg:gap-4">
+    <div className="lg:grid lg:grid-cols-4 lg:gap-4">
       {/* Full-width KPI header row */}
-      <div className="lg:col-span-3 space-y-2 mb-2">
+      <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
             <div className="text-xs text-[var(--neutral-700)]">Task Completed</div>
@@ -294,8 +303,8 @@ export default function TasksPage() {
         )}
       </div>
 
-      {/* Right column (1fr) */}
-      <aside className="hidden lg:block lg:col-span-1">
+      {/* Right column (wider details) */}
+      <aside className="hidden lg:block lg:col-span-2">
         <div className="sticky top-20 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft min-h-[320px] max-h-[calc(100vh-6rem)] overflow-y-auto">
           <TaskDetailsPanel
             task={selectedTask}
