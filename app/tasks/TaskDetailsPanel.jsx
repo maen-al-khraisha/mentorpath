@@ -360,13 +360,15 @@ export default function TaskDetailsPanel({
               onChange={(e) => setNewChecklistItem(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
               placeholder="Add checklist item"
-              className="flex-1 h-8 rounded border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+              className="flex-1 h-7 px-2 rounded border border-dashed border-[var(--border)] bg-[var(--bg-card)] text-xs"
             />
             <button
               onClick={handleAddChecklistItem}
-              className="px-2 py-1 bg-[var(--primary)] text-[var(--neutral-900)] rounded text-sm"
+              className="inline-flex items-center justify-center w-7 h-7 rounded bg-[var(--primary)] text-[var(--neutral-900)]"
+              aria-label="Add checklist item"
+              title="Add checklist item"
             >
-              Add
+              <Plus size={14} />
             </button>
           </div>
         </div>
