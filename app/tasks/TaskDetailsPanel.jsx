@@ -21,6 +21,7 @@ import {
   Loader2,
   ArrowRight,
   X,
+  Plus,
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -155,7 +156,8 @@ export default function TaskDetailsPanel({
           </div>
           {isShifted && (
             <div className="mt-1 text-xs text-[var(--neutral-700)]">
-              Original date: {format(normalizeDateLocal(task?.originalDate) || new Date(), 'MMM dd, yyyy')}
+              Original date:{' '}
+              {format(normalizeDateLocal(task?.originalDate) || new Date(), 'MMM dd, yyyy')}
             </div>
           )}
         </div>
@@ -275,36 +277,34 @@ export default function TaskDetailsPanel({
           <Tag size={14} className="text-[var(--neutral-700)]" />
           <label className="text-xs text-[var(--neutral-700)]">Labels</label>
         </div>
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-1">
-            {task.labels?.map((label) => (
-              <span
-                key={label}
-                className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded"
-              >
-                {label}
-                <button onClick={() => handleRemoveLabel(label)} className="hover:text-blue-900">
-                  <X size={12} />
-                </button>
-              </span>
-            )) || <span className="text-xs text-[var(--neutral-700)] italic">No labels</span>}
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddLabel()}
-              placeholder="Add label"
-              className="flex-1 h-8 rounded border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
-            />
-            <button
-              onClick={handleAddLabel}
-              className="px-2 py-1 bg-[var(--primary)] text-[var(--neutral-900)] rounded text-sm"
+        <div className="flex flex-wrap items-center gap-1">
+          {task.labels?.map((label) => (
+            <span
+              key={label}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded"
             >
-              Add
-            </button>
-          </div>
+              {label}
+              <button onClick={() => handleRemoveLabel(label)} className="hover:text-blue-900">
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+          <input
+            type="text"
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleAddLabel()}
+            placeholder="Add label"
+            className="h-7 px-2 rounded border border-dashed border-[var(--border)] bg-[var(--bg-card)] text-xs"
+          />
+          <button
+            onClick={handleAddLabel}
+            className="inline-flex items-center justify-center w-7 h-7 rounded bg-[var(--primary)] text-[var(--neutral-900)]"
+            aria-label="Add label"
+            title="Add label"
+          >
+            <Plus size={14} />
+          </button>
         </div>
       </div>
 
