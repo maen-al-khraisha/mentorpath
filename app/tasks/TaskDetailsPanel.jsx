@@ -9,21 +9,7 @@ import {
   addAttachment,
 } from '@/lib/tasksApi'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
-import {
-  Play,
-  Pause,
-  Clock,
-  Calendar,
-  Tag,
-  List,
-  FileText,
-  Paperclip,
-  Eye,
-  Loader2,
-  ArrowRight,
-  X,
-} from 'lucide-react'
-import { format } from 'date-fns'
+import { Play, Pause, Clock, Tag, List, FileText, Paperclip, Eye, Loader2, ArrowRight, X } from 'lucide-react'
 
 export default function TaskDetailsPanel({
   task,
@@ -107,51 +93,47 @@ export default function TaskDetailsPanel({
   const totalChecklistItems = task.checklist?.length || 0
   const attachmentInputId = `attachment-input-${task.id}`
 
+  const priorityBadgeClass =
+    (task.priority || 'Medium') === 'High'
+      ? 'bg-red-100 text-red-800'
+      : (task.priority || 'Medium') === 'Low'
+      ? 'bg-green-100 text-green-800'
+      : 'bg-yellow-100 text-yellow-800'
+
   return (
-    <div className="space-y-4">
-      {/* Task Header */}
-      <div>
-        <h3 className="font-semibold text-lg mb-2">{task.title}</h3>
-        <div className="flex items-center gap-2 text-sm text-[var(--neutral-700)]">
-          <Calendar size={14} />
-          <span>{format(task.date?.toDate?.() || new Date(task.date), 'MMM dd, yyyy')}</span>
-          {task.originalDate &&
-            task.originalDate !== task.date &&
-            new Date(task.originalDate) < new Date(task.date) && (
-              <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                Shifted
-              </span>
-            )}
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-lg">{task.title}</h3>
+            <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded ${priorityBadgeClass}`}>
+              {task.priority || 'Medium'}
+            </span>
+          </div>
         </div>
+        <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none">
+          <Checkbox
+            checked={!!task.completed}
+            onChange={(e) => updateTask(task.id, { completed: e.target.checked })}
+            aria-label="Mark as complete"
+          />
+          <span className={task.completed ? 'line-through text-[var(--neutral-700)]' : ''}>Done</span>
+        </label>
       </div>
 
-      {/* Status and Priority */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none">
-            <Checkbox
-              checked={!!task.completed}
-              onChange={(e) => updateTask(task.id, { completed: e.target.checked })}
-              aria-label="Mark as complete"
-            />
-            <span className={task.completed ? 'line-through text-[var(--neutral-700)]' : ''}>
-              Mark as complete
-            </span>
-          </label>
-        </div>
-
-        <div>
-          <label className="block text-xs text-[var(--neutral-700)] mb-1">Priority</label>
-          <select
-            value={task.priority || 'Medium'}
-            onChange={(e) => updateTask(task.id, { priority: e.target.value })}
-            className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
-          >
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
-        </div>
+      {/* Properties */}
+      <div>
+        <label className="block text-xs text-[var(--neutral-700)] mb-1">Priority</label>
+        <select
+          value={task.priority || 'Medium'}
+          onChange={(e) => updateTask(task.id, { priority: e.target.value })}
+          className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+        >
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
       </div>
 
       {/* Timer Controls */}
