@@ -50,3 +50,21 @@ html[data-theme='dark'] {
 * {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Remove default focus ring and apply subtle themed border */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--neutral-700);
+}
+
+/* Ensure dashed inputs keep dashed on focus while changing color */
+input[style*='dashed']:focus,
+input.border-dashed:focus,
+textarea.border-dashed:focus {
+  border-style: dashed;
+  border-color: var(--neutral-700);
+}
