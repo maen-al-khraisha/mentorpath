@@ -42,7 +42,7 @@ export default function TaskDetailsPanel({
   const [uploadError, setUploadError] = useState('')
   const [localAttachments, setLocalAttachments] = useState([])
   const reachedAttachmentLimit = (localAttachments?.length || 0) >= 3
-  const [previewUrl, setPreviewUrl] = useState(null)
+  const [previewItem, setPreviewItem] = useState(null) // { url, name }
 
   useEffect(() => {
     setLocalAttachments(task?.attachments || [])
@@ -351,7 +351,7 @@ export default function TaskDetailsPanel({
             <input
               id={attachmentInputId}
               type="file"
-              accept="image/*"
+              accept="image/*,.pdf,.txt,.doc,.docx"
               className="hidden"
               onChange={async (e) => {
                 const file = e.target.files?.[0]
@@ -417,7 +417,7 @@ export default function TaskDetailsPanel({
                   <span className="text-sm flex-1 truncate">{attachment.name}</span>
                   <button
                     onClick={() => {
-                      if (attachment.url) setPreviewUrl(attachment.url)
+                      if (attachment.url) setPreviewItem({ url: attachment.url, name: attachment.name })
                     }}
                     className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-[var(--muted1)] text-blue-600"
                     title="View"
@@ -473,19 +473,45 @@ export default function TaskDetailsPanel({
       )}
 
       {/* Attachment Preview Modal */}
-      {previewUrl && (
+      {previewItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setPreviewUrl(null)} />
+          <div className="absolute inset-0 bg-black/60" onClick={() => setPreviewItem(null)} />
           <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
             <button
               className="absolute top-2 right-2 p-1 rounded-md border border-[var(--border)] hover:bg-[var(--muted1)]"
               aria-label="Close"
-              onClick={() => setPreviewUrl(null)}
+              onClick={() => setPreviewItem(null)}
             >
               <X size={16} />
             </button>
-            <div className="p-2 flex items-center justify-center">
-              <img src={previewUrl} alt="Attachment preview" className="max-h-[85vh] w-auto object-contain" />
+            <div className="p-2 flex items-center justify-center w-full h-full">
+              {(() => {
+                const name = previewItem?.name || ''
+                const url = previewItem?.url || ''
+                const ext = name.split('.').pop()?.toLowerCase() || ''
+                const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg']
+                if (imageExts.includes(ext)) {
+                  return (
+                    <img src={url} alt="Attachment preview" className="max-h-[85vh] w-auto object-contain" />
+                  )
+                }
+                if (ext === 'pdf' || ext === 'txt') {
+                  return (
+                    <iframe src={url} title="Attachment preview" className="w-[88vw] max-w-3xl h-[85vh]" />
+                  )
+                }
+                return (
+                  <div className="p-6 text-center">
+                    <div className="mb-3 text-sm text-[var(--neutral-700)]">Preview not available for this file type.</div>
+                    <button
+                      className="px-3 py-2 rounded-md border border-[var(--border)] text-sm"
+                      onClick={() => window.open(url, '_blank', 'noopener')}
+                    >
+                      Open in new tab
+                    </button>
+                  </div>
+                )
+              })()}
             </div>
           </div>
         </div>
