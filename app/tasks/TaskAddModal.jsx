@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createTask, addAttachment } from '@/lib/tasksApi'
+import { createTask } from '@/lib/tasksApi'
 import { useAuth } from '@/lib/useAuth'
 
 export default function TaskAddModal({ open, onClose, defaultDate }) {
@@ -43,7 +43,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
   function addLabel() {
     const v = labelInput.trim()
     if (!v) return
-    setLabels((ls) => Array.from(new Set([...ls, v])))
+    setLabels((ls) => Array.from(new window.Set([...ls, v])))
     setLabelInput('')
   }
 
