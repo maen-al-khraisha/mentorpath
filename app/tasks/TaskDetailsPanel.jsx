@@ -44,6 +44,27 @@ export default function TaskDetailsPanel({
   const reachedAttachmentLimit = (localAttachments?.length || 0) >= 3
   const [previewItem, setPreviewItem] = useState(null) // { url, name }
 
+  function normalizeDateLocal(input) {
+    if (!input) return null
+    if (input instanceof Date) return input
+    if (typeof input === 'object' && typeof input.toDate === 'function') {
+      try {
+        return input.toDate()
+      } catch {
+        return null
+      }
+    }
+    const d = new Date(input)
+    return isNaN(d.getTime()) ? null : d
+  }
+
+  const isShifted = (() => {
+    const od = normalizeDateLocal(task.originalDate)
+    const cd = normalizeDateLocal(task.date)
+    if (!od || !cd) return false
+    return od.getTime() < cd.getTime()
+  })()
+
   useEffect(() => {
     setLocalAttachments(task?.attachments || [])
   }, [task])
@@ -125,6 +146,11 @@ export default function TaskDetailsPanel({
             >
               {task.priority || 'Medium'}
             </span>
+            {isShifted && (
+              <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded bg-orange-100 text-orange-800">
+                Shifted
+              </span>
+            )}
           </div>
         </div>
         <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none">
@@ -417,7 +443,8 @@ export default function TaskDetailsPanel({
                   <span className="text-sm flex-1 truncate">{attachment.name}</span>
                   <button
                     onClick={() => {
-                      if (attachment.url) setPreviewItem({ url: attachment.url, name: attachment.name })
+                      if (attachment.url)
+                        setPreviewItem({ url: attachment.url, name: attachment.name })
                     }}
                     className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-[var(--muted1)] text-blue-600"
                     title="View"
@@ -492,17 +519,27 @@ export default function TaskDetailsPanel({
                 const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg']
                 if (imageExts.includes(ext)) {
                   return (
-                    <img src={url} alt="Attachment preview" className="max-h-[85vh] w-auto object-contain" />
+                    <img
+                      src={url}
+                      alt="Attachment preview"
+                      className="max-h-[85vh] w-auto object-contain"
+                    />
                   )
                 }
                 if (ext === 'pdf' || ext === 'txt') {
                   return (
-                    <iframe src={url} title="Attachment preview" className="w-[88vw] max-w-3xl h-[85vh]" />
+                    <iframe
+                      src={url}
+                      title="Attachment preview"
+                      className="w-[88vw] max-w-3xl h-[85vh]"
+                    />
                   )
                 }
                 return (
                   <div className="p-6 text-center">
-                    <div className="mb-3 text-sm text-[var(--neutral-700)]">Preview not available for this file type.</div>
+                    <div className="mb-3 text-sm text-[var(--neutral-700)]">
+                      Preview not available for this file type.
+                    </div>
                     <button
                       className="px-3 py-2 rounded-md border border-[var(--border)] text-sm"
                       onClick={() => window.open(url, '_blank', 'noopener')}
