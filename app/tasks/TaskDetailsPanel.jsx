@@ -349,58 +349,18 @@ export default function TaskDetailsPanel({
         </div>
         <div className="space-y-2">
           <div className="pt-1">
-            <input
-              id={attachmentInputId}
-              type="file"
-              accept="image/*,text/plain"
-              onChange={async (e) => {
-                const file = e.target.files?.[0]
-                if (!file) return
-                if (reachedAttachmentLimit) {
-                  setUploadError('Attachment limit reached (max 3 per task)')
-                  if (e.target) e.target.value = ''
-                  return
-                }
-                setUploadError('')
-                setPendingAttachmentName(file.name)
-                setIsUploading(true)
-                try {
-                  const url = await addAttachment(task.id, file)
-                  setPendingAttachmentName('')
-                  // Optimistic UI update (listener will also refresh)
-                  setLocalAttachments((prev) => [...(prev || []), { name: file.name, url }])
-                } catch (err) {
-                  console.error('Attachment upload failed:', err)
-                  const message = err?.message || 'Failed to upload. Please try again.'
-                  setUploadError(message)
-                } finally {
-                  setIsUploading(false)
-                  // Allow selecting the same file again if needed
-                  if (e.target) e.target.value = ''
-                }
-              }}
-              className="hidden"
-            />
+            <input id={attachmentInputId} type="file" accept="image/*,text/plain" className="hidden" disabled />
             <label
-              htmlFor={isUploading || reachedAttachmentLimit ? undefined : attachmentInputId}
+              htmlFor={undefined}
               className={`inline-flex items-center gap-2 px-3 py-2 border border-dashed border-[var(--border)] rounded-md text-sm transition-colors ${
-                isUploading || reachedAttachmentLimit
-                  ? 'opacity-70 cursor-not-allowed'
-                  : 'cursor-pointer hover:bg-[var(--muted1)] hover:border-[var(--neutral-600)]'
+                'opacity-70 cursor-not-allowed'
               }`}
-              aria-disabled={isUploading}
+              aria-disabled
             >
-              {isUploading ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Paperclip size={14} />
-                  {reachedAttachmentLimit ? 'Max 3 attachments' : 'Attach file'}
-                </>
-              )}
+              <>
+                <Paperclip size={14} />
+                File uploads disabled
+              </>
             </label>
             {pendingAttachmentName && (
               <span className="ml-2 text-xs text-[var(--neutral-700)]">
@@ -419,23 +379,9 @@ export default function TaskDetailsPanel({
                   <Paperclip size={14} className="text-[var(--neutral-700)]" />
                   <span className="text-sm flex-1 truncate">{attachment.name}</span>
                   <button
-                    onClick={async () => {
-                      const path = attachment.path
-                      try {
-                        if (path) {
-                          const res = await fetch('/api/attachments/sign', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ path }),
-                          })
-                          const data = await res.json()
-                          const urlToOpen = data?.url || attachment.url
-                          if (urlToOpen) window.open(urlToOpen, '_blank', 'noopener')
-                        } else if (attachment.url) {
-                          window.open(attachment.url, '_blank', 'noopener')
-                        }
-                      } catch (err) {
-                        console.error('Open attachment failed', err)
+                    onClick={() => {
+                      if (attachment.url) {
+                        window.open(attachment.url, '_blank', 'noopener')
                       }
                     }}
                     className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-[var(--muted1)] text-blue-600"

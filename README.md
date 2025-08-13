@@ -47,13 +47,7 @@ Required in `.env.local`:
 ## Firebase Setup
 
 1. Create a Firebase project and a Web App. Copy the config to `.env.local`.
-2. Create a Supabase project and add:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (server only)
-   - `SUPABASE_BUCKET` (default: `attachments`)
-   - `SUPABASE_MAX_FILE_BYTES` (default 6,291,456 ~ 6MB)
-   - `SUPABASE_SIGNED_URL_SECONDS` (default 3600)
+2. (Optional) Supabase integration was removed. If you plan to use a different storage, provide its env vars and update `lib/tasksApi.js` and `app/tasks/TaskDetailsPanel.jsx` accordingly.
 2. Enable Firestore (Native mode) and Storage.
 3. Enable Authentication providers:
    - Google: enable and set app name/logo.
