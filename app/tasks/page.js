@@ -28,6 +28,8 @@ export default function TasksPage() {
   const [selectedId, setSelectedId] = useState(null)
   const [activeTimer, setActiveTimer] = useState(null)
   const [timerTick, setTimerTick] = useState(0)
+  const [priorityFilter, setPriorityFilter] = useState('All')
+  const [labelFilter, setLabelFilter] = useState('All')
 
   useEffect(() => {
     if (!user || loading) {
@@ -96,18 +98,35 @@ export default function TasksPage() {
     return `${s}s`
   }
 
-  const todo = tasks.filter((t) => !t.completed)
-  const completed = tasks.filter((t) => t.completed)
+  const allLabels = useMemo(() => {
+    const set = new Set()
+    tasks.forEach((t) => (t.labels || []).forEach((l) => set.add(l)))
+    return Array.from(set).sort()
+  }, [tasks])
+
+  function applyFilters(list) {
+    return list.filter((t) => {
+      const priorityOk =
+        priorityFilter === 'All' || (t.priority || 'Medium') === priorityFilter
+      const labelOk = labelFilter === 'All' || (t.labels || []).includes(labelFilter)
+      return priorityOk && labelOk
+    })
+  }
+
+  const todo = applyFilters(tasks.filter((t) => !t.completed))
+  const completed = applyFilters(tasks.filter((t) => t.completed))
   const selectedTask = useMemo(() => tasks.find((t) => t.id === selectedId), [tasks, selectedId])
 
   // Auto-select first task (prefer first To Do) when list loads
   useEffect(() => {
-    if (!selectedId && tasks.length > 0) {
-      const firstTodo = tasks.find((t) => !t.completed)
-      const first = firstTodo || tasks[0]
+    const visible = [...todo, ...completed]
+    if (!visible.find((t) => t.id === selectedId)) {
+      const firstTodo = todo[0]
+      const first = firstTodo || visible[0]
       if (first) setSelectedId(first.id)
+      else setSelectedId(null)
     }
-  }, [tasks, selectedId])
+  }, [tasks, priorityFilter, labelFilter])
 
   // Timer tick for live counter
   useEffect(() => {
@@ -237,15 +256,29 @@ export default function TasksPage() {
             >
               <ChevronRight size={16} />
             </Button>
-            <select className="h-9 ml-2 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm">
-              <option>Priority</option>
-              <option>High</option>
-              <option>Medium</option>
-              <option>Low</option>
+            <select
+              className="h-9 ml-2 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              aria-label="Filter by priority"
+            >
+              <option value="All">All priorities</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
             </select>
-            <select className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm">
-              <option>Label</option>
-              <option>work</option>
+            <select
+              className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+              value={labelFilter}
+              onChange={(e) => setLabelFilter(e.target.value)}
+              aria-label="Filter by label"
+            >
+              <option value="All">All labels</option>
+              {allLabels.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex items-center gap-2">
