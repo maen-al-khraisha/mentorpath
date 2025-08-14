@@ -15,6 +15,7 @@ import TaskAddModal from './TaskAddModal'
 import TaskDetailsPanel from './TaskDetailsPanel'
 
 import { ChevronLeft, ChevronRight, Plus, Play, Pause, Clock } from 'lucide-react'
+import Image from 'next/image'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
 
 export default function TasksPage() {
@@ -157,28 +158,34 @@ export default function TasksPage() {
     <div className="lg:grid lg:grid-cols-4 lg:gap-4">
       {/* Full-width KPI header row */}
       <div className="lg:col-span-4 space-y-2 mb-2">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="sm:col-span-2 sketch-card sketch-green p-4">
+        <div className="grid grid-cols-3  sm:grid-cols-3 gap-3">
+          <div className="sketch-card sketch-green px-7 py-10">
             <div className="flex items-start justify-between">
               <div className="sketch-title">Task Completed</div>
-              <div className="text-[10px] uppercase tracking-wide font-semibold">Done</div>
+              <div className="flex items-center">
+                <Image src="/icons/done-badge.svg" alt="Done" width={18} height={18} />
+              </div>
             </div>
             <div className="sketch-count mt-2">
-              {completed.length.toString().padStart(2, '0')}/{tasks.length.toString().padStart(2, '0')}
+              {completed.length.toString().padStart(2, '0')}/
+              {tasks.length.toString().padStart(2, '0')}
             </div>
           </div>
-          <div className="sm:col-span-1 sketch-card sketch-pink p-4">
+          <div className="sketch-card sketch-pink px-7 py-10">
             <div className="flex items-start justify-between">
               <div className="sketch-title">Focus Time Today</div>
               <div className="text-[10px] uppercase tracking-wide font-semibold">Focus</div>
             </div>
             <div className="sketch-count mt-2">3h 45m</div>
           </div>
-        </div>
-        <div className="flex justify-end">
-          <a href="/insights" className="h-9 px-3 rounded-md border border-[var(--border)] text-sm">
-            Insights
-          </a>
+          <div className="flex justify-end">
+            <a
+              href="/insights"
+              className="h-9 px-3 rounded-md border border-[var(--border)] text-sm"
+            >
+              Insights
+            </a>
+          </div>
         </div>
       </div>
 
