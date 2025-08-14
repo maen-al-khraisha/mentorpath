@@ -311,6 +311,16 @@ export default function TaskDetailsPanel({
               <Pause size={14} />
               Stop Timer
             </button>
+          ) : task.completed ? (
+            <button
+              disabled
+              className="flex items-center gap-2 px-3 py-2 bg-gray-300 text-gray-600 rounded-md text-sm cursor-not-allowed"
+              aria-disabled="true"
+              title="Task is completed"
+            >
+              <Play size={14} />
+              Start Timer
+            </button>
           ) : (
             <button
               onClick={() => onStartTimer?.(task.id)}
@@ -737,7 +747,8 @@ export default function TaskDetailsPanel({
                         const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
                         const mins = Math.max(
                           0,
-                          parseInt(durationHours || '0', 10) * 60 + parseInt(durationMinutes || '0', 10)
+                          parseInt(durationHours || '0', 10) * 60 +
+                            parseInt(durationMinutes || '0', 10)
                         )
                         const end = new Date(start.getTime() + mins * 60000)
                         const durText = `${Math.floor(mins / 60)}h ${mins % 60}m`
