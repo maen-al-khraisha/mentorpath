@@ -211,17 +211,19 @@ export default function TaskDetailsPanel({
               Done
             </span>
           </label>
-          <button
-            className="p-1 rounded hover:bg-[var(--muted1)]"
+          <Button
+            variant="ghost"
+            className="p-1"
             aria-label="More actions"
             onClick={() => setShowActions((v) => !v)}
           >
             <MoreVertical size={18} />
-          </button>
+          </Button>
           {showActions && (
             <div className="absolute right-0 top-7 z-10 w-52 bg-[var(--bg-card)] border border-[var(--border)] rounded-md shadow-soft py-1">
-              <button
-                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] flex items-center gap-2"
+              <Button
+                variant="ghost"
+                className="w-full px-3 py-2 justify-start text-sm"
                 onClick={() => {
                   setShowActions(false)
                   setTargetDate('')
@@ -229,10 +231,11 @@ export default function TaskDetailsPanel({
                   setShowChangeDate(true)
                 }}
               >
-                <Calendar size={14} /> Change date
-              </button>
-              <button
-                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] flex items-center gap-2"
+                <Calendar size={14} /> <span>Change date</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full px-3 py-2 justify-start text-sm"
                 onClick={() => {
                   setShowActions(false)
                   const now = new Date()
@@ -247,10 +250,11 @@ export default function TaskDetailsPanel({
                   setShowAddTime(true)
                 }}
               >
-                <ClockIcon size={14} /> Add time
-              </button>
-              <button
-                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] flex items-center gap-2"
+                <ClockIcon size={14} /> <span>Add time</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full px-3 py-2 justify-start text-sm"
                 onClick={() => {
                   setShowActions(false)
                   setCopyTitle(task.title || '')
@@ -262,10 +266,11 @@ export default function TaskDetailsPanel({
                   setShowCopyModal(true)
                 }}
               >
-                <CopyIcon size={14} /> Copy task
-              </button>
-              <button
-                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--muted1)] text-red-600 flex items-center gap-2"
+                <CopyIcon size={14} /> <span>Copy task</span>
+              </Button>
+              <Button
+                variant="danger"
+                className="w-full px-3 py-2 justify-start text-sm"
                 onClick={async () => {
                   setShowActions(false)
                   if (!confirm('Delete this task? This cannot be undone.')) return
@@ -276,8 +281,8 @@ export default function TaskDetailsPanel({
                   }
                 }}
               >
-                <Trash2 size={14} /> Delete task
-              </button>
+                <Trash2 size={14} /> <span>Delete task</span>
+              </Button>
             </div>
           )}
         </div>
@@ -310,7 +315,12 @@ export default function TaskDetailsPanel({
               <span>Stop Timer</span>
             </Button>
           ) : task.completed ? (
-            <Button variant="primary" disabled title="Task is completed" className="opacity-60 cursor-not-allowed">
+            <Button
+              variant="primary"
+              disabled
+              title="Task is completed"
+              className="opacity-60 cursor-not-allowed"
+            >
               <Play size={14} />
               <span>Start Timer</span>
             </Button>
@@ -334,12 +344,13 @@ export default function TaskDetailsPanel({
             <FileText size={14} />
             Description
           </label>
-          <button
+          <Button
+            variant="ghost"
+            className="p-1 text-xs"
             onClick={() => setEditingDescription(!editingDescription)}
-            className="text-xs text-blue-600 hover:underline"
           >
             {editingDescription ? 'Cancel' : 'Edit'}
-          </button>
+          </Button>
         </div>
         {editingDescription ? (
           <div>
@@ -351,21 +362,19 @@ export default function TaskDetailsPanel({
               placeholder="Add task description..."
             />
             <div className="flex items-center gap-2 mt-2">
-              <button
-                onClick={handleSaveDescription}
-                className="px-3 py-1 bg-[var(--primary)] text-[var(--neutral-900)] rounded text-sm"
-              >
+              <Button variant="primary" className="px-3 py-1 text-sm" onClick={handleSaveDescription}>
                 Save
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
+                className="px-3 py-1 text-sm"
                 onClick={() => {
                   setDescription(task.description || '')
                   setEditingDescription(false)
                 }}
-                className="px-3 py-1 border border-[var(--border)] rounded text-sm"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -403,14 +412,15 @@ export default function TaskDetailsPanel({
             placeholder="Add label"
             className="h-7 px-2 rounded border border-dashed border-[var(--border)] bg-[var(--bg-card)] text-xs"
           />
-          <button
+          <Button
+            variant="secondary"
+            className="inline-flex items-center justify-center w-7 h-7 p-1"
             onClick={handleAddLabel}
-            className="inline-flex items-center justify-center w-7 h-7 rounded bg-[var(--primary)] text-[var(--neutral-900)]"
             aria-label="Add label"
             title="Add label"
           >
             <Plus size={14} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -449,12 +459,14 @@ export default function TaskDetailsPanel({
                   {item.text}
                 </span>
               </label>
-              <button
+              <Button
+                variant="danger"
+                className="p-1"
                 onClick={() => handleRemoveChecklistItem(item.id)}
-                className="text-red-500 hover:text-red-700"
+                aria-label="Delete checklist item"
               >
                 <X size={14} />
-              </button>
+              </Button>
             </div>
           )) || (
             <span className="text-xs text-[var(--neutral-700)] italic">No checklist items</span>
@@ -468,14 +480,15 @@ export default function TaskDetailsPanel({
               placeholder="Add checklist item"
               className="flex-1 h-7 px-2 rounded border border-dashed border-[var(--border)] bg-[var(--bg-card)] text-xs"
             />
-            <button
+            <Button
+              variant="secondary"
+              className="inline-flex items-center justify-center w-7 h-7 p-1"
               onClick={handleAddChecklistItem}
-              className="inline-flex items-center justify-center w-7 h-7 rounded bg-[var(--primary)] text-[var(--neutral-900)]"
               aria-label="Add checklist item"
               title="Add checklist item"
             >
               <Plus size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

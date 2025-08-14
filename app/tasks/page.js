@@ -224,7 +224,7 @@ export default function TasksPage() {
             <div className="sketch-count mt-2">{formatTotalTime(getTotalFocusTime())}</div>
           </div>
           <div className="flex justify-end">
-            <a href="/insights" className={buttonVariants({ variant: 'outline', size: 'default' })}>
+            <a href="/insights" className="px-3 py-2 rounded-lg font-medium border border-gray-300 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
               Insights
             </a>
           </div>
