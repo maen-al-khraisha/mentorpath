@@ -62,8 +62,8 @@ export default function TaskDetailsPanel({
   const [showAddTime, setShowAddTime] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [endTime, setEndTime] = useState('')
+  const [durationHours, setDurationHours] = useState('0')
+  const [durationMinutes, setDurationMinutes] = useState('30')
   const [isSubmittingTime, setIsSubmittingTime] = useState(false)
   const [showCopyModal, setShowCopyModal] = useState(false)
   const [copyTitle, setCopyTitle] = useState('')
@@ -237,7 +237,8 @@ export default function TaskDetailsPanel({
                   const now = new Date()
                   const end = new Date(now.getTime() + 30 * 60000)
                   const pad = (n) => String(n).padStart(2, '0')
-                  const toDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+                  const toDate = (d) =>
+                    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
                   const toTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
                   setStartDate(toDate(now))
                   setStartTime(toTime(now))
@@ -690,17 +691,30 @@ export default function TaskDetailsPanel({
                 <div>
                   <label className="block text-xs text-[var(--neutral-700)] mb-1">Start</label>
                   <div className="flex items-center gap-2">
-                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
-                    <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
-                    <span className="text-xs text-[var(--neutral-700)] w-10 text-center">{Number((startTime||'0:0').split(':')[0]) >= 12 ? 'PM' : 'AM'}</span>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                    />
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                    />
+                    <span className="text-xs text-[var(--neutral-700)] w-10 text-center">
+                      {Number((startTime || '0:0').split(':')[0]) >= 12 ? 'PM' : 'AM'}
+                    </span>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-[var(--neutral-700)] mb-1">End</label>
+                  <label className="block text-xs text-[var(--neutral-700)] mb-1">Duration</label>
                   <div className="flex items-center gap-2">
-                    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
-                    <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
-                    <span className="text-xs text-[var(--neutral-700)] w-10 text-center">{Number((endTime||'0:0').split(':')[0]) >= 12 ? 'PM' : 'AM'}</span>
+                    <input type="number" min="0" step="1" value={durationHours} onChange={(e) => setDurationHours(e.target.value)} className="h-9 w-20 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
+                    <span className="text-xs">hours</span>
+                    <input type="number" min="0" step="1" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} className="h-9 w-20 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
+                    <span className="text-xs">minutes</span>
                   </div>
                 </div>
               </div>
@@ -712,23 +726,22 @@ export default function TaskDetailsPanel({
                   Cancel
                 </button>
                 <button
-                  disabled={!startDate || !startTime || !endDate || !endTime || isSubmittingTime}
+                  disabled={!startDate || !startTime || (parseInt(durationHours || '0', 10) === 0 && parseInt(durationMinutes || '0', 10) === 0) || isSubmittingTime}
                   onClick={async () => {
-                    if (!startDate || !startTime || !endDate || !endTime) return
+                    if (!startDate || !startTime) return
                     setIsSubmittingTime(true)
                     try {
                       const [sy, sm, sd] = startDate.split('-').map(Number)
                       const [sh, smin] = startTime.split(':').map(Number)
-                      const [ey, em, ed] = endDate.split('-').map(Number)
-                      const [eh, emin] = endTime.split(':').map(Number)
-                      const start = new Date(sy, sm - 1, sd, sh, smin)
-                      const end = new Date(ey, em - 1, ed, eh, emin)
+                      const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
+                      const mins = Math.max(0, (parseInt(durationHours || '0', 10) * 60) + parseInt(durationMinutes || '0', 10))
+                      const end = new Date(start.getTime() + mins * 60000)
                       await addManualWorkSession(task.id, start, end)
                       setShowAddTime(false)
                       setStartDate('')
                       setStartTime('')
-                      setEndDate('')
-                      setEndTime('')
+                      setDurationHours('0')
+                      setDurationMinutes('30')
                     } catch (e) {
                       console.error('Add time failed', e)
                     } finally {
