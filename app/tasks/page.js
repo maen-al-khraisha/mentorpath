@@ -161,7 +161,7 @@ export default function TasksPage() {
           <div className="rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
             <div className="text-xs text-[var(--neutral-700)]">Task Completed</div>
             <div className="text-2xl font-semibold mt-1">
-              {String(completed.length).padStart(2, '0')}/{String(tasks.length).padStart(2, '0')}
+              {completed.length}/{tasks.length}
             </div>
           </div>
           <div className="rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
