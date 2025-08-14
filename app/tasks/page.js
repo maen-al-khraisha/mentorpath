@@ -17,6 +17,7 @@ import TaskDetailsPanel from './TaskDetailsPanel'
 import { ChevronLeft, ChevronRight, Plus, Play, Pause, Clock } from 'lucide-react'
 import Image from 'next/image'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
+import { Button, buttonVariants } from '@/components/ui/button'
 
 export default function TasksPage() {
   const { user, loading } = useAuth()
@@ -196,10 +197,7 @@ export default function TasksPage() {
             <div className="sketch-count mt-2">{formatTotalTime(getTotalFocusTime())}</div>
           </div>
           <div className="flex justify-end">
-            <a
-              href="/insights"
-              className="h-9 px-3 rounded-md border border-[var(--border)] text-sm"
-            >
+            <a href="/insights" className={buttonVariants({ variant: 'outline', size: 'default' })}>
               Insights
             </a>
           </div>
@@ -211,24 +209,26 @@ export default function TasksPage() {
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-2 justify-between">
           <div className="flex items-center gap-1 border px-1 py-1 rounded-md bg-[var(--bg-card)] flex-1">
-            <button
-              className="p-2 rounded-md border border-[var(--border)]"
+            <Button
+              variant="outline"
+              size="icon"
               onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
               aria-label="Previous day"
             >
               <ChevronLeft size={16} />
-            </button>
+            </Button>
 
             <div className="px-3 h-9 inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--bg-card)] text-sm">
               {date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
             </div>
-            <button
-              className="p-2 rounded-md border border-[var(--border)]"
+            <Button
+              variant="outline"
+              size="icon"
               onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
               aria-label="Next day"
             >
               <ChevronRight size={16} />
-            </button>
+            </Button>
             <select className="h-9 ml-2 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm">
               <option>Priority</option>
               <option>High</option>
@@ -241,12 +241,10 @@ export default function TasksPage() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              className="h-9 px-3 rounded-md bg-[var(--primary)] text-[var(--neutral-900)] shadow-soft text-sm inline-flex items-center gap-2"
-              onClick={() => setShowAdd(true)}
-            >
-              <Plus size={16} /> Add task
-            </button>
+            <Button variant="primary" onClick={() => setShowAdd(true)}>
+              <Plus size={16} />
+              <span className="ml-1">Add task</span>
+            </Button>
           </div>
         </div>
 
