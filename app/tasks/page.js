@@ -49,9 +49,13 @@ export default function TasksPage() {
     let total = 0
     sessions.forEach((s) => {
       if (s.startAt && s.endAt) {
-        const start = s.startAt.toDate ? s.startAt.toDate() : new Date(s.startAt)
-        const end = s.endAt.toDate ? s.endAt.toDate() : new Date(s.endAt)
-        total += Math.max(0, (end - start) / 1000)
+        if (typeof s.durationSec === 'number') {
+          total += Math.max(0, s.durationSec)
+        } else {
+          const start = s.startAt.toDate ? s.startAt.toDate() : new Date(s.startAt)
+          const end = s.endAt.toDate ? s.endAt.toDate() : new Date(s.endAt)
+          total += Math.max(0, (end - start) / 1000)
+        }
       } else if (s.startAt && activeTimer && activeTimer.taskId === taskId) {
         // If session is running, add live time
         const start = s.startAt.toDate ? s.startAt.toDate() : new Date(s.startAt)
@@ -69,8 +73,12 @@ export default function TasksPage() {
       if (!s.startAt) return
       const start = s.startAt.toDate ? s.startAt.toDate() : new Date(s.startAt)
       if (s.endAt) {
-        const end = s.endAt.toDate ? s.endAt.toDate() : new Date(s.endAt)
-        total += Math.max(0, (end - start) / 1000)
+        if (typeof s.durationSec === 'number') {
+          total += Math.max(0, s.durationSec)
+        } else {
+          const end = s.endAt.toDate ? s.endAt.toDate() : new Date(s.endAt)
+          total += Math.max(0, (end - start) / 1000)
+        }
       } else if (activeTimer && activeTimer.sessionId && s.id === activeTimer.sessionId) {
         const now = new Date()
         total += Math.max(0, (now - start) / 1000)

@@ -235,15 +235,14 @@ export default function TaskDetailsPanel({
                 onClick={() => {
                   setShowActions(false)
                   const now = new Date()
-                  const end = new Date(now.getTime() + 30 * 60000)
                   const pad = (n) => String(n).padStart(2, '0')
                   const toDate = (d) =>
                     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
                   const toTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
                   setStartDate(toDate(now))
                   setStartTime(toTime(now))
-                  setEndDate(toDate(end))
-                  setEndTime(toTime(end))
+                  setDurationHours('0')
+                  setDurationMinutes('30')
                   setShowAddTime(true)
                 }}
               >
@@ -711,11 +710,48 @@ export default function TaskDetailsPanel({
                 <div>
                   <label className="block text-xs text-[var(--neutral-700)] mb-1">Duration</label>
                   <div className="flex items-center gap-2">
-                    <input type="number" min="0" step="1" value={durationHours} onChange={(e) => setDurationHours(e.target.value)} className="h-9 w-20 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={durationHours}
+                      onChange={(e) => setDurationHours(e.target.value)}
+                      className="h-9 w-20 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                    />
                     <span className="text-xs">hours</span>
-                    <input type="number" min="0" step="1" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} className="h-9 w-20 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={durationMinutes}
+                      onChange={(e) => setDurationMinutes(e.target.value)}
+                      className="h-9 w-20 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                    />
                     <span className="text-xs">minutes</span>
                   </div>
+                  {startDate && startTime && (
+                    <div className="mt-2 text-xs text-[var(--neutral-700)]">
+                      {(() => {
+                        const [sy, sm, sd] = startDate.split('-').map(Number)
+                        const [sh, smin] = startTime.split(':').map(Number)
+                        const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
+                        const mins = Math.max(
+                          0,
+                          parseInt(durationHours || '0', 10) * 60 + parseInt(durationMinutes || '0', 10)
+                        )
+                        const end = new Date(start.getTime() + mins * 60000)
+                        const durText = `${Math.floor(mins / 60)}h ${mins % 60}m`
+                        const endText = end.toLocaleString([], {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true,
+                          month: 'short',
+                          day: '2-digit',
+                        })
+                        return `Duration: ${durText} — Ends at: ${endText}`
+                      })()}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex justify-end gap-2">
@@ -726,7 +762,13 @@ export default function TaskDetailsPanel({
                   Cancel
                 </button>
                 <button
-                  disabled={!startDate || !startTime || (parseInt(durationHours || '0', 10) === 0 && parseInt(durationMinutes || '0', 10) === 0) || isSubmittingTime}
+                  disabled={
+                    !startDate ||
+                    !startTime ||
+                    (parseInt(durationHours || '0', 10) === 0 &&
+                      parseInt(durationMinutes || '0', 10) === 0) ||
+                    isSubmittingTime
+                  }
                   onClick={async () => {
                     if (!startDate || !startTime) return
                     setIsSubmittingTime(true)
@@ -734,7 +776,11 @@ export default function TaskDetailsPanel({
                       const [sy, sm, sd] = startDate.split('-').map(Number)
                       const [sh, smin] = startTime.split(':').map(Number)
                       const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
-                      const mins = Math.max(0, (parseInt(durationHours || '0', 10) * 60) + parseInt(durationMinutes || '0', 10))
+                      const mins = Math.max(
+                        0,
+                        parseInt(durationHours || '0', 10) * 60 +
+                          parseInt(durationMinutes || '0', 10)
+                      )
                       const end = new Date(start.getTime() + mins * 60000)
                       await addManualWorkSession(task.id, start, end)
                       setShowAddTime(false)
