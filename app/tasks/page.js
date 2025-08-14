@@ -17,7 +17,8 @@ import TaskDetailsPanel from './TaskDetailsPanel'
 import { ChevronLeft, ChevronRight, Plus, Play, Pause, Clock } from 'lucide-react'
 import Image from 'next/image'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
-import { Button, buttonVariants } from '@/components/ui/button'
+import Button from '@/components/Button'
+import { buttonVariants } from '@/components/ui/button'
 
 export default function TasksPage() {
   const { user, loading } = useAuth()
@@ -203,9 +204,9 @@ export default function TasksPage() {
       {/* Full-width KPI header row */}
       <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-3  sm:grid-cols-3 gap-3">
-          <div className="sketch-card sketch-green px-7 py-10">
+          <div className="sketch-card sketch-green p-5">
             <div className="flex items-start justify-between relative">
-              <div className="sketch-title text-[26px]">Task Completed</div>
+              <div className="sketch-title text-[22px]">Task Completed</div>
               <div className="flex items-center absolute top-0 right-0">
                 <Image src="/icons/done-badge.svg" alt="Done" width={40} height={40} />
               </div>
@@ -215,9 +216,9 @@ export default function TasksPage() {
               {tasks.length.toString().padStart(1, '0')}
             </div>
           </div>
-          <div className="sketch-card sketch-pink px-7 py-10">
+          <div className="sketch-card sketch-pink p-5">
             <div className="flex items-start justify-between">
-              <div className="sketch-title text-[26px]">Focus Time Today</div>
+              <div className="sketch-title text-[22px]">Focus Time Today</div>
               <Image src="/icons/focus.svg" alt="Done" width={40} height={40} />
             </div>
             <div className="sketch-count mt-2">{formatTotalTime(getTotalFocusTime())}</div>
@@ -322,13 +323,14 @@ export default function TasksPage() {
                     </button>
                   ) : (
                     !t.completed && (
-                      <button
-                        className="p-1.5 rounded-md border border-[var(--border)]"
+                      <Button
+                        variant="primary"
+                        className="p-1"
                         aria-label="Start timer"
                         onClick={() => handleStartTimer(t.id)}
                       >
                         <Play size={14} />
-                      </button>
+                      </Button>
                     )
                   )}
                 </div>

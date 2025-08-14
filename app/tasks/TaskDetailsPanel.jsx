@@ -13,6 +13,7 @@ import {
   deleteTask,
 } from '@/lib/tasksApi'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
+import Button from '@/components/Button'
 import {
   Play,
   Pause,
@@ -304,39 +305,25 @@ export default function TaskDetailsPanel({
         </div>
         <div className="flex items-center gap-2">
           {isTimerActive ? (
-            <button
-              onClick={() => onStopTimer?.(task.id)}
-              className="flex items-center gap-2 px-3 py-2 bg-red-500 text-white rounded-md text-sm hover:bg-red-600"
-            >
+            <Button variant="danger" onClick={() => onStopTimer?.(task.id)}>
               <Pause size={14} />
-              Stop Timer
-            </button>
+              <span>Stop Timer</span>
+            </Button>
           ) : task.completed ? (
-            <button
-              disabled
-              className="flex items-center gap-2 px-3 py-2 bg-gray-300 text-gray-600 rounded-md text-sm cursor-not-allowed"
-              aria-disabled="true"
-              title="Task is completed"
-            >
+            <Button variant="primary" disabled title="Task is completed" className="opacity-60 cursor-not-allowed">
               <Play size={14} />
-              Start Timer
-            </button>
+              <span>Start Timer</span>
+            </Button>
           ) : (
-            <button
-              onClick={() => onStartTimer?.(task.id)}
-              className="flex items-center gap-2 px-3 py-2 bg-green-500 text-white rounded-md text-sm hover:bg-green-600"
-            >
+            <Button variant="primary" onClick={() => onStartTimer?.(task.id)}>
               <Play size={14} />
-              Start Timer
-            </button>
+              <span>Start Timer</span>
+            </Button>
           )}
-          <button
-            onClick={() => setShowShiftModal(true)}
-            className="flex items-center gap-2 px-3 py-2 border border-[var(--border)] rounded-md text-sm hover:bg-[var(--muted1)]"
-          >
+          <Button variant="secondary" onClick={() => setShowShiftModal(true)}>
             <ArrowRight size={14} />
-            Shift to Tomorrow
-          </button>
+            <span>Shift to Tomorrow</span>
+          </Button>
         </div>
       </div>
 
