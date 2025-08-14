@@ -157,14 +157,14 @@ export default function TasksPage() {
     <div className="lg:grid lg:grid-cols-4 lg:gap-4">
       {/* Full-width KPI header row */}
       <div className="lg:col-span-4 space-y-2 mb-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-2 rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
             <div className="text-xs text-[var(--neutral-700)]">Task Completed</div>
             <div className="text-2xl font-semibold mt-1">
               {completed.length}/{tasks.length}
             </div>
           </div>
-          <div className="rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
+          <div className="sm:col-span-1 rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
             <div className="text-xs text-[var(--neutral-700)]">Focus Time Today</div>
             <div className="text-2xl font-semibold mt-1">3h 45m</div>
           </div>
@@ -180,7 +180,7 @@ export default function TasksPage() {
       <div className="space-y-3 lg:col-span-2">
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-2 justify-between">
-          <div className="flex items-center gap-1 border px-5 py-1 rounded-md bg-[var(--bg-card)] flex-1">
+          <div className="flex items-center gap-1 border px-1 py-1 rounded-md bg-[var(--bg-card)] flex-1">
             <button
               className="p-2 rounded-md border border-[var(--border)]"
               onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
