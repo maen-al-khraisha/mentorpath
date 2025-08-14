@@ -106,8 +106,7 @@ export default function TasksPage() {
 
   function applyFilters(list) {
     return list.filter((t) => {
-      const priorityOk =
-        priorityFilter === 'All' || (t.priority || 'Medium') === priorityFilter
+      const priorityOk = priorityFilter === 'All' || (t.priority || 'Medium') === priorityFilter
       const labelOk = labelFilter === 'All' || (t.labels || []).includes(labelFilter)
       return priorityOk && labelOk
     })
@@ -368,7 +367,16 @@ export default function TasksPage() {
         </section>
 
         {showAdd && (
-          <TaskAddModal open={showAdd} onClose={() => setShowAdd(false)} defaultDate={date} />
+          <TaskAddModal
+            open={showAdd}
+            onClose={(newId) => {
+              setShowAdd(false)
+              if (newId) {
+                setSelectedId(newId)
+              }
+            }}
+            defaultDate={date}
+          />
         )}
       </div>
 
