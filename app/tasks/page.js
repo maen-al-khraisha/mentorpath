@@ -158,15 +158,21 @@ export default function TasksPage() {
       {/* Full-width KPI header row */}
       <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="sm:col-span-2 rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
-            <div className="text-xs text-[var(--neutral-700)]">Task Completed</div>
-            <div className="text-2xl font-semibold mt-1">
-              {completed.length}/{tasks.length}
+          <div className="sm:col-span-2 sketch-card sketch-green p-4">
+            <div className="flex items-start justify-between">
+              <div className="sketch-title">Task Completed</div>
+              <div className="text-[10px] uppercase tracking-wide font-semibold">Done</div>
+            </div>
+            <div className="sketch-count mt-2">
+              {completed.length.toString().padStart(2, '0')}/{tasks.length.toString().padStart(2, '0')}
             </div>
           </div>
-          <div className="sm:col-span-1 rounded-lg p-3 border border-[var(--border)] shadow-soft bg-[var(--bg-card)]">
-            <div className="text-xs text-[var(--neutral-700)]">Focus Time Today</div>
-            <div className="text-2xl font-semibold mt-1">3h 45m</div>
+          <div className="sm:col-span-1 sketch-card sketch-pink p-4">
+            <div className="flex items-start justify-between">
+              <div className="sketch-title">Focus Time Today</div>
+              <div className="text-[10px] uppercase tracking-wide font-semibold">Focus</div>
+            </div>
+            <div className="sketch-count mt-2">3h 45m</div>
           </div>
         </div>
         <div className="flex justify-end">

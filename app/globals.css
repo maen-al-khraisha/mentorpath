@@ -68,3 +68,30 @@ textarea.border-dashed:focus {
   border-style: dashed;
   border-color: var(--primary);
 }
+
+/* Sketch card style for KPI widgets */
+.sketch-card {
+  position: relative;
+  border: 2px solid #1d1d1d;
+  border-radius: 14px;
+  background: var(--sketch-bg, #fff);
+}
+.sketch-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 8px);
+  pointer-events: none;
+}
+.sketch-green { --sketch-bg: #d9f2d6; }
+.sketch-pink { --sketch-bg: #f6d9dc; }
+.sketch-title {
+  font-weight: 600;
+}
+.sketch-count {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
