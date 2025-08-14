@@ -679,7 +679,7 @@ export default function TaskDetailsPanel({
           <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Add Manual Time</h3>
             <div className="space-y-3">
-              <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label className="block text-xs text-[var(--neutral-700)] mb-1">Start</label>
                   <input
@@ -688,6 +688,11 @@ export default function TaskDetailsPanel({
                     onChange={(e) => setManualStart(e.target.value)}
                     className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
                   />
+                    {manualStart && (
+                      <div className="mt-1 text-xs text-[var(--neutral-700)]">
+                        {new Date(manualStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
+                      </div>
+                    )}
                 </div>
                 <div>
                   <label className="block text-xs text-[var(--neutral-700)] mb-1">End</label>
@@ -697,6 +702,11 @@ export default function TaskDetailsPanel({
                     onChange={(e) => setManualEnd(e.target.value)}
                     className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
                   />
+                    {manualEnd && (
+                      <div className="mt-1 text-xs text-[var(--neutral-700)]">
+                        {new Date(manualEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
+                      </div>
+                    )}
                 </div>
               </div>
               <div className="flex justify-end gap-2">
