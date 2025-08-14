@@ -60,8 +60,10 @@ export default function TaskDetailsPanel({
   const [targetReason, setTargetReason] = useState('')
   const [isSubmittingChangeDate, setIsSubmittingChangeDate] = useState(false)
   const [showAddTime, setShowAddTime] = useState(false)
-  const [manualStart, setManualStart] = useState('') // datetime-local
-  const [manualEnd, setManualEnd] = useState('') // datetime-local
+  const [startDate, setStartDate] = useState('')
+  const [startTime, setStartTime] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [endTime, setEndTime] = useState('')
   const [isSubmittingTime, setIsSubmittingTime] = useState(false)
   const [showCopyModal, setShowCopyModal] = useState(false)
   const [copyTitle, setCopyTitle] = useState('')
@@ -234,8 +236,13 @@ export default function TaskDetailsPanel({
                   setShowActions(false)
                   const now = new Date()
                   const end = new Date(now.getTime() + 30 * 60000)
-                  setManualStart(formatDateTimeLocal(now))
-                  setManualEnd(formatDateTimeLocal(end))
+                  const pad = (n) => String(n).padStart(2, '0')
+                  const toDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+                  const toTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
+                  setStartDate(toDate(now))
+                  setStartTime(toTime(now))
+                  setEndDate(toDate(end))
+                  setEndTime(toTime(end))
                   setShowAddTime(true)
                 }}
               >
@@ -679,34 +686,22 @@ export default function TaskDetailsPanel({
           <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Add Manual Time</h3>
             <div className="space-y-3">
-                <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label className="block text-xs text-[var(--neutral-700)] mb-1">Start</label>
-                  <input
-                    type="datetime-local"
-                    value={manualStart}
-                    onChange={(e) => setManualStart(e.target.value)}
-                    className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
-                  />
-                    {manualStart && (
-                      <div className="mt-1 text-xs text-[var(--neutral-700)]">
-                        {new Date(manualStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
-                      </div>
-                    )}
+                  <div className="flex items-center gap-2">
+                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
+                    <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
+                    <span className="text-xs text-[var(--neutral-700)] w-10 text-center">{Number((startTime||'0:0').split(':')[0]) >= 12 ? 'PM' : 'AM'}</span>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs text-[var(--neutral-700)] mb-1">End</label>
-                  <input
-                    type="datetime-local"
-                    value={manualEnd}
-                    onChange={(e) => setManualEnd(e.target.value)}
-                    className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
-                  />
-                    {manualEnd && (
-                      <div className="mt-1 text-xs text-[var(--neutral-700)]">
-                        {new Date(manualEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
-                      </div>
-                    )}
+                  <div className="flex items-center gap-2">
+                    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
+                    <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm" />
+                    <span className="text-xs text-[var(--neutral-700)] w-10 text-center">{Number((endTime||'0:0').split(':')[0]) >= 12 ? 'PM' : 'AM'}</span>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
@@ -717,19 +712,23 @@ export default function TaskDetailsPanel({
                   Cancel
                 </button>
                 <button
-                  disabled={!manualStart || !manualEnd || isSubmittingTime}
+                  disabled={!startDate || !startTime || !endDate || !endTime || isSubmittingTime}
                   onClick={async () => {
-                    if (!manualStart || !manualEnd) return
+                    if (!startDate || !startTime || !endDate || !endTime) return
                     setIsSubmittingTime(true)
                     try {
-                      await addManualWorkSession(
-                        task.id,
-                        new Date(manualStart),
-                        new Date(manualEnd)
-                      )
+                      const [sy, sm, sd] = startDate.split('-').map(Number)
+                      const [sh, smin] = startTime.split(':').map(Number)
+                      const [ey, em, ed] = endDate.split('-').map(Number)
+                      const [eh, emin] = endTime.split(':').map(Number)
+                      const start = new Date(sy, sm - 1, sd, sh, smin)
+                      const end = new Date(ey, em - 1, ed, eh, emin)
+                      await addManualWorkSession(task.id, start, end)
                       setShowAddTime(false)
-                      setManualStart('')
-                      setManualEnd('')
+                      setStartDate('')
+                      setStartTime('')
+                      setEndDate('')
+                      setEndTime('')
                     } catch (e) {
                       console.error('Add time failed', e)
                     } finally {
