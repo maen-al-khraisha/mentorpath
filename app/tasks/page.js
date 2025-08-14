@@ -61,6 +61,23 @@ export default function TasksPage() {
     return total
   }
 
+  // Sum of all work sessions for the selected day (respects date filter)
+  function getTotalFocusTime() {
+    let total = 0
+    workSessions.forEach((s) => {
+      if (!s.startAt) return
+      const start = s.startAt.toDate ? s.startAt.toDate() : new Date(s.startAt)
+      if (s.endAt) {
+        const end = s.endAt.toDate ? s.endAt.toDate() : new Date(s.endAt)
+        total += Math.max(0, (end - start) / 1000)
+      } else if (activeTimer && activeTimer.sessionId && s.id === activeTimer.sessionId) {
+        const now = new Date()
+        total += Math.max(0, (now - start) / 1000)
+      }
+    })
+    return total
+  }
+
   function formatTotalTime(sec) {
     const h = Math.floor(sec / 3600)
     const m = Math.floor((sec % 3600) / 60)
@@ -160,23 +177,23 @@ export default function TasksPage() {
       <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-3  sm:grid-cols-3 gap-3">
           <div className="sketch-card sketch-green px-7 py-10">
-            <div className="flex items-start justify-between">
-              <div className="sketch-title">Task Completed</div>
-              <div className="flex items-center">
-                <Image src="/icons/done-badge.svg" alt="Done" width={18} height={18} />
+            <div className="flex items-start justify-between relative">
+              <div className="sketch-title text-[26px]">Task Completed</div>
+              <div className="flex items-center absolute top-0 right-0">
+                <Image src="/icons/done-badge.svg" alt="Done" width={40} height={40} />
               </div>
             </div>
-            <div className="sketch-count mt-2">
-              {completed.length.toString().padStart(2, '0')}/
-              {tasks.length.toString().padStart(2, '0')}
+            <div className="sketch-count mt-2 ">
+              {completed.length.toString().padStart(1, '0')} /
+              {tasks.length.toString().padStart(1, '0')}
             </div>
           </div>
           <div className="sketch-card sketch-pink px-7 py-10">
             <div className="flex items-start justify-between">
-              <div className="sketch-title">Focus Time Today</div>
-              <div className="text-[10px] uppercase tracking-wide font-semibold">Focus</div>
+              <div className="sketch-title text-[26px]">Focus Time Today</div>
+              <Image src="/icons/focus.svg" alt="Done" width={40} height={40} />
             </div>
-            <div className="sketch-count mt-2">3h 45m</div>
+            <div className="sketch-count mt-2">{formatTotalTime(getTotalFocusTime())}</div>
           </div>
           <div className="flex justify-end">
             <a
