@@ -14,11 +14,10 @@ import {
 import TaskAddModal from './TaskAddModal'
 import TaskDetailsPanel from './TaskDetailsPanel'
 
-import { ChevronLeft, ChevronRight, Plus, Play, Pause, Clock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Play, Pause, Clock, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
 import Button from '@/components/Button'
-import { buttonVariants } from '@/components/ui/button'
 
 export default function TasksPage() {
   const { user, loading } = useAuth()
@@ -206,7 +205,7 @@ export default function TasksPage() {
         <div className="grid grid-cols-3  sm:grid-cols-3 gap-3">
           <div className="sketch-card sketch-green p-5">
             <div className="flex items-start justify-between relative">
-              <div className="sketch-title text-[22px]">Task Completed</div>
+              <div className="sketch-title text-[26px]">Task Completed</div>
               <div className="flex items-center absolute top-0 right-0">
                 <Image src="/icons/done-badge.svg" alt="Done" width={40} height={40} />
               </div>
@@ -218,15 +217,20 @@ export default function TasksPage() {
           </div>
           <div className="sketch-card sketch-pink p-5">
             <div className="flex items-start justify-between">
-              <div className="sketch-title text-[22px]">Focus Time Today</div>
+              <div className="sketch-title text-[26px]">Focus Time Today</div>
               <Image src="/icons/focus.svg" alt="Done" width={40} height={40} />
             </div>
             <div className="sketch-count mt-2">{formatTotalTime(getTotalFocusTime())}</div>
           </div>
           <div className="flex justify-end">
-            <a href="/insights" className="px-3 py-2 rounded-lg font-medium border border-gray-300 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-              Insights
-            </a>
+            <Button
+              variant="sketchButton"
+              href="/insights"
+              className="h-min flex align-center justify-center"
+            >
+              <span>Insights</span>
+              <ArrowRight size={16} />
+            </Button>
           </div>
         </div>
       </div>
@@ -234,11 +238,11 @@ export default function TasksPage() {
       {/* Left column (2fr) */}
       <div className="space-y-3 lg:col-span-2">
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-2 justify-between">
+        <div className="flex  items-center gap-2 justify-between">
           <div className="flex items-center gap-1 border px-1 py-1 rounded-md bg-[var(--bg-card)] flex-1">
             <Button
-              variant="outline"
-              size="icon"
+              variant="ghost"
+              className="p-1"
               onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
               aria-label="Previous day"
             >
@@ -249,8 +253,8 @@ export default function TasksPage() {
               {date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
             </div>
             <Button
-              variant="outline"
-              size="icon"
+              variant="ghost"
+              className="p-1"
               onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
               aria-label="Next day"
             >
@@ -281,12 +285,11 @@ export default function TasksPage() {
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="primary" onClick={() => setShowAdd(true)}>
-              <Plus size={16} />
-              <span className="ml-1">Add task</span>
-            </Button>
-          </div>
+
+          <Button variant="primary" onClick={() => setShowAdd(true)}>
+            <Plus size={16} />
+            <span className="ml-1">Add task</span>
+          </Button>
         </div>
 
         {/* Lists */}

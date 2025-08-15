@@ -54,8 +54,7 @@ html[data-theme='dark'] {
 /* Remove default focus ring and apply subtle themed border */
 input:focus,
 select:focus,
-textarea:focus,
-button:focus {
+textarea:focus {
   outline: none;
   box-shadow: none;
   border-color: var(--primary);
@@ -82,16 +81,36 @@ textarea.border-dashed:focus {
   inset: 0;
   border-radius: inherit;
   background:
-    repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 8px),
-    repeating-linear-gradient(-45deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 8px);
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.08) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.08) 0 1px, transparent 1px 4px);
   pointer-events: none;
 }
-.sketch-green { --sketch-bg: #d9f2d6; }
-.sketch-pink { --sketch-bg: #f6d9dc; }
+.sketch-green {
+  --sketch-bg: #b8e6b3;
+}
+.sketch-green-dark {
+  --sketch-bg: #8fd085;
+}
+.sketch-pink {
+  --sketch-bg: #f6d9dc;
+}
 .sketch-title {
   font-weight: 600;
 }
 .sketch-count {
   font-size: 1.4rem;
   font-weight: 600;
+}
+
+/* Light black color for text and icons */
+.sketch-card .text-light-black {
+  color: #2a2a2a;
+}
+
+.sketch-button {
+  --sketch-bg: #4aa13b;
+  border: none;
+}
+.sketch-button-dark {
+  --sketch-bg: #f6d9dc;
 }

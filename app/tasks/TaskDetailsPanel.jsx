@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   updateTask,
   startWorkSession,
@@ -74,6 +74,19 @@ export default function TaskDetailsPanel({
   const [copyLabels, setCopyLabels] = useState(true)
   const [copyChecklist, setCopyChecklist] = useState(true)
   const [isSubmittingCopy, setIsSubmittingCopy] = useState(false)
+  const actionsRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (showActions && actionsRef.current && !actionsRef.current.contains(e.target)) {
+        setShowActions(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showActions])
 
   function normalizeDateLocal(input) {
     if (!input) return null
@@ -200,8 +213,8 @@ export default function TaskDetailsPanel({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 relative">
-          <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none">
+        <div className="flex items-center gap-2 relative" ref={actionsRef}>
+          <label className="border border-green-500 text-green-600 bg-transparent rounded-md px-3 py-1.5 font-medium hover:bg-green-50 hover:border-green-600 hover:text-green-700 active:bg-green-100 transition-colors duration-150 focus:outline-none inline-flex items-center text-sm cursor-pointer select-none">
             <Checkbox
               checked={!!task.completed}
               onChange={(e) => updateTask(task.id, { completed: e.target.checked })}
@@ -310,10 +323,13 @@ export default function TaskDetailsPanel({
         </div>
         <div className="flex items-center gap-2">
           {isTimerActive ? (
-            <Button variant="danger" onClick={() => onStopTimer?.(task.id)}>
+            <button
+              onClick={() => onStopTimer?.(task.id)}
+              className="flex items-center gap-2 px-3 py-2 bg-red-500 text-white rounded-md text-sm hover:bg-red-600"
+            >
               <Pause size={14} />
-              <span>Stop Timer</span>
-            </Button>
+              Stop Timer
+            </button>
           ) : task.completed ? (
             <Button
               variant="primary"
@@ -362,7 +378,11 @@ export default function TaskDetailsPanel({
               placeholder="Add task description..."
             />
             <div className="flex items-center gap-2 mt-2">
-              <Button variant="primary" className="px-3 py-1 text-sm" onClick={handleSaveDescription}>
+              <Button
+                variant="primary"
+                className="px-3 py-1 text-sm"
+                onClick={handleSaveDescription}
+              >
                 Save
               </Button>
               <Button
@@ -413,13 +433,14 @@ export default function TaskDetailsPanel({
             className="h-7 px-2 rounded border border-dashed border-[var(--border)] bg-[var(--bg-card)] text-xs"
           />
           <Button
-            variant="secondary"
-            className="inline-flex items-center justify-center w-7 h-7 p-1"
+            variant="primary"
+            className="p-1"
             onClick={handleAddLabel}
             aria-label="Add label"
             title="Add label"
+            style={{ height: '24px' }}
           >
-            <Plus size={14} />
+            <Plus size={18} />
           </Button>
         </div>
       </div>
@@ -434,13 +455,18 @@ export default function TaskDetailsPanel({
             </label>
           </div>
           {totalChecklistItems > 0 && (
-            <div className="w-16 bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-green-500 h-2 rounded-full transition-all"
-                style={{
-                  width: `${totalChecklistItems > 0 ? (completedChecklistItems / totalChecklistItems) * 100 : 0}%`,
-                }}
-              />
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <span className="text-xs text-[var(--neutral-700)]">
+                {Math.round((completedChecklistItems / totalChecklistItems) * 100)}%
+              </span>
+              <div className="w-1/2 bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-green-500 h-2 rounded-full transition-all"
+                  style={{
+                    width: `${totalChecklistItems > 0 ? (completedChecklistItems / totalChecklistItems) * 100 : 0}%`,
+                  }}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -481,13 +507,13 @@ export default function TaskDetailsPanel({
               className="flex-1 h-7 px-2 rounded border border-dashed border-[var(--border)] bg-[var(--bg-card)] text-xs"
             />
             <Button
-              variant="secondary"
-              className="inline-flex items-center justify-center w-7 h-7 p-1"
+              variant="primary"
+              style={{ height: '24px' }}
               onClick={handleAddChecklistItem}
               aria-label="Add checklist item"
               title="Add checklist item"
             >
-              <Plus size={14} />
+              <Plus size={18} />
             </Button>
           </div>
         </div>

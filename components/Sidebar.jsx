@@ -251,7 +251,7 @@ export default function Sidebar({ onMobileOpen }) {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-3 w-full px-3 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] ${
+                    className={`group flex items-center gap-3 w-full px-3 py-2 rounded-md transition-colors  ${
                       isActive
                         ? 'bg-[var(--primary)] text-[var(--neutral-900)]'
                         : 'text-[var(--bg-card)] hover:bg-[rgba(255,255,255,0.04)]'

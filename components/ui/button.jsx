@@ -4,14 +4,18 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none',
   {
     variants: {
       variant: {
-        default: 'bg-neutral-900 text-card hover:opacity-90',
-        outline: 'border border-border bg-card hover:bg-muted1',
-        ghost: 'hover:bg-muted1',
-        primary: 'bg-primary text-neutral-900 hover:opacity-90',
+        primary: 'bg-green-600 text-white hover:bg-green-700 ',
+        secondary:
+          'bg-gradient-to-b from-gray-50 to-gray-100 text-gray-700 border border-gray-300 rounded-lg shadow-sm hover:from-gray-100 hover:to-gray-200 hover:shadow-md active:from-gray-200 active:to-gray-300 active:shadow-inner transition-all duration-150',
+        boder:
+          'border border-green-500 text-green-600 bg-transparent rounded-sm px-3 py-1.5 font-medium hover:bg-green-50 hover:border-green-600 hover:text-green-700 active:bg-green-100 transition-colors duration-150 focus:outline-none',
+
+        ghost: 'text-gray-500 hover:text-gray-700 ',
+        danger: 'text-red-500 hover:text-red-700',
       },
       size: {
         default: 'h-9 px-4 py-2',
