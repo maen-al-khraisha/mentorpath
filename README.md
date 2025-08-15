@@ -53,8 +53,8 @@ Required in `.env.local`:
      - `NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT`
      - `IMAGEKIT_PRIVATE_KEY` (server only)
    - The app exposes an auth endpoint at `/api/imagekit/auth` for upload signatures.
-2. Enable Firestore (Native mode) and Storage.
-3. Enable Authentication providers:
+3. Enable Firestore (Native mode) and Storage.
+4. Enable Authentication providers:
    - Google: enable and set app name/logo.
    - Facebook: enable with App ID/Secret from Facebook Developers; add OAuth redirect `https://<your-auth-domain>/__/auth/handler`.
    - LinkedIn: Firebase supports generic OAuth via `OAuthProvider('linkedin.com')`.

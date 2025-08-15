@@ -2,7 +2,10 @@ import './globals.css'
 import { ThemeProvider } from 'next-themes'
 
 export const metadata = {
-  title: 'MaenStack',
+  title: {
+    template: '%s | Mentor Path',
+    default: 'Mentor Path',
+  },
   description: 'Task Timer, Notes, Calendar, Habit Tracker',
   icons: {
     icon: '/favicon.png',

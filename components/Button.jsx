@@ -1,8 +1,15 @@
 'use client'
 
-export default function Button({ variant = 'primary', children, className = '', ...props }) {
+export default function Button({
+  variant = 'primary',
+  size = 'default',
+  children,
+  className = '',
+  ...props
+}) {
   const base =
     'inline-flex items-center px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap'
+
   const variants = {
     primary: 'bg-green-600 text-white hover:bg-green-700',
     secondary: 'border border-gray-300 text-gray-700 hover:bg-gray-100',
@@ -10,8 +17,17 @@ export default function Button({ variant = 'primary', children, className = '', 
     danger: 'text-red-500 hover:text-red-700',
     sketchButton: 'sketch-card sketch-button  text-white p-2 hover:bg-green-700',
   }
+
+  const sizes = {
+    default: 'px-3 py-2',
+    sm: 'px-2 py-1 text-sm',
+    lg: 'px-4 py-3 text-lg',
+  }
+
+  const sizeClasses = sizes[size] || sizes.default
+
   return (
-    <button className={`${base} ${variants[variant]} ${className}`} {...props}>
+    <button className={`${base} ${variants[variant]} ${sizeClasses} ${className}`} {...props}>
       {children}
     </button>
   )
