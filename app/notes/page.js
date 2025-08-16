@@ -120,7 +120,7 @@ export default function NotesPage() {
       try {
         const [notesData, labelsData] = await Promise.all([
           getNotes(user.uid),
-          getAllLabels(user.uid)
+          getAllLabels(user.uid),
         ])
         setNotes(notesData)
         setAllLabels(labelsData)
@@ -169,7 +169,6 @@ export default function NotesPage() {
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
             {/* Label Filter */}
             <div className="flex items-center gap-2">
-              <Filter size={16} className="text-gray-500" />
               <select
                 className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm"
                 value={labelFilter}
@@ -186,7 +185,6 @@ export default function NotesPage() {
 
             {/* Date Filter */}
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-gray-500" />
               <input
                 type="date"
                 className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm"
@@ -196,14 +194,17 @@ export default function NotesPage() {
             </div>
 
             {/* Search */}
-            <div className="flex items-center gap-2 flex-1 max-w-xs">
-              <Search size={16} className="text-gray-500" />
+            <div className="flex items-center gap-2 flex-1 max-w-xs relative">
               <input
                 type="text"
                 placeholder="Search notes..."
-                className="h-9 w-full rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm"
+                className="h-9 w-full rounded-md border border-[var(--border)] bg-[var(--bg-card)] pl-10 pr-3 text-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Search
+                size={16}
+                className="text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"
               />
             </div>
           </div>

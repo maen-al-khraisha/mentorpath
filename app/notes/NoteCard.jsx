@@ -1,16 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { deleteNote } from '@/lib/notesApi'
-import { Trash2, Clipboard } from 'lucide-react'
+import { useAuth } from '@/lib/useAuth'
+import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
-import ConvertToTaskModal from './ConvertToTaskModal'
+import { Trash2, Edit } from 'lucide-react'
 import NoteDetailsModal from './NoteDetailsModal'
+import ConvertToTaskModal from './ConvertToTaskModal'
 
 export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate }) {
-  const [isDeleting, setIsDeleting] = useState(false)
+  const { user } = useAuth()
+  const { showToast } = useToast()
   const [showConvertModal, setShowConvertModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this note?')) {
@@ -62,9 +65,12 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate }) 
   return (
     <>
       <div
-        className="bg-yellow-50 border-2 border-[var(--border)] rounded-lg p-4 shadow-soft hover:shadow-md transition-all duration-200 group cursor-pointer"
-        onClick={() => setShowDetailsModal(true)}
-        title="Click to view/edit note details"
+        className="bg-yellow-50 border-2 border-[var(--border)] rounded-lg p-4 shadow-soft hover:shadow-md transition-all duration-200 group cursor-pointer w-full aspect-[1/1] flex flex-col"
+        onClick={() => {
+          setIsEditing(false)
+          setShowDetailsModal(true)
+        }}
+        title="Click to view note details"
       >
         {/* Header with pushpin icon */}
         <div className="flex items-start justify-between mb-3">
@@ -73,10 +79,8 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate }) 
               {truncateText(note.title, 30)}
             </h3>
           </div>
-          <div className="relative -mt-2 -mr-2">
-            <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-red-600 shadow-sm flex items-center justify-center">
-              <div className="w-1 h-3 bg-red-600 rounded-full"></div>
-            </div>
+          <div className="relative -mt-8 -mr-8">
+            <img src="/icons/pin.png" alt="Convert to task" className="w-9 h-9" />
           </div>
         </div>
 
@@ -86,6 +90,9 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate }) 
             {truncateText(note.description, 120)}
           </p>
         </div>
+
+        {/* Spacer to push footer to bottom */}
+        <div className="flex-1"></div>
 
         {/* Labels */}
         {note.labels && note.labels.length > 0 && (
@@ -105,39 +112,46 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate }) 
             )}
           </div>
         )}
-
         {/* Footer */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between ">
           {/* Date */}
           <div className="text-xs text-gray-500 font-medium hover:text-gray-700 transition-colors">
             {formatDate(note.createdAt)}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            {/* Convert to Task Button */}
+          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setIsEditing(true)
+                setShowDetailsModal(true)
+              }}
+              className="p-1"
+              title="Edit note"
+            >
+              <Edit size={16} />
+            </Button>
+
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setShowConvertModal(true)}
-              className="px-3 py-2 h-10 flex items-center gap-2"
+              className="p-1"
               title="Convert to Task"
             >
-              <Clipboard size={16} />
-              <span className="text-sm font-medium">Convert</span>
+              <img src="/icons/exchange.png" alt="Convert to task" className="w-4 h-4" />
             </Button>
 
-            {/* Delete Button */}
             <Button
               variant="danger"
               size="sm"
               onClick={handleDelete}
-              disabled={isDeleting}
-              className="px-3 py-2 h-10 flex items-center gap-2"
-              title="Delete Note"
+              className="p-1"
+              title="Delete note"
             >
               <Trash2 size={16} />
-              <span className="text-sm font-medium">Delete</span>
             </Button>
           </div>
         </div>
@@ -146,7 +160,7 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate }) 
       {/* Convert to Task Modal */}
       {showConvertModal && (
         <ConvertToTaskModal
-          open={showConvertModal}
+          isOpen={showConvertModal}
           note={note}
           onClose={() => setShowConvertModal(false)}
           onConvert={handleConvertToTask}
@@ -156,10 +170,14 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate }) 
       {/* Note Details Modal */}
       {showDetailsModal && (
         <NoteDetailsModal
-          open={showDetailsModal}
           note={note}
-          onClose={() => setShowDetailsModal(false)}
-          onUpdate={handleNoteUpdate}
+          isOpen={showDetailsModal}
+          onClose={() => {
+            setShowDetailsModal(false)
+            setIsEditing(false)
+          }}
+          onUpdate={onUpdate}
+          isEditing={isEditing}
         />
       )}
     </>

@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import { X, Calendar, Clock } from 'lucide-react'
 
-export default function ConvertToTaskModal({ open, note, onClose, onConvert }) {
+export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert }) {
   const { user, loading } = useAuth()
   const [title, setTitle] = useState(note?.title || '')
   const [description, setDescription] = useState(note?.description || '')
@@ -19,7 +19,7 @@ export default function ConvertToTaskModal({ open, note, onClose, onConvert }) {
   const [checkInput, setCheckInput] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (!open || !note) return null
+  if (!isOpen || !note) return null
 
   async function onSave() {
     if (!user) {

@@ -6,23 +6,30 @@ import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import { X, Edit2, Save, X as CloseIcon } from 'lucide-react'
 
-export default function NoteDetailsModal({ open, note, onClose, onUpdate }) {
+export default function NoteDetailsModal({
+  isOpen,
+  note,
+  onClose,
+  onUpdate,
+  isEditing: initialEditingState = false,
+}) {
   const { user, loading } = useAuth()
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(initialEditingState)
   const [editedTitle, setEditedTitle] = useState(note?.title || '')
   const [editedDescription, setEditedDescription] = useState(note?.description || '')
   const [editedLabels, setEditedLabels] = useState(note?.labels || [])
   const [labelInput, setLabelInput] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (!open || !note) return null
+  if (!isOpen || !note) return null
 
-  // Reset form when note changes
+  // Reset form when note changes or editing state changes
   useState(() => {
     setEditedTitle(note.title || '')
     setEditedDescription(note.description || '')
     setEditedLabels(note.labels || [])
-  }, [note])
+    setIsEditing(initialEditingState)
+  }, [note, initialEditingState])
 
   const handleSave = async () => {
     if (!user) {
@@ -42,9 +49,10 @@ export default function NoteDetailsModal({ open, note, onClose, onUpdate }) {
         description: editedDescription.trim(),
         labels: editedLabels,
       })
-      
+
       setIsEditing(false)
       onUpdate?.()
+      onClose?.()
     } catch (e) {
       console.error(e)
       alert('Failed to update note: ' + e.message)
@@ -82,18 +90,24 @@ export default function NoteDetailsModal({ open, note, onClose, onUpdate }) {
   // Format date for display
   const formatDate = (date) => {
     const d = new Date(date)
-    return d.toLocaleDateString('en-US', { 
+    return d.toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long', 
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={() => onClose?.()} />
+      <div
+        className="absolute inset-0 bg-black/40"
+        onClick={() => {
+          setIsEditing(false)
+          onClose?.()
+        }}
+      />
       <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -101,15 +115,6 @@ export default function NoteDetailsModal({ open, note, onClose, onUpdate }) {
           <div className="flex items-center gap-2">
             {isEditing ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancel}
-                  disabled={busy}
-                  className="p-2"
-                >
-                  <CloseIcon size={16} />
-                </Button>
                 <Button
                   variant="primary"
                   size="sm"
@@ -120,18 +125,12 @@ export default function NoteDetailsModal({ open, note, onClose, onUpdate }) {
                   <Save size={16} />
                 </Button>
               </>
-            ) : (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                className="p-2"
-              >
-                <Edit2 size={16} />
-              </Button>
-            )}
+            ) : null}
             <button
-              onClick={() => onClose?.()}
+              onClick={() => {
+                setIsEditing(false)
+                onClose?.()
+              }}
               className="p-2 rounded-md hover:bg-gray-100 transition-colors"
               aria-label="Close modal"
             >
@@ -152,10 +151,7 @@ export default function NoteDetailsModal({ open, note, onClose, onUpdate }) {
                 placeholder="Note title"
               />
             ) : (
-              <div 
-                className="w-full h-12 rounded-lg border-2 border-transparent bg-transparent px-4 text-lg font-semibold cursor-pointer hover:bg-gray-50 transition-colors flex items-center"
-                onClick={() => setIsEditing(true)}
-              >
+              <div className="w-full h-12 rounded-lg border-2 border-transparent bg-transparent px-4 text-lg font-semibold">
                 {note.title || 'No title'}
               </div>
             )}
@@ -172,10 +168,7 @@ export default function NoteDetailsModal({ open, note, onClose, onUpdate }) {
                 placeholder="Note description"
               />
             ) : (
-              <div 
-                className="w-full min-h-[8rem] rounded-lg border-2 border-transparent bg-transparent px-4 py-3 text-base cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => setIsEditing(true)}
-              >
+              <div className="w-full min-h-[8rem] rounded-lg border-2 border-transparent bg-transparent px-4 py-3 text-base">
                 {note.description || 'No description'}
               </div>
             )}
@@ -184,7 +177,7 @@ export default function NoteDetailsModal({ open, note, onClose, onUpdate }) {
           {/* Labels */}
           <div>
             <label className="block text-xs text-[var(--neutral-700)] mb-2">Labels</label>
-            
+
             {/* Existing Labels */}
             {editedLabels.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-3">

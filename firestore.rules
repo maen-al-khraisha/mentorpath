@@ -27,6 +27,20 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
+    // Events owned by a user
+    match /events/{eventId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      // On create, ensure userId is the caller
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Habits owned by a user
+    match /habits/{habitId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      // On create, ensure userId is the caller
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
     // Public readable app settings
     match /settings/{document=**} {
       allow read: if true;
