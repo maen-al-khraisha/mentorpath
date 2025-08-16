@@ -207,7 +207,7 @@ export default function TasksPage() {
             <div className="flex items-start justify-between relative">
               <div className="sketch-title text-[26px]">Task Completed</div>
               <div className="flex items-center absolute top-0 right-0">
-                <Image src="/icons/done-badge.svg" alt="Done" width={40} height={40} />
+                <Image src="/icons/done-badge.png" alt="Done" width={40} height={40} />
               </div>
             </div>
             <div className="sketch-count mt-2 ">
@@ -218,7 +218,7 @@ export default function TasksPage() {
           <div className="sketch-card sketch-pink p-5">
             <div className="flex items-start justify-between">
               <div className="sketch-title text-[26px]">Focus Time Today</div>
-              <Image src="/icons/focus.svg" alt="Done" width={40} height={40} />
+              <Image src="/icons/focus.png" alt="Done" width={40} height={40} />
             </div>
             <div className="sketch-count mt-2">{formatTotalTime(getTotalFocusTime())}</div>
           </div>
