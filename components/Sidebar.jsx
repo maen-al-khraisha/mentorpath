@@ -89,7 +89,11 @@ export default function Sidebar({
                     title={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <span className="flex items-center justify-center min-w-[20px] p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span className={`flex items-center justify-center min-w-[20px] p-2 rounded-lg ${
+                      isActive 
+                        ? '' // No hover background for active items
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}>
                       {renderIcon(item.icon)}
                     </span>
                     {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
@@ -121,7 +125,11 @@ export default function Sidebar({
                     title={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <span className="flex items-center justify-center min-w-[20px] p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span className={`flex items-center justify-center min-w-[20px] p-2 rounded-lg ${
+                      isActive 
+                        ? '' // No hover background for active items
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}>
                       {renderIcon(item.icon)}
                     </span>
                     {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
@@ -249,7 +257,11 @@ export default function Sidebar({
                         }`}
                         aria-current={isActive ? 'page' : undefined}
                       >
-                        <span className="flex items-center justify-center min-w-[20px] p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span className={`flex items-center justify-center min-w-[20px] p-2 rounded-lg ${
+                          isActive 
+                            ? '' // No hover background for active items
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}>
                           {React.createElement(item.icon, { size: 18, strokeWidth: 1.6 })}
                         </span>
                         <span className="text-sm font-medium">{item.label}</span>
@@ -282,7 +294,11 @@ export default function Sidebar({
                         }`}
                         aria-current={isActive ? 'page' : undefined}
                       >
-                        <span className="flex items-center justify-center min-w-[20px] p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span className={`flex items-center justify-center min-w-[20px] p-2 rounded-lg ${
+                          isActive 
+                            ? '' // No hover background for active items
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}>
                           {React.createElement(item.icon, { size: 18, strokeWidth: 1.6 })}
                         </span>
                         <span className="text-sm font-medium">{item.label}</span>
