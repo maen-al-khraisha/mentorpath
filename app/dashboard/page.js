@@ -10,6 +10,8 @@ import { getNotes, getAllLabels } from '@/lib/notesApi'
 import { useToast } from '@/components/Toast'
 import { useRouter } from 'next/navigation'
 
+import { SquareCheck, FileText, Calendar } from 'lucide-react'
+
 export default function DashboardPage() {
   const { user, loading } = useAuth()
   const { showToast, ToastContainer } = useToast()
@@ -177,7 +179,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold text-blue-700">Tasks</h3>
-              <div className="text-2xl font-bold text-blue-600">{stats.todayTasks}</div>
+              <SquareCheck size={24} className="text-blue-600" />
             </div>
             <div className="text-sm text-blue-600 mb-3">{stats.completedTasks} completed today</div>
 
@@ -205,7 +207,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold text-yellow-700">Notes</h3>
-              <div className="text-2xl font-bold text-yellow-600">{stats.totalNotes}</div>
+              <FileText size={24} className="text-yellow-600" />
             </div>
             <div className="text-sm text-yellow-600 mb-3">Total notes</div>
 
@@ -215,8 +217,8 @@ export default function DashboardPage() {
               {dashboardData.notes.slice(0, 3).map((note) => (
                 <div key={note.id} className="bg-white/50 rounded p-2 border border-yellow-100">
                   <div className="text-sm font-medium text-yellow-800 truncate">{note.title}</div>
-                  <div className="text-xs text-yellow-600">
-                    {note.description?.substring(0, 30)}...
+                  <div className="text-xs text-yellow-600 truncate">
+                    {note.description || 'No description'}
                   </div>
                 </div>
               ))}
@@ -233,7 +235,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold text-green-700">Calendar</h3>
-              <div className="text-2xl font-bold text-green-600">{stats.totalEvents}</div>
+              <Calendar size={24} className="text-green-600" />
             </div>
             <div className="text-sm text-green-600 mb-3">Total events</div>
 
