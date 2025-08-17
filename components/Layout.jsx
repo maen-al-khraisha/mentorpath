@@ -63,6 +63,7 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
         <Sidebar
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+          onMobileOpen={() => setMobileSidebarOpen(true)}
           mobileOpen={mobileSidebarOpen}
           onCloseMobile={() => setMobileSidebarOpen(false)}
         />

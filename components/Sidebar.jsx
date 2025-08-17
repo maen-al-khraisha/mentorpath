@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/useAuth'
@@ -22,42 +22,15 @@ import {
 } from 'lucide-react'
 import navConfig from '../lib/navConfig'
 
-const LOCAL_KEY = 'mentorpath.sidebarCollapsed'
-
-export default function Sidebar({ onMobileOpen, mobileOpen = false, onCloseMobile }) {
+export default function Sidebar({ 
+  collapsed = false, 
+  onToggleCollapse, 
+  onMobileOpen, 
+  mobileOpen = false, 
+  onCloseMobile 
+}) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
-  const [collapsed, setCollapsed] = useState(false)
-
-  // Load persisted state
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LOCAL_KEY)
-      if (raw !== null) setCollapsed(raw === 'true')
-    } catch (e) {
-      // ignore
-    }
-  }, [])
-
-  // Persist collapsed state
-  useEffect(() => {
-    try {
-      localStorage.setItem(LOCAL_KEY, String(collapsed))
-    } catch (e) {}
-  }, [collapsed])
-
-  // Keyboard shortcut Ctrl + \
-  useEffect(() => {
-    function onKey(e) {
-      if (e.ctrlKey && e.key === '\\') {
-        setCollapsed((c) => !c)
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [])
-
-  const toggle = useCallback(() => setCollapsed((c) => !c), [])
 
   const handleSignOut = async () => {
     try {
@@ -182,7 +155,7 @@ export default function Sidebar({ onMobileOpen, mobileOpen = false, onCloseMobil
       {/* Collapse Toggle */}
       <div className="px-3 py-4 border-t border-white/20 dark:border-gray-800/40">
         <button
-          onClick={toggle}
+          onClick={onToggleCollapse}
           aria-expanded={!collapsed}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           className="w-full flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-800/40 transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
