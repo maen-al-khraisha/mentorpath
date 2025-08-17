@@ -4,30 +4,15 @@ import React, { useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/useAuth'
-import {
-  LayoutDashboard,
-  CheckSquare,
-  FileText,
-  Calendar,
-  Repeat,
-  Table,
-  BarChart3,
-  Settings,
-  ChevronsLeft,
-  ChevronsRight,
-  Menu,
-  X,
-  User,
-  LogOut,
-} from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, Menu, X, User, LogOut } from 'lucide-react'
 import navConfig from '../lib/navConfig'
 
-export default function Sidebar({ 
-  collapsed = false, 
-  onToggleCollapse, 
-  onMobileOpen, 
-  mobileOpen = false, 
-  onCloseMobile 
+export default function Sidebar({
+  collapsed = false,
+  onToggleCollapse,
+  onMobileOpen,
+  mobileOpen = false,
+  onCloseMobile,
 }) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
@@ -41,7 +26,7 @@ export default function Sidebar({
   }
 
   const renderIcon = (icon) => {
-    const size = collapsed ? 20 : 18
+    const size = collapsed ? 24 : 18
     const props = { size, strokeWidth: 1.6 }
     return React.createElement(icon, props)
   }
@@ -89,11 +74,15 @@ export default function Sidebar({
                     title={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <span className={`flex items-center justify-center min-w-[20px] p-2 rounded-lg ${
-                      isActive 
-                        ? '' // No hover background for active items
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}>
+                    <span
+                      className={`flex items-center justify-center ${
+                        collapsed ? 'w-8 h-8' : 'min-w-[20px] p-2'
+                      } rounded-lg ${
+                        isActive
+                          ? '' // No hover background for active items
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
                       {renderIcon(item.icon)}
                     </span>
                     {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
@@ -125,11 +114,15 @@ export default function Sidebar({
                     title={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <span className={`flex items-center justify-center min-w-[20px] p-2 rounded-lg ${
-                      isActive 
-                        ? '' // No hover background for active items
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}>
+                    <span
+                      className={`flex items-center justify-center ${
+                        collapsed ? 'w-8 h-8' : 'min-w-[20px] p-2'
+                      } rounded-lg ${
+                        isActive
+                          ? '' // No hover background for active items
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
                       {renderIcon(item.icon)}
                     </span>
                     {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
@@ -257,12 +250,19 @@ export default function Sidebar({
                         }`}
                         aria-current={isActive ? 'page' : undefined}
                       >
-                        <span className={`flex items-center justify-center min-w-[20px] p-2 rounded-lg ${
-                          isActive 
-                            ? '' // No hover background for active items
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}>
-                          {React.createElement(item.icon, { size: 18, strokeWidth: 1.6 })}
+                        <span
+                          className={`flex items-center justify-center ${
+                            collapsed ? 'w-8 h-8' : 'min-w-[20px] p-2'
+                          } rounded-lg ${
+                            isActive
+                              ? '' // No hover background for active items
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          }`}
+                        >
+                          {React.createElement(item.icon, {
+                            size: collapsed ? 24 : 18,
+                            strokeWidth: 1.6,
+                          })}
                         </span>
                         <span className="text-sm font-medium">{item.label}</span>
                       </Link>
@@ -294,12 +294,19 @@ export default function Sidebar({
                         }`}
                         aria-current={isActive ? 'page' : undefined}
                       >
-                        <span className={`flex items-center justify-center min-w-[20px] p-2 rounded-lg ${
-                          isActive 
-                            ? '' // No hover background for active items
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}>
-                          {React.createElement(item.icon, { size: 18, strokeWidth: 1.6 })}
+                        <span
+                          className={`flex items-center justify-center ${
+                            collapsed ? 'w-8 h-8' : 'min-w-[20px] p-2'
+                          } rounded-lg ${
+                            isActive
+                              ? '' // No hover background for active items
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          }`}
+                        >
+                          {React.createElement(item.icon, {
+                            size: collapsed ? 24 : 18,
+                            strokeWidth: 1.6,
+                          })}
                         </span>
                         <span className="text-sm font-medium">{item.label}</span>
                       </Link>

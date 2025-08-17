@@ -27,14 +27,14 @@ export default function CalendarPage() {
       const unsubscribe = subscribeToEvents(user.uid, (updatedEvents) => {
         setEvents(updatedEvents)
       })
-      
+
       return () => unsubscribe()
     }
   }, [user, loading])
 
   // Navigation functions
   const goToPreviousMonth = () => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const newDate = new Date(prev)
       newDate.setMonth(prev.getMonth() - 1)
       return newDate
@@ -42,7 +42,7 @@ export default function CalendarPage() {
   }
 
   const goToNextMonth = () => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const newDate = new Date(prev)
       newDate.setMonth(prev.getMonth() + 1)
       return newDate
@@ -61,19 +61,19 @@ export default function CalendarPage() {
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
-    
+
     const days = []
-    
+
     // Add empty days for previous month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null)
     }
-    
+
     // Add days of current month
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(year, month, i))
     }
-    
+
     return days
   }
 
@@ -81,7 +81,7 @@ export default function CalendarPage() {
   const getEventsForDate = (date) => {
     if (!date) return []
     const dateString = date.toISOString().split('T')[0]
-    return events.filter(event => event.date === dateString)
+    return events.filter((event) => event.date === dateString)
   }
 
   // Handle day click
@@ -129,8 +129,8 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen ">
+      <div className=" mx-auto bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between">
@@ -150,11 +150,7 @@ export default function CalendarPage() {
               </button>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="secondary"
-                onClick={goToToday}
-                className="px-4 py-2"
-              >
+              <Button variant="secondary" onClick={goToToday} className="px-4 py-2">
                 Today
               </Button>
               <Button
@@ -173,7 +169,7 @@ export default function CalendarPage() {
         <div className="bg-white rounded-lg shadow-sm p-6">
           {/* Weekday Headers */}
           <div className="grid grid-cols-7 gap-1 mb-4">
-            {weekdays.map(day => (
+            {weekdays.map((day) => (
               <div key={day} className="text-center py-2">
                 <span className="text-sm font-medium text-gray-700">{day}</span>
               </div>
@@ -199,14 +195,14 @@ export default function CalendarPage() {
                     <>
                       {/* Date Header */}
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`text-sm font-medium ${
-                          isToday ? 'text-blue-600' : 'text-gray-900'
-                        }`}>
+                        <span
+                          className={`text-sm font-medium ${
+                            isToday ? 'text-blue-600' : 'text-gray-900'
+                          }`}
+                        >
                           {date.getDate()}
                         </span>
-                        {dayEvents.length > 0 && (
-                          <Eye size={14} className="text-gray-400" />
-                        )}
+                        {dayEvents.length > 0 && <Eye size={14} className="text-gray-400" />}
                       </div>
 
                       {/* Events Preview */}
