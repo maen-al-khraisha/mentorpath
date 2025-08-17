@@ -1,5 +1,6 @@
 import './globals.css'
 import { ThemeProvider } from 'next-themes'
+import { SidebarProvider } from '@/lib/SidebarContext'
 
 export const metadata = {
   title: {
@@ -19,7 +20,9 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          {children}
+          <SidebarProvider>
+            {children}
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,44 +1,24 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
 import MobileBottomNav from '@/components/MobileBottomNav'
+import { useSidebar } from '@/lib/SidebarContext'
 
 // Layout: Root layout wrapper composing Sidebar, Header, and content area
 // Props:
 // - columns: string like "2|1" or "1|2|1" to control main area grid on large screens
 // - onPrevDate / onNextDate: optional callbacks passed to Header for date navigation
 export default function Layout({ children, columns = '1', onPrevDate, onNextDate }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-
-  // Load persisted collapse state
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('mentorpath.sidebarCollapsed')
-      if (saved != null) setSidebarCollapsed(saved === 'true')
-    } catch {}
-  }, [])
-
-  // Persist collapse state
-  useEffect(() => {
-    try {
-      localStorage.setItem('mentorpath.sidebarCollapsed', String(sidebarCollapsed))
-    } catch {}
-  }, [sidebarCollapsed])
-
-  // Keyboard shortcut: Ctrl+\ toggles collapse
-  useEffect(() => {
-    function onKey(e) {
-      if (e.ctrlKey && e.key === '\\') {
-        e.preventDefault()
-        setSidebarCollapsed((v) => !v)
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [])
+  const { 
+    sidebarCollapsed, 
+    mobileSidebarOpen, 
+    toggleSidebar, 
+    toggleMobileSidebar, 
+    closeMobileSidebar, 
+    openMobileSidebar 
+  } = useSidebar()
 
   // Compute grid template columns from prop for large screens
   const gridColsLg = useMemo(() => {
@@ -62,18 +42,18 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
       <div className="flex min-h-screen">
         <Sidebar
           collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
-          onMobileOpen={() => setMobileSidebarOpen(true)}
+          onToggleCollapse={toggleSidebar}
+          onMobileOpen={openMobileSidebar}
           mobileOpen={mobileSidebarOpen}
-          onCloseMobile={() => setMobileSidebarOpen(false)}
+          onCloseMobile={closeMobileSidebar}
         />
 
         <div className="flex-1 min-w-0 flex flex-col">
           <Header
             onPrevDate={onPrevDate}
             onNextDate={onNextDate}
-            onToggleSidebarMobile={() => setMobileSidebarOpen((v) => !v)}
-            onToggleSidebarCollapse={() => setSidebarCollapsed((v) => !v)}
+            onToggleSidebarMobile={toggleMobileSidebar}
+            onToggleSidebarCollapse={toggleSidebar}
             sidebarCollapsed={sidebarCollapsed}
           />
 
