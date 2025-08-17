@@ -10,6 +10,10 @@
   overflow: hidden;
 }
 
+.shadow-soft {
+  box-shadow: var(--soft-shadow);
+}
+
 :root {
   /* Theme tokens per Phase 1 */
   --color-primary: #c0db11;
@@ -79,9 +83,11 @@ textarea.border-dashed:focus {
 /* Sketch card style for KPI widgets */
 .sketch-card {
   position: relative;
-  border: 2px solid #1d1d1d;
   border-radius: 14px;
   background: var(--sketch-bg, #fff);
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 .sketch-card::before {
   content: '';
