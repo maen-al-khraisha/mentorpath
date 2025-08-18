@@ -1,3 +1,5 @@
+'use client'
+
 export default function DonatePage() {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
@@ -13,24 +15,30 @@ export default function DonatePage() {
               Support Development ❤️
             </h1>
           </div>
-          
+
           <div className="space-y-6">
             <p className="text-gray-600 dark:text-gray-300 text-center leading-relaxed">
-              This is a one-time contribution to support the ongoing development of my app. 
-              This payment is a voluntary donation and not tied to physical goods. 
-              All contributions help cover hosting, updates, and new features.
+              This is a one-time contribution to support the ongoing development of my app. This
+              payment is a voluntary donation and not tied to physical goods. All contributions help
+              cover hosting, updates, and new features.
             </p>
-            
+
             <div className="flex justify-center">
               <button
                 className="inline-flex items-center px-8 py-4 text-lg font-semibold rounded-xl bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                onClick={() => window.open('https://buy.paddle.com/checkout/12345', '_blank', 'noopener,noreferrer')}
+                onClick={() =>
+                  window.open(
+                    'https://buy.paddle.com/checkout/12345',
+                    '_blank',
+                    'noopener,noreferrer'
+                  )
+                }
               >
                 <span className="mr-2">💳</span>
                 Donate via Paddle 💳
               </button>
             </div>
-            
+
             <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Thank you for supporting indie development 🙏

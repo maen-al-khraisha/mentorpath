@@ -54,8 +54,8 @@ export default function MainHeader() {
           Contact
         </Link>
 
-        <Link href="/pricing" className="text-[var(--neutral-700)] hover:text-[var(--neutral-900)]">
-          Pricing
+        <Link href="/donate" className="text-[var(--neutral-700)] hover:text-[var(--neutral-900)]">
+          Donate
         </Link>
         <Link href="/about" className="text-[var(--neutral-700)] hover:text-[var(--neutral-900)]">
           About

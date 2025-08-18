@@ -71,6 +71,11 @@ export default function FooterLanding() {
                 Admin
               </a>
             </li>
+            <li>
+              <a href="/terms" className="hover:underline">
+                Terms & Conditions
+              </a>
+            </li>
           </ul>
         </div>
 
