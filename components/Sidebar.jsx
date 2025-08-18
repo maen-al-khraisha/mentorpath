@@ -160,7 +160,7 @@ export default function Sidebar({
         <button
           onClick={() => setShowDonationDialog(true)}
           className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-          title={collapsed ? "Donate" : "Support Development"}
+          title={collapsed ? 'Donate' : 'Support Development'}
         >
           <Heart size={collapsed ? 18 : 16} className="animate-pulse" />
           {!collapsed && <span className="text-sm font-medium">Donate</span>}
@@ -378,10 +378,7 @@ export default function Sidebar({
       </div>
 
       {/* Donation Dialog */}
-      <DonationDialog 
-        isOpen={showDonationDialog} 
-        onClose={() => setShowDonationDialog(false)} 
-      />
+      <DonationDialog isOpen={showDonationDialog} onClose={() => setShowDonationDialog(false)} />
     </>
   )
 }
