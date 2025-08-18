@@ -9,9 +9,9 @@ export const metadata = {
   },
   description: 'Task Timer, Notes, Calendar, Habit Tracker',
   icons: {
-    icon: '/favicon-black.svg',
-    shortcut: '/favicon-black.svg',
-    apple: '/favicon-black.svg',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 }
 
