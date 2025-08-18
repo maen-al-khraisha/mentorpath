@@ -12,7 +12,7 @@ export default function DonationDialog({ isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-[var(--bg-card)]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
             <Heart className="w-6 h-6 text-red-500" />
