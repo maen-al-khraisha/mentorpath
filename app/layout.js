@@ -9,9 +9,9 @@ export const metadata = {
   },
   description: 'Task Timer, Notes, Calendar, Habit Tracker',
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: '/favicon-black.svg',
+    shortcut: '/favicon-black.svg',
+    apple: '/favicon-black.svg',
   },
 }
 
@@ -20,9 +20,7 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <SidebarProvider>
-            {children}
-          </SidebarProvider>
+          <SidebarProvider>{children}</SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

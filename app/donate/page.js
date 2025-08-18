@@ -16,7 +16,7 @@ export default function DonatePage() {
           <span>Back to Home</span>
         </Link>
       </div>
-      
+
       <div className="flex items-center justify-center">
         <div className="w-full max-w-md">
           <div className="rounded-xl shadow-lg bg-white dark:bg-gray-800 p-6">
@@ -34,8 +34,8 @@ export default function DonatePage() {
             <div className="space-y-6">
               <p className="text-gray-600 dark:text-gray-300 text-center leading-relaxed">
                 This is a one-time contribution to support the ongoing development of my app. This
-                payment is a voluntary donation and not tied to physical goods. All contributions help
-                cover hosting, updates, and new features.
+                payment is a voluntary donation and not tied to physical goods. All contributions
+                help cover hosting, updates, and new features.
               </p>
 
               <div className="flex justify-center">
