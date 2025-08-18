@@ -4,9 +4,10 @@ import React, { useEffect, useCallback, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/useAuth'
-import { ChevronsLeft, ChevronsRight, Menu, X, User, LogOut, Heart } from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, Menu, X, User, LogOut, Heart, Share2 } from 'lucide-react'
 import navConfig from '../lib/navConfig'
 import DonationDialog from './DonationDialog'
+import ShareDialog from './ShareDialog'
 
 export default function Sidebar({
   collapsed = false,
@@ -18,12 +19,36 @@ export default function Sidebar({
   const pathname = usePathname()
   const { user, signOut } = useAuth()
   const [showDonationDialog, setShowDonationDialog] = useState(false)
+  const [showShareDialog, setShowShareDialog] = useState(false)
 
   const handleSignOut = async () => {
     try {
       await signOut()
     } catch (error) {
       console.error('Error signing out:', error)
+    }
+  }
+
+  const handleShare = async () => {
+    const shareData = {
+      title: "Check out this app!",
+      text: "I'm using this productivity app, it's awesome 🚀",
+      url: window.location.origin
+    }
+
+    // Check if Web Share API is supported
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData)
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error)
+          setShowShareDialog(true)
+        }
+      }
+    } else {
+      // Fallback to custom share dialog
+      setShowShareDialog(true)
     }
   }
 
@@ -164,6 +189,18 @@ export default function Sidebar({
         >
           <Heart size={collapsed ? 18 : 16} className="animate-pulse" />
           {!collapsed && <span className="text-sm font-medium">Donate</span>}
+        </button>
+      </div>
+
+      {/* Share Button */}
+      <div className="px-3 py-2">
+        <button
+          onClick={handleShare}
+          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+          title={collapsed ? "Share" : "Share this app"}
+        >
+          <Share2 size={collapsed ? 18 : 16} />
+          {!collapsed && <span className="text-sm font-medium">Share</span>}
         </button>
       </div>
 
@@ -379,6 +416,9 @@ export default function Sidebar({
 
       {/* Donation Dialog */}
       <DonationDialog isOpen={showDonationDialog} onClose={() => setShowDonationDialog(false)} />
+
+      {/* Share Dialog */}
+      <ShareDialog isOpen={showShareDialog} onClose={() => setShowShareDialog(false)} />
     </>
   )
 }
