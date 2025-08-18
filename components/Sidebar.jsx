@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect, useCallback, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/useAuth'
-import { ChevronsLeft, ChevronsRight, Menu, X, User, LogOut } from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, Menu, X, User, LogOut, Heart } from 'lucide-react'
 import navConfig from '../lib/navConfig'
+import DonationDialog from './DonationDialog'
 
 export default function Sidebar({
   collapsed = false,
@@ -16,6 +17,7 @@ export default function Sidebar({
 }) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
+  const [showDonationDialog, setShowDonationDialog] = useState(false)
 
   const handleSignOut = async () => {
     try {
@@ -152,6 +154,18 @@ export default function Sidebar({
           </div>
         </div>
       )}
+
+      {/* Donate Button */}
+      <div className="px-3 py-2 border-t border-white/20 dark:border-gray-800/40">
+        <button
+          onClick={() => setShowDonationDialog(true)}
+          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+          title={collapsed ? "Donate" : "Support Development"}
+        >
+          <Heart size={collapsed ? 18 : 16} className="animate-pulse" />
+          {!collapsed && <span className="text-sm font-medium">Donate</span>}
+        </button>
+      </div>
 
       {/* Collapse Toggle */}
       <div className="px-3 py-4 border-t border-white/20 dark:border-gray-800/40">
@@ -362,6 +376,12 @@ export default function Sidebar({
           <div className="font-bold text-white">MentorPath</div>
         </div>
       </div>
+
+      {/* Donation Dialog */}
+      <DonationDialog 
+        isOpen={showDonationDialog} 
+        onClose={() => setShowDonationDialog(false)} 
+      />
     </>
   )
 }
