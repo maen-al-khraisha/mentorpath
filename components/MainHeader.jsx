@@ -3,7 +3,14 @@
 import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 import { useEffect, useState } from 'react'
-import { onAuthStateChanged, signInWithPopup, signOut, GoogleAuthProvider } from 'firebase/auth'
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+  GoogleAuthProvider,
+  getRedirectResult,
+} from 'firebase/auth'
 import { auth } from '@/lib/firebaseClient'
 
 export default function MainHeader() {
@@ -12,6 +19,21 @@ export default function MainHeader() {
 
   useEffect(() => {
     if (!authClient) return
+
+    // Handle redirect result when component mounts
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(authClient)
+        if (result) {
+          console.log('Sign-in successful via redirect')
+        }
+      } catch (error) {
+        console.error('Error getting redirect result:', error)
+      }
+    }
+
+    handleRedirectResult()
+
     const unsubscribe = onAuthStateChanged(authClient, (currentUser) => {
       setUser(currentUser)
     })
@@ -21,9 +43,33 @@ export default function MainHeader() {
   const handleSignIn = async () => {
     try {
       const provider = new GoogleAuthProvider()
+      // Add custom parameters to improve popup experience
+      provider.setCustomParameters({
+        prompt: 'select_account',
+      })
+
       await signInWithPopup(authClient, provider)
     } catch (error) {
       console.error('Error signing in:', error)
+
+      // Handle specific popup errors gracefully
+      if (error.code === 'auth/popup-closed-by-user') {
+        console.log('Sign-in popup was closed by user')
+        // You could show a user-friendly message here
+      } else if (error.code === 'auth/popup-blocked') {
+        console.log('Sign-in popup was blocked by browser')
+        // You could show instructions to allow popups
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        console.log('Sign-in popup request was cancelled')
+      }
+
+      // Fallback to redirect method if popup fails
+      console.log('Falling back to redirect sign-in method...')
+      try {
+        await signInWithRedirect(authClient, provider)
+      } catch (redirectError) {
+        console.error('Redirect sign-in also failed:', redirectError)
+      }
     }
   }
 

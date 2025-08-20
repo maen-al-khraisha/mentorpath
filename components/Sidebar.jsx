@@ -17,7 +17,7 @@ export default function Sidebar({
   onCloseMobile,
 }) {
   const pathname = usePathname()
-  const { user, signOut } = useAuth()
+  const { signOut } = useAuth()
   const [showDonationDialog, setShowDonationDialog] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
 
@@ -213,7 +213,7 @@ export default function Sidebar({
         aria-label="Main navigation"
         className={` 
           
-          rounded-xl hidden md:flex flex-col h-screen sticky top-0 z-40 bg-white/70 dark:bg-gray-900/30 backdrop-blur-lg  `}
+          hidden md:flex flex-col h-screen sticky top-0 z-40 bg-white/70 dark:bg-gray-900/30 backdrop-blur-lg  `}
       >
         {navContent}
       </aside>
