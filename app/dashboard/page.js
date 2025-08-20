@@ -71,7 +71,7 @@ export default function DashboardPage() {
       unsubscribeHabits()
       unsubscribeSheets()
     }
-  }, [user, loading, showToast])
+  }, [user?.uid, loading, showToast]) // Only depend on user.uid instead of entire user object
 
   // Calculate stats when data changes
   useEffect(() => {

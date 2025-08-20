@@ -17,7 +17,6 @@ import { Plus, Search, Filter, Calendar } from 'lucide-react'
 export default function NotesPage() {
   const { user, loading } = useAuth()
   const [notes, setNotes] = useState([])
-  const [filteredNotes, setFilteredNotes] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [labelFilter, setLabelFilter] = useState('All')
@@ -29,7 +28,6 @@ export default function NotesPage() {
   useEffect(() => {
     if (!user || loading) {
       setNotes([])
-      setFilteredNotes([])
       setAllLabels([])
       setIsLoading(false)
       return
@@ -38,13 +36,10 @@ export default function NotesPage() {
     async function loadData() {
       try {
         setIsLoading(true)
-        console.log('Loading notes for user:', user.uid)
         const [notesData, labelsData] = await Promise.all([
           getNotes(user.uid),
           getAllLabels(user.uid),
         ])
-        console.log('Loaded notes:', notesData)
-        console.log('Loaded labels:', labelsData)
         setNotes(notesData)
         setAllLabels(labelsData)
       } catch (error) {
@@ -55,10 +50,10 @@ export default function NotesPage() {
     }
 
     loadData()
-  }, [user, loading])
+  }, [user?.uid, loading]) // Only depend on user.uid instead of entire user object
 
-  // Apply filters and search
-  useEffect(() => {
+  // Apply filters and search using useMemo for better performance
+  const filteredNotes = useMemo(() => {
     let filtered = [...notes]
 
     // Apply search filter
@@ -84,7 +79,7 @@ export default function NotesPage() {
       })
     }
 
-    setFilteredNotes(filtered)
+    return filtered
   }, [notes, searchQuery, labelFilter, dateFilter])
 
   const handleNoteCreated = async (newNoteId) => {
