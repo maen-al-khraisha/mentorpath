@@ -31,9 +31,9 @@ export default function Sidebar({
 
   const handleShare = async () => {
     const shareData = {
-      title: "Check out this app!",
-      text: "I'm using this productivity app, it's awesome 🚀",
-      url: window.location.origin
+      title: 'Check out MentorPath!',
+      text: "I'm using MentorPath - an amazing productivity app for mentors and mentees 🚀",
+      url: 'https://www.mentorpath.tech',
     }
 
     // Check if Web Share API is supported
@@ -161,25 +161,6 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Profile Section */}
-      {!collapsed && user && (
-        <div className="px-3 py-4 border-t border-white/20 dark:border-gray-800/40">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm">
-            <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-              <User size={18} className="text-accent-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {user.email?.split('@')[0] || 'User'}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                {user.email || 'user@example.com'}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Donate Button */}
       <div className="px-3 py-2 border-t border-white/20 dark:border-gray-800/40">
         <button
@@ -197,7 +178,7 @@ export default function Sidebar({
         <button
           onClick={handleShare}
           className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-          title={collapsed ? "Share" : "Share this app"}
+          title={collapsed ? 'Share' : 'Share this app'}
         >
           <Share2 size={collapsed ? 18 : 16} />
           {!collapsed && <span className="text-sm font-medium">Share</span>}
@@ -367,36 +348,6 @@ export default function Sidebar({
               </ul>
             </div>
           </div>
-
-          {/* Mobile Profile Section */}
-          {user && (
-            <div className="px-3 py-4 border-t border-white/20 dark:border-gray-800/40">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm">
-                <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-                  <User size={18} className="text-accent-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {user.email?.split('@')[0] || 'User'}
-                  </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                    {user.email || 'user@example.com'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Actions */}
-              <div className="flex items-center gap-2 mt-3">
-                <button
-                  onClick={handleSignOut}
-                  className="flex-1 p-2 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-800/40 transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white flex items-center justify-center gap-2"
-                >
-                  <LogOut size={16} />
-                  <span className="text-sm">Sign Out</span>
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 

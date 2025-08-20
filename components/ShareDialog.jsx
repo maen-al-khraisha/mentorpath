@@ -6,14 +6,14 @@ import { Twitter, Linkedin, Facebook, MessageCircle, Share2 } from 'lucide-react
 
 export default function ShareDialog({ isOpen, onClose }) {
   const shareData = {
-    title: "Check out this app!",
-    text: "I'm using this productivity app, it's awesome 🚀",
-    url: "https://yourapp.com" // Update this with your actual app URL
+    title: 'Check out MentorPath!',
+    text: "I'm using MentorPath - an amazing productivity app for mentors and mentees 🚀",
+    url: 'https://www.mentorpath.tech',
   }
 
   const handleShare = (platform) => {
     let shareUrl = ''
-    
+
     switch (platform) {
       case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}`
@@ -30,7 +30,7 @@ export default function ShareDialog({ isOpen, onClose }) {
       default:
         return
     }
-    
+
     window.open(shareUrl, '_blank', 'noopener,noreferrer')
     onClose()
   }
@@ -44,12 +44,12 @@ export default function ShareDialog({ isOpen, onClose }) {
             Share this app 💌
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <p className="text-gray-600 dark:text-gray-300 text-center leading-relaxed">
             Help spread the word and support the project.
           </p>
-          
+
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             {/* Twitter */}
             <Button
@@ -61,7 +61,7 @@ export default function ShareDialog({ isOpen, onClose }) {
               <Twitter className="w-6 h-6 text-blue-500" />
               <span className="text-sm font-medium">Twitter</span>
             </Button>
-            
+
             {/* LinkedIn */}
             <Button
               variant="secondary"
@@ -72,7 +72,7 @@ export default function ShareDialog({ isOpen, onClose }) {
               <Linkedin className="w-6 h-6 text-blue-600" />
               <span className="text-sm font-medium">LinkedIn</span>
             </Button>
-            
+
             {/* Facebook */}
             <Button
               variant="secondary"
@@ -83,7 +83,7 @@ export default function ShareDialog({ isOpen, onClose }) {
               <Facebook className="w-6 h-6 text-blue-600" />
               <span className="text-sm font-medium">Facebook</span>
             </Button>
-            
+
             {/* WhatsApp */}
             <Button
               variant="secondary"
