@@ -1,5 +1,4 @@
 import './globals.css'
-import { ThemeProvider } from 'next-themes'
 import { SidebarProvider } from '@/lib/SidebarContext'
 
 export const metadata = {
@@ -48,10 +47,22 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme') || 'light';
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <SidebarProvider>{children}</SidebarProvider>
-        </ThemeProvider>
+        <SidebarProvider>{children}</SidebarProvider>
       </body>
     </html>
   )

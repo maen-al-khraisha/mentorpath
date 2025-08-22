@@ -65,7 +65,7 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate }) 
   return (
     <>
       <div
-        className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md
+        className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md
          hover:shadow-lg transition-all duration-200 group cursor-pointer w-full aspect-[1/1] flex flex-col"
         onClick={() => {
           setIsEditing(false)

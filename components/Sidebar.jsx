@@ -64,7 +64,7 @@ export default function Sidebar({
 
   const navContent = (
     <div
-      className={`flex flex-col h-full transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}
+      className={`flex flex-col h-full transition-all duration-300 bg-[var(--bg-card)] ${collapsed ? 'w-16' : 'w-64'}`}
     >
       {/* Header */}
       <div className="flex items-center justify-center px-4 py-6 border-b border-green dark:border-gray-800/40">

@@ -69,7 +69,7 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
 
   if (groupedTasks.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <div className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-sm">
         <div className="text-center py-8">
           <div className="text-gray-400 mb-2">
             <Clock size={48} className="mx-auto" />
@@ -84,7 +84,7 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+    <div className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-sm">
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Task History</h3>
         <p className="text-sm text-gray-600">Review your completed tasks and work sessions</p>

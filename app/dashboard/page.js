@@ -206,7 +206,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Tasks Box */}
           <div
-            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md 
+            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
             cursor-pointer
              hover:bg-white/80 hover:border-gray-300
              transition-all duration-200 transform hover:shadow-xl"
@@ -237,7 +237,7 @@ export default function DashboardPage() {
 
           {/* Notes Box */}
           <div
-            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md 
+            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
             cursor-pointer
              hover:bg-white/80 hover:border-gray-300
              transition-all duration-200 transform hover:shadow-xl"
@@ -268,7 +268,7 @@ export default function DashboardPage() {
 
           {/* Calendar Box */}
           <div
-            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md 
+            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
             cursor-pointer
              hover:bg-white/80 hover:border-gray-300
              transition-all duration-200 transform hover:shadow-xl"

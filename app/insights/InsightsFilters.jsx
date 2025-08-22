@@ -64,7 +64,7 @@ export default function InsightsFilters({
   ]
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+    <div className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-sm">
       {/* Single Row Layout */}
       <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-6">
         {/* Period Toggle & Navigation */}

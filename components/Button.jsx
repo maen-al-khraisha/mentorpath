@@ -13,10 +13,10 @@ export default function Button({
 
   const variants = {
     primary: 'bg-green-600 text-white hover:bg-green-700',
-    secondary: 'border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
+    secondary: 'border border-gray-300 text-gray-700 hover:bg-gray-100',
     ghost: 'text-gray-500 hover:text-gray-700',
     danger: 'text-red-500 hover:text-red-700',
-    sketchButton: 'sketch-card sketch-button  text-white p-2 hover:bg-green-700',
+    sketchButton: 'sketch-card sketch-button text-white p-2 hover:bg-green-700',
   }
 
   const sizes = {
@@ -28,8 +28,8 @@ export default function Button({
   const sizeClasses = sizes[size] || sizes.default
 
   return (
-    <button 
-      className={`${base} ${variants[variant]} ${sizeClasses} ${className}`} 
+    <button
+      className={`${base} ${variants[variant]} ${sizeClasses} ${className}`}
       onClick={onClick}
       {...props}
     >

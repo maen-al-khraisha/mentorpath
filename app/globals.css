@@ -22,7 +22,7 @@
   --neutral-900: #0b0b0c;
   --neutral-700: #636257;
   --bg-page: #f5f6ea;
-  --bg-card: #ffffff;
+  --bg-card: #ffffffb3;
   --border: #e6e8d8;
 
   /* Back-compat tokens used by Tailwind theme extension */
@@ -39,6 +39,19 @@
   --soft-shadow: 0 6px 18px rgba(12, 15, 20, 0.06);
 }
 
+/* Dark theme variables */
+html[data-theme='dark'] {
+  --bg-page: #1a1d21;
+  --bg-card: #979ca6;
+  --border: #404550;
+  --neutral-900: #f8fafc;
+  --neutral-700: #cbd5e1;
+  --muted1: #374151;
+  --muted2: #4b5563;
+  --box-color: #979ca6;
+  --soft-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
 html {
   font-size: 14px;
 }
@@ -47,15 +60,9 @@ body {
   background: var(--page);
   color: var(--neutral-900);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-}
-
-/* Simple dark mode using data-theme attribute */
-html[data-theme='dark'] {
-  --bg-page: #0d0f12;
-  --bg-card: #12161b;
-  --border: #222933;
-  --neutral-900: #f4f6fb;
-  --neutral-700: #c3c9d1;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Basic shadcn/radix resets if needed */
@@ -84,10 +91,11 @@ textarea.border-dashed:focus {
 .sketch-card {
   position: relative;
   border-radius: 14px;
-  background: var(--sketch-bg, #fff);
-  box-shadow:
-    0 20px 25px -5px rgb(0 0 0 / 0.1),
-    0 8px 10px -6px rgb(0 0 0 / 0.1);
+  background: var(--sketch-bg, var(--card));
+  box-shadow: var(--soft-shadow);
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 .sketch-card::before {
   content: '';
@@ -99,6 +107,14 @@ textarea.border-dashed:focus {
     repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.08) 0 1px, transparent 1px 4px);
   pointer-events: none;
 }
+
+/* Dark mode adjustments for sketch cards */
+html[data-theme='dark'] .sketch-card::before {
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 4px);
+}
+
 .sketch-green {
   --sketch-bg: #b8e6b3;
 }
@@ -119,6 +135,11 @@ textarea.border-dashed:focus {
 /* Light black color for text and icons */
 .sketch-card .text-light-black {
   color: #2a2a2a;
+}
+
+/* Dark mode text adjustments */
+html[data-theme='dark'] .sketch-card .text-light-black {
+  color: #e0e0e0;
 }
 
 /* Line clamp utilities for text truncation */
@@ -149,4 +170,181 @@ textarea.border-dashed:focus {
 }
 .sketch-button-dark {
   --sketch-bg: #f6d9dc;
+}
+
+/* Additional dark mode utilities */
+html[data-theme='dark'] .border-gray-200 {
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .bg-white {
+  background-color: var(--card);
+}
+
+html[data-theme='dark'] .text-gray-600 {
+  color: var(--neutral-700);
+}
+
+html[data-theme='dark'] .text-gray-800 {
+  color: var(--neutral-900);
+}
+
+html[data-theme='dark'] .hover\:bg-gray-50:hover {
+  background-color: var(--muted1);
+}
+
+html[data-theme='dark'] .hover\:bg-gray-100:hover {
+  background-color: var(--muted1);
+}
+
+/* Button dark mode variants */
+html[data-theme='dark'] .border-gray-300 {
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .text-gray-700 {
+  color: var(--neutral-700);
+}
+
+html[data-theme='dark'] .text-gray-500 {
+  color: var(--neutral-700);
+}
+
+html[data-theme='dark'] .hover\:text-gray-700:hover {
+  color: var(--neutral-900);
+}
+
+/* Card and container dark mode */
+html[data-theme='dark'] .bg-gray-50 {
+  background-color: var(--muted1);
+}
+
+html[data-theme='dark'] .bg-gray-100 {
+  background-color: var(--muted1);
+}
+
+html[data-theme='dark'] .bg-gray-200 {
+  background-color: var(--muted2);
+}
+
+/* Additional dark mode improvements for better contrast */
+html[data-theme='dark'] .bg-gray-800 {
+  background-color: var(--muted1);
+}
+
+html[data-theme='dark'] .bg-gray-900 {
+  background-color: var(--bg-card);
+}
+
+html[data-theme='dark'] .text-gray-300 {
+  color: var(--neutral-700);
+}
+
+html[data-theme='dark'] .text-gray-400 {
+  color: var(--neutral-700);
+}
+
+html[data-theme='dark'] .text-gray-500 {
+  color: var(--neutral-700);
+}
+
+html[data-theme='dark'] .text-gray-600 {
+  color: var(--neutral-700);
+}
+
+html[data-theme='dark'] .text-gray-700 {
+  color: var(--neutral-700);
+}
+
+html[data-theme='dark'] .text-gray-800 {
+  color: var(--neutral-900);
+}
+
+html[data-theme='dark'] .text-gray-900 {
+  color: var(--neutral-900);
+}
+
+/* Border improvements for dark mode */
+html[data-theme='dark'] .border-gray-300 {
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .border-gray-400 {
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .border-gray-500 {
+  border-color: var(--border);
+}
+
+html[data-theme='dark'] .border-gray-600 {
+  border-color: var(--border);
+}
+
+/* Hover state improvements */
+html[data-theme='dark'] .hover\:bg-gray-50:hover {
+  background-color: var(--muted2);
+}
+
+html[data-theme='dark'] .hover\:bg-gray-100:hover {
+  background-color: var(--muted2);
+}
+
+html[data-theme='dark'] .hover\:bg-gray-200:hover {
+  background-color: var(--muted1);
+}
+
+html[data-theme='dark'] .hover\:bg-gray-800:hover {
+  background-color: var(--muted2);
+}
+
+/* Input and form improvements */
+html[data-theme='dark'] input,
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] select {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  color: var(--neutral-900);
+}
+
+html[data-theme='dark'] input:focus,
+html[data-theme='dark'] textarea:focus,
+html[data-theme='dark'] select:focus {
+  border-color: var(--primary);
+  background-color: var(--muted1);
+}
+
+/* Box styling with new color */
+html[data-theme='dark'] .bg-gray-300 {
+  background-color: var(--box-color);
+}
+
+html[data-theme='dark'] .bg-gray-400 {
+  background-color: var(--box-color);
+}
+
+html[data-theme='dark'] .border-gray-200 {
+  border-color: var(--box-color);
+}
+
+html[data-theme='dark'] .border-gray-300 {
+  border-color: var(--box-color);
+}
+
+/* Additional box variants */
+html[data-theme='dark'] .bg-gray-500 {
+  background-color: var(--box-color);
+}
+
+html[data-theme='dark'] .bg-gray-600 {
+  background-color: var(--muted1);
+}
+
+/* Text colors for better contrast on boxes */
+html[data-theme='dark'] .text-gray-200 {
+  color: var(--neutral-900);
+}
+
+html[data-theme='dark'] .text-gray-300 {
+  color: var(--neutral-900);
 }

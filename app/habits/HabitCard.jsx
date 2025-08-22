@@ -91,7 +91,7 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 w-full">
+    <div className="bg-[var(--bg-card)] rounded-lg border border-gray-200 shadow-sm p-6 w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">

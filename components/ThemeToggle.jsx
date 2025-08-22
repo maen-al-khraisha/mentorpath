@@ -5,28 +5,36 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState('light')
 
   useEffect(() => {
-    if (localStorage.theme === 'dark') {
-      document.documentElement.classList.add('dark')
-      setTheme('dark')
+    // Check for saved theme preference or default to light
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    setTheme(savedTheme)
+
+    // Apply the theme immediately
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark')
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light')
     }
   }, [])
 
   const toggleTheme = () => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-      setTheme('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-      setTheme('light')
-    }
+    const newTheme = theme === 'light' ? 'dark' : 'light'
+
+    // Update state
+    setTheme(newTheme)
+
+    // Update DOM
+    document.documentElement.setAttribute('data-theme', newTheme)
+
+    // Save to localStorage
+    localStorage.setItem('theme', newTheme)
   }
 
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full border border-gray-300 dark:border-gray-600"
+      className="h-9 w-9 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus-visible:outline-none"
+      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
     >
       {theme === 'light' ? '🌙' : '☀️'}
     </button>

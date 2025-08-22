@@ -25,7 +25,7 @@ export default function Header({
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-lg  shadow-sm">
+    <header className="sticky top-0 z-50 bg-[var(--bg-card)] backdrop-blur-lg  shadow-sm">
       <div className="max-w-[1400px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {/* Mobile hamburger */}

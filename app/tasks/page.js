@@ -204,7 +204,7 @@ export default function TasksPage() {
       <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-3  sm:grid-cols-3 gap-10">
           <div
-            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md 
+            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
             cursor-pointer
              hover:bg-white/80 hover:border-gray-300
              transition-all duration-200 transform hover:shadow-xl"
@@ -221,7 +221,7 @@ export default function TasksPage() {
             </div>
           </div>
           <div
-            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md 
+            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
             cursor-pointer
              hover:bg-white/80 hover:border-gray-300
              transition-all duration-200 transform hover:shadow-xl"

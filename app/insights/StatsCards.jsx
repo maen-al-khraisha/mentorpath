@@ -109,7 +109,7 @@ export default function StatsCards({ tasks, periodDates }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Peak Hours Card */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <div className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -131,7 +131,7 @@ export default function StatsCards({ tasks, periodDates }) {
       </div>
 
       {/* Best Streak Card */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <div className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -149,7 +149,7 @@ export default function StatsCards({ tasks, periodDates }) {
       </div>
 
       {/* Productivity Score Card */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <div className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 rounded-lg">
