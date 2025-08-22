@@ -203,7 +203,12 @@ export default function TasksPage() {
       {/* Full-width KPI header row */}
       <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-3  sm:grid-cols-3 gap-10">
-          <div className="sketch-card sketch-green p-5 ">
+          <div
+            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md 
+            cursor-pointer
+             hover:bg-white/80 hover:border-gray-300
+             transition-all duration-200 transform hover:shadow-xl"
+          >
             <div className="flex items-start justify-between relative">
               <div className="sketch-title text-[26px]">Task Completed</div>
               <div className="flex items-center absolute top-0 right-0">
@@ -215,7 +220,12 @@ export default function TasksPage() {
               {tasks.length.toString().padStart(1, '0')}
             </div>
           </div>
-          <div className="sketch-card sketch-pink p-5 ">
+          <div
+            className="bg-white border border-gray-200 rounded-2xl p-6 shadow-md 
+            cursor-pointer
+             hover:bg-white/80 hover:border-gray-300
+             transition-all duration-200 transform hover:shadow-xl"
+          >
             <div className="flex items-start justify-between">
               <div className="sketch-title text-[26px]">Focus Time Today</div>
               <Image src="/icons/focus.png" alt="Done" width={40} height={40} />

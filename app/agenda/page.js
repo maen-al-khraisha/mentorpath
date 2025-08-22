@@ -56,8 +56,7 @@ export default function AgendaPage() {
       <div className="bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-            <ChevronDown size={20} className="text-gray-600" />
+            <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>{' '}
           </div>
           <Button variant="primary" onClick={handleAddSheet} className="flex items-center gap-2">
             <Plus size={16} />
