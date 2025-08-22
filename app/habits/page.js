@@ -188,14 +188,10 @@ export default function HabitsPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft">
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg px-5 py-10 shadow-soft">
         <div className="flex flex-col md:flex-row gap-4">
           {/* Category Filter */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Filter size={14} className="inline mr-1" />
-              Category
-            </label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -212,25 +208,23 @@ export default function HabitsPage() {
 
           {/* Search */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Search size={14} className="inline mr-1" />
-              Search
-            </label>
-            <input
-              type="text"
-              placeholder="Search habits..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm focus:border-[var(--primary)] transition-colors"
-            />
+            <div className="relative">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="text"
+                placeholder="Search habits..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] pl-10 pr-3 text-sm focus:border-[var(--primary)] transition-colors"
+              />
+            </div>
           </div>
 
           {/* Sort */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <TrendingUp size={14} className="inline mr-1" />
-              Sort By
-            </label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
