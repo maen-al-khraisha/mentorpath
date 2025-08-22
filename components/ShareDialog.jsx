@@ -55,7 +55,7 @@ export default function ShareDialog({ isOpen, onClose }) {
         return
     }
 
-    window.open(shareUrl, '_blank', 'noopener,noreferrer')
+    window.open(shareUrl, '_blank', 'noopener,noreferrer', 'width=600,height=600')
     onClose()
   }
 
