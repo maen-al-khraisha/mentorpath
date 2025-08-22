@@ -24,8 +24,10 @@ export default function ShareDialog({ isOpen, onClose }) {
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}&url=${encodeURIComponent(shareData.url)}`
         break
       case 'linkedin':
-        // LinkedIn with title, summary, and image
-        const linkedinText = `${shareData.title} - ${shareData.text}`
+        // LinkedIn with pre-filled text - using the most reliable sharing method
+        const linkedinText = `${shareData.text} ${shareData.hashtags}`
+        // Use LinkedIn's official sharing endpoint with all parameters
+        // LinkedIn sometimes works better with just the URL and relies on Open Graph tags
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareData.url)}&title=${encodeURIComponent(shareData.title)}&summary=${encodeURIComponent(linkedinText)}`
         break
       case 'facebook':
@@ -70,7 +72,7 @@ export default function ShareDialog({ isOpen, onClose }) {
         <div className="space-y-4">
           <p className="text-gray-600 dark:text-gray-300 text-center leading-relaxed">
             Share MentorPath with your network! Click any platform below to open with pre-filled
-            content.
+            content. LinkedIn will display your website's image and description automatically.
           </p>
 
           <div className="grid grid-cols-3 gap-3 sm:gap-4">

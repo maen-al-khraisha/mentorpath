@@ -21,10 +21,15 @@ export const metadata = {
     title: 'MentorPath - Focused Productivity for Mentors and Makers',
     description:
       'Focused productivity for mentors and makers 🚀 Tasks, notes, habits, calendar, and insights — beautifully organized in one place. Perfect for anyone looking to boost their productivity!',
-    image: 'https://www.mentorpath.tech/og-image.png', // You need to add this image to your public folder
+    image:
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center', // High-quality Unsplash image for better social sharing
     imageWidth: 1200,
     imageHeight: 630,
     imageAlt: 'MentorPath Dashboard - Productivity app for mentors and makers',
+    // Additional properties for better LinkedIn compatibility
+    imageType: 'image/jpeg',
+    imageSecureUrl:
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center',
   },
   twitter: {
     card: 'summary_large_image',
@@ -33,7 +38,8 @@ export const metadata = {
     title: 'MentorPath - Focused Productivity for Mentors and Makers',
     description:
       'Focused productivity for mentors and makers 🚀 Tasks, notes, habits, calendar, and insights — beautifully organized in one place.',
-    image: 'https://www.mentorpath.tech/og-image.png', // Same image as Open Graph
+    image:
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center', // Same image as Open Graph
     imageAlt: 'MentorPath Dashboard - Productivity app for mentors and makers',
   },
   icons: {
@@ -59,6 +65,30 @@ export default function RootLayout({ children }) {
               })();
             `,
           }}
+        />
+        {/* LinkedIn-specific meta tags for better sharing */}
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta
+          property="og:image:secure_url"
+          content="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center"
+        />
+        <meta property="og:site_name" content="MentorPath" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.mentorpath.tech" />
+        <meta
+          property="og:title"
+          content="MentorPath - Focused Productivity for Mentors and Makers"
+        />
+        <meta
+          property="og:description"
+          content="Focused productivity for mentors and makers 🚀 Tasks, notes, habits, calendar, and insights — beautifully organized in one place. Perfect for anyone looking to boost their productivity!"
+        />
+        <meta
+          property="og:image"
+          content="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=630&fit=crop&crop=center"
         />
       </head>
       <body>
