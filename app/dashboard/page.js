@@ -35,43 +35,76 @@ export default function DashboardPage() {
 
   // Set up real-time subscriptions
   useEffect(() => {
-    if (!user || loading) return
-
-    const unsubscribeTasks = subscribeToTasks(user.uid, (tasks) => {
-      setDashboardData((prev) => ({ ...prev, tasks }))
-    })
-
-    const unsubscribeEvents = subscribeToEvents(user.uid, (events) => {
-      setDashboardData((prev) => ({ ...prev, events }))
-    })
-
-    const unsubscribeHabits = subscribeToHabits(user.uid, (habits) => {
-      setDashboardData((prev) => ({ ...prev, habits }))
-    })
-
-    const unsubscribeSheets = subscribeToSheets(user.uid, (sheets) => {
-      setDashboardData((prev) => ({ ...prev, sheets }))
-    })
-
-    // Load notes (IndexedDB doesn't have real-time updates)
-    const loadNotes = async () => {
-      try {
-        const notes = await getNotes(user.uid)
-        setDashboardData((prev) => ({ ...prev, notes }))
-      } catch (error) {
-        console.error('Failed to load notes:', error)
-        showToast('Failed to load notes', 'error')
-      }
+    if (!user || loading) {
+      // Clear data when user is not authenticated
+      setDashboardData({
+        tasks: [],
+        events: [],
+        habits: [],
+        notes: [],
+        sheets: [],
+      })
+      setStats({
+        todayTasks: 0,
+        totalEvents: 0,
+        totalHabits: 0,
+        totalNotes: 0,
+        totalSheets: 0,
+        completedTasks: 0,
+        focusTime: 0,
+      })
+      return
     }
-    loadNotes()
+
+    let unsubscribeTasks = () => {}
+    let unsubscribeEvents = () => {}
+    let unsubscribeHabits = () => {}
+    let unsubscribeSheets = () => {}
+
+    try {
+      unsubscribeTasks = subscribeToTasks(user.uid, (tasks) => {
+        setDashboardData((prev) => ({ ...prev, tasks }))
+      })
+
+      unsubscribeEvents = subscribeToEvents(user.uid, (events) => {
+        setDashboardData((prev) => ({ ...prev, events }))
+      })
+
+      unsubscribeHabits = subscribeToHabits(user.uid, (habits) => {
+        setDashboardData((prev) => ({ ...prev, habits }))
+      })
+
+      unsubscribeSheets = subscribeToSheets(user.uid, (sheets) => {
+        setDashboardData((prev) => ({ ...prev, sheets }))
+      })
+
+      // Load notes (IndexedDB doesn't have real-time updates)
+      const loadNotes = async () => {
+        try {
+          const notes = await getNotes(user.uid)
+          setDashboardData((prev) => ({ ...prev, notes }))
+        } catch (error) {
+          console.error('Failed to load notes:', error)
+          showToast('Failed to load notes', 'error')
+        }
+      }
+      loadNotes()
+    } catch (error) {
+      console.error('Error setting up subscriptions:', error)
+    }
 
     return () => {
-      unsubscribeTasks()
-      unsubscribeEvents()
-      unsubscribeHabits()
-      unsubscribeSheets()
+      // Clean up all subscriptions
+      try {
+        unsubscribeTasks()
+        unsubscribeEvents()
+        unsubscribeHabits()
+        unsubscribeSheets()
+      } catch (error) {
+        console.error('Error cleaning up subscriptions:', error)
+      }
     }
-  }, [user?.uid, loading, showToast]) // Only depend on user.uid instead of entire user object
+  }, [user?.uid, loading]) // Removed showToast from dependencies to prevent infinite loop
 
   // Calculate stats when data changes
   useEffect(() => {
@@ -167,7 +200,6 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <div className="text-sm text-gray-500">Welcome back, {user.email}</div>
         </div>
 
         {/* Stats Cards */}

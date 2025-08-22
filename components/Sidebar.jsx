@@ -8,6 +8,7 @@ import { ChevronsLeft, ChevronsRight, Menu, X, User, LogOut, Heart, Share2 } fro
 import navConfig from '../lib/navConfig'
 import DonationDialog from './DonationDialog'
 import ShareDialog from './ShareDialog'
+import { useRouter } from 'next/navigation'
 
 export default function Sidebar({
   collapsed = false,
@@ -18,12 +19,15 @@ export default function Sidebar({
 }) {
   const pathname = usePathname()
   const { signOut } = useAuth()
+  const router = useRouter()
   const [showDonationDialog, setShowDonationDialog] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
 
   const handleSignOut = async () => {
     try {
       await signOut()
+      // Redirect to home page after sign out
+      router.push('/')
     } catch (error) {
       console.error('Error signing out:', error)
     }

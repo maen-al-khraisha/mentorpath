@@ -95,9 +95,8 @@ export default function InsightsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col">
         <h1 className="text-2xl font-bold text-gray-900">Insights & Analytics</h1>
-        <div className="text-sm text-gray-500">Track your productivity and work patterns</div>
       </div>
 
       {/* Filters & Navigation */}

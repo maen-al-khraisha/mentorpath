@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   onAuthStateChanged,
   signInWithPopup,
@@ -16,6 +17,8 @@ import { auth } from '@/lib/firebaseClient'
 export default function MainHeader() {
   const authClient = auth
   const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     if (!authClient) return
@@ -76,6 +79,8 @@ export default function MainHeader() {
   const handleSignOut = async () => {
     try {
       await signOut(authClient)
+      // Redirect to home page after sign out
+      router.push('/')
     } catch (error) {
       console.error('Error signing out:', error)
     }
