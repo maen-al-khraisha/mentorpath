@@ -42,15 +42,11 @@ export default function DonatePage() {
                 <button
                   className="inline-flex items-center px-8 py-4 text-lg font-semibold rounded-xl bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                   onClick={() =>
-                    window.open(
-                      'https://buy.paddle.com/checkout/12345',
-                      '_blank',
-                      'noopener,noreferrer'
-                    )
+                    window.open('https://paypal.me/maenalkhraisha', '_blank', 'noopener,noreferrer')
                   }
                 >
                   <span className="mr-2">💳</span>
-                  Donate via Paddle 💳
+                  Donate via PayPal 💳
                 </button>
               </div>
 

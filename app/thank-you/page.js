@@ -26,7 +26,8 @@ export default function ThankYouPage() {
               Thank You! 🎉
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-lg mx-auto leading-relaxed">
-              Your generous support means the world to us! Every contribution helps keep MentorPath growing and improving.
+              Your generous support means the world to us! Every contribution helps keep MentorPath
+              growing and improving.
             </p>
           </div>
 
@@ -48,7 +49,7 @@ export default function ThankYouPage() {
               <div className="flex items-start gap-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  You'll receive a receipt from Paddle via email
+                  You'll receive a receipt from PayPal via email
                 </p>
               </div>
               <div className="flex items-start gap-3">
@@ -86,7 +87,10 @@ export default function ThankYouPage() {
           {/* Footer Message */}
           <div className="text-center pt-6">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Have questions? Feel free to <Link href="/contact" className="text-green-600 hover:underline">contact us</Link>
+              Have questions? Feel free to{' '}
+              <Link href="/contact" className="text-green-600 hover:underline">
+                contact us
+              </Link>
             </p>
           </div>
         </div>

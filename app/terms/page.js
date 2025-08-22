@@ -16,7 +16,7 @@ export default function TermsPage() {
               Terms & Conditions
             </CardTitle>
           </CardHeader>
-          
+
           <CardContent className="prose prose-gray dark:prose-invert max-w-none">
             <div className="space-y-6 text-gray-700 dark:text-gray-300 leading-relaxed">
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
@@ -24,50 +24,48 @@ export default function TermsPage() {
                   Donation Terms
                 </h3>
                 <p className="mb-4">
-                  By making a donation, you acknowledge this is a voluntary payment to support development.
+                  By making a donation, you acknowledge this is a voluntary payment to support
+                  development.
                 </p>
                 <p className="mb-4">
                   No physical goods or services are delivered in exchange for donations.
                 </p>
-                <p className="mb-4">
-                  Donations are non-refundable.
-                </p>
-                <p>
-                  Payments are processed securely via Paddle.
-                </p>
+                <p className="mb-4">Donations are non-refundable.</p>
+                <p>Payments are processed securely via PayPal.</p>
               </div>
-              
+
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   Payment Processing
                 </h3>
                 <p className="mb-4">
-                  All donations are processed securely through Paddle, a trusted payment processor. 
+                  All donations are processed securely through PayPal, a trusted payment processor.
                   Your payment information is encrypted and secure.
                 </p>
-                <p>
-                  You will receive a receipt via email for your donation.
-                </p>
+                <p>You will receive a receipt via email for your donation.</p>
               </div>
-              
+
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   Use of Donations
                 </h3>
                 <p className="mb-4">
-                  Donations are used to support the ongoing development, hosting, and maintenance of the application.
+                  Donations are used to support the ongoing development, hosting, and maintenance of
+                  the application.
                 </p>
                 <p>
-                  This includes server costs, development tools, and time invested in new features and improvements.
+                  This includes server costs, development tools, and time invested in new features
+                  and improvements.
                 </p>
               </div>
-              
+
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   Contact
                 </h3>
                 <p>
-                  If you have any questions about these terms or your donation, please contact us through the app.
+                  If you have any questions about these terms or your donation, please contact us
+                  through the app.
                 </p>
               </div>
             </div>

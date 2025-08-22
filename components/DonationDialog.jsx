@@ -12,7 +12,7 @@ export default function DonationDialog({ isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-[var(--bg-card)]">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-gray-800 border-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
             <Heart className="w-6 h-6 text-red-500" />
@@ -28,18 +28,6 @@ export default function DonationDialog({ isOpen, onClose }) {
           <div className="space-y-3">
             <Button
               variant="primary"
-              size="lg"
-              className="w-full h-16 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200"
-              onClick={() => handleDonate('https://buy.paddle.com/checkout/12345')}
-            >
-              <div className="flex items-center gap-3">
-                <CreditCard className="w-6 h-6" />
-                <span className="text-lg font-medium">Donate via Paddle</span>
-              </div>
-            </Button>
-
-            <Button
-              variant="secondary"
               size="lg"
               className="w-full h-16 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200"
               onClick={() => handleDonate('https://paypal.me/maenalkhraisha')}
