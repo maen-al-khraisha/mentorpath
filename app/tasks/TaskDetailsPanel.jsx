@@ -233,10 +233,10 @@ export default function TaskDetailsPanel({
             <MoreVertical size={18} />
           </Button>
           {showActions && (
-            <div className="absolute right-0 top-7 z-10 w-52 bg-[var(--bg-card)] border border-[var(--border)] rounded-md shadow-soft py-1">
+            <div className="absolute right-0 top-7 z-10 w-52 bg-white border border-[var(--border)] rounded-md shadow-soft py-1">
               <Button
                 variant="ghost"
-                className="w-full px-3 py-2 justify-start text-sm"
+                className="w-full px-3 py-2 flex gap-1 justify-start text-sm"
                 onClick={() => {
                   setShowActions(false)
                   setTargetDate('')
@@ -248,7 +248,7 @@ export default function TaskDetailsPanel({
               </Button>
               <Button
                 variant="ghost"
-                className="w-full px-3 py-2 justify-start text-sm"
+                className="w-full px-3 py-2 flex gap-1 justify-start text-sm"
                 onClick={() => {
                   setShowActions(false)
                   const now = new Date()
@@ -267,7 +267,7 @@ export default function TaskDetailsPanel({
               </Button>
               <Button
                 variant="ghost"
-                className="w-full px-3 py-2 justify-start text-sm"
+                className="w-full px-3 py-2 flex gap-1 justify-start text-sm"
                 onClick={() => {
                   setShowActions(false)
                   setCopyTitle(task.title || '')
@@ -283,7 +283,7 @@ export default function TaskDetailsPanel({
               </Button>
               <Button
                 variant="danger"
-                className="w-full px-3 py-2 justify-start text-sm"
+                className="w-full px-3 py-2 flex gap-1 justify-start text-sm"
                 onClick={async () => {
                   setShowActions(false)
                   if (!confirm('Delete this task? This cannot be undone.')) return
@@ -618,7 +618,7 @@ export default function TaskDetailsPanel({
       {showShiftModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowShiftModal(false)} />
-          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
+          <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Shift Task to Tomorrow</h3>
             <div className="space-y-3">
               <div>
@@ -656,7 +656,7 @@ export default function TaskDetailsPanel({
       {showChangeDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowChangeDate(false)} />
-          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
+          <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Change Date</h3>
             <div className="space-y-3">
               <div>
@@ -719,7 +719,7 @@ export default function TaskDetailsPanel({
       {showAddTime && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowAddTime(false)} />
-          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
+          <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Add Manual Time</h3>
             <div className="space-y-3">
               <div className="grid grid-cols-1 gap-3">
@@ -845,7 +845,7 @@ export default function TaskDetailsPanel({
       {showCopyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowCopyModal(false)} />
-          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
+          <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Copy Task</h3>
             <div className="space-y-3">
               <div>
@@ -953,7 +953,7 @@ export default function TaskDetailsPanel({
       {previewItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={() => setPreviewItem(null)} />
-          <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
+          <div className="relative bg-white border border-[var(--border)] rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
             <button
               className="absolute top-2 right-2 p-1 rounded-md border border-[var(--border)] hover:bg-[var(--muted1)]"
               aria-label="Close"
