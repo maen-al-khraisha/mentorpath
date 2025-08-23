@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { updateTask, addAttachment, deleteTask } from '@/lib/tasksApi'
 import Button from '@/components/Button'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
-import DescriptionEditModal from './DescriptionEditModal'
+
 import {
   Play,
   Pause,
@@ -38,8 +38,8 @@ export default function TaskDetailsPanel({
   onShowAddTime,
   onShowCopyModal,
   onPreviewAttachment,
+  onEditDescription,
 }) {
-  const [showDescriptionModal, setShowDescriptionModal] = useState(false)
   const [description, setDescription] = useState(task?.description || '')
   const [editingLabels, setEditingLabels] = useState(false)
   const [newLabel, setNewLabel] = useState('')
@@ -101,14 +101,6 @@ export default function TaskDetailsPanel({
 
   if (!task) {
     return <div className="text-sm text-[var(--neutral-700)]">Select a task to see details.</div>
-  }
-
-  const handleSaveDescription = async (newDescription) => {
-    if (newDescription !== task.description) {
-      await updateTask(task.id, { description: newDescription })
-      setDescription(newDescription)
-      onUpdate && onUpdate()
-    }
   }
 
   const handleAddLabel = () => {
@@ -378,7 +370,7 @@ export default function TaskDetailsPanel({
               className="inline-flex items-center rounded-md font-medium 
               transition-colors whitespace-nowrap 
               border border-gray-300 text-gray-700 hover:bg-gray-100 p-1 text-xs"
-              onClick={() => setShowDescriptionModal(true)}
+              onClick={() => onEditDescription?.(task.id)}
             >
               <Edit size={14} />
             </Button>
@@ -619,14 +611,6 @@ export default function TaskDetailsPanel({
 
       {/* Attachment Preview Modal */}
       {/* Removed as per edit hint */}
-
-      {/* Description Edit Modal */}
-      <DescriptionEditModal
-        isOpen={showDescriptionModal}
-        onClose={() => setShowDescriptionModal(false)}
-        description={task.description || ''}
-        onSave={handleSaveDescription}
-      />
     </>
   )
 }

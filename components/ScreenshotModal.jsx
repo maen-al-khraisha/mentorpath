@@ -6,7 +6,7 @@ export default function ScreenshotModal({ onClose }) {
   const shots = ['/screenshot-1.svg', '/screenshot-2.svg', '/screenshot-3.svg']
   return (
     <Dialog.Portal>
-      <Dialog.Overlay className="fixed inset-0 bg-black/40 z-50" />
+              <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />
       <Dialog.Content className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-3xl rounded-lg bg-[var(--bg-card)] border border-[var(--border)] shadow-soft p-3">
         <div className="flex items-center justify-between px-2 py-2">
           <Dialog.Title className="text-sm font-semibold text-[var(--neutral-900)]">

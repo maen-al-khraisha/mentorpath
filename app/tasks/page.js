@@ -17,6 +17,7 @@ import {
 } from '@/lib/tasksApi'
 import TaskAddModal from './TaskAddModal'
 import TaskDetailsPanel from './TaskDetailsPanel'
+import DescriptionEditModal from './DescriptionEditModal'
 
 import { ChevronLeft, ChevronRight, Plus, Play, Pause, Clock, ArrowRight, X } from 'lucide-react'
 import Image from 'next/image'
@@ -57,6 +58,8 @@ export default function TasksPage() {
   const [copyChecklist, setCopyChecklist] = useState(true)
   const [isSubmittingCopy, setIsSubmittingCopy] = useState(false)
   const [previewItem, setPreviewItem] = useState(null) // { url, name }
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false)
+  const [editingTaskId, setEditingTaskId] = useState(null)
 
   // Modal handlers
   const handleShiftToTomorrow = async () => {
@@ -72,6 +75,17 @@ export default function TasksPage() {
 
   const handlePreviewAttachment = (attachment) => {
     setPreviewItem({ url: attachment.url, name: attachment.name })
+  }
+
+  const handleSaveDescription = async (newDescription) => {
+    if (
+      editingTaskId &&
+      newDescription !== tasks.find((t) => t.id === editingTaskId)?.description
+    ) {
+      await updateTask(editingTaskId, { description: newDescription })
+      setShowDescriptionModal(false)
+      setEditingTaskId(null)
+    }
   }
 
   const handleShowCopyModal = () => {
@@ -441,7 +455,10 @@ export default function TasksPage() {
       {/* Mobile/md details modal */}
       {selectedTask && (
         <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setSelectedId(null)} />
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSelectedId(null)}
+          />
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg max-h-[90vh] bg-[var(--bg-card)] border border-[var(--border)] rounded-lg shadow-soft overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
               <h3 className="font-semibold">Task Details</h3>
@@ -465,6 +482,10 @@ export default function TasksPage() {
                 onShowAddTime={() => setShowAddTime(true)}
                 onShowCopyModal={handleShowCopyModal}
                 onPreviewAttachment={handlePreviewAttachment}
+                onEditDescription={(taskId) => {
+                  setEditingTaskId(taskId)
+                  setShowDescriptionModal(true)
+                }}
               />
             </div>
           </div>
@@ -485,6 +506,10 @@ export default function TasksPage() {
             onShowAddTime={() => setShowAddTime(true)}
             onShowCopyModal={handleShowCopyModal}
             onPreviewAttachment={handlePreviewAttachment}
+            onEditDescription={(taskId) => {
+              setEditingTaskId(taskId)
+              setShowDescriptionModal(true)
+            }}
           />
         </div>
       </aside>
@@ -506,7 +531,10 @@ export default function TasksPage() {
       {/* Shift to Tomorrow Modal */}
       {showShiftModal && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowShiftModal(false)} />
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowShiftModal(false)}
+          />
           <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Shift Task to Tomorrow</h3>
             <div className="space-y-3">
@@ -546,7 +574,10 @@ export default function TasksPage() {
       {/* Change Date Modal */}
       {showChangeDate && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowChangeDate(false)} />
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowChangeDate(false)}
+          />
           <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Change Date</h3>
             <div className="space-y-3">
@@ -611,7 +642,10 @@ export default function TasksPage() {
       {/* Add Time Modal */}
       {showAddTime && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowAddTime(false)} />
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowAddTime(false)}
+          />
           <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Add Manual Time</h3>
             <div className="space-y-3">
@@ -739,7 +773,10 @@ export default function TasksPage() {
       {/* Copy Task Modal */}
       {showCopyModal && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowCopyModal(false)} />
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowCopyModal(false)}
+          />
           <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
             <h3 className="font-semibold mb-3">Copy Task</h3>
             <div className="space-y-3">
@@ -849,7 +886,10 @@ export default function TasksPage() {
       {/* Attachment Preview Modal */}
       {previewItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setPreviewItem(null)} />
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setPreviewItem(null)}
+          />
           <div className="relative bg-white border border-[var(--border)] rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
             <button
               className="absolute top-2 right-2 p-1 rounded-md border border-[var(--border)] hover:bg-[var(--muted1)]"
@@ -900,6 +940,19 @@ export default function TasksPage() {
           </div>
         </div>
       )}
+
+      {/* Description Edit Modal */}
+      <DescriptionEditModal
+        isOpen={showDescriptionModal}
+        onClose={() => {
+          setShowDescriptionModal(false)
+          setEditingTaskId(null)
+        }}
+        description={
+          editingTaskId ? tasks.find((t) => t.id === editingTaskId)?.description || '' : ''
+        }
+        onSave={handleSaveDescription}
+      />
 
       <style jsx>{`
         .overflow-y-auto::-webkit-scrollbar {

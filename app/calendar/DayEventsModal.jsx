@@ -7,20 +7,24 @@ import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import { X, Eye, Trash2 } from 'lucide-react'
 
-export default function DayEventsModal({ 
-  date, 
-  events, 
-  isOpen, 
-  onClose, 
-  onEventDeleted, 
-  onViewEvent 
+export default function DayEventsModal({
+  date,
+  events,
+  isOpen,
+  onClose,
+  onEventDeleted,
+  onViewEvent,
 }) {
   const { user } = useAuth()
   const { showToast } = useToast()
   const [isClearing, setIsClearing] = useState(false)
 
   const handleClearEvents = async () => {
-    if (!confirm(`Are you sure you want to clear all events for ${new Date(date).toLocaleDateString()}? This cannot be undone.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to clear all events for ${new Date(date).toLocaleDateString()}? This cannot be undone.`
+      )
+    ) {
       return
     }
 
@@ -43,17 +47,19 @@ export default function DayEventsModal({
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">{formattedDate}</h2>
-            <p className="text-sm text-gray-500">{events.length} event{events.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-gray-500">
+              {events.length} event{events.length !== 1 ? 's' : ''}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -98,7 +104,10 @@ export default function DayEventsModal({
 
             {/* Event Rows */}
             {events.map((event) => (
-              <div key={event.id} className="grid grid-cols-12 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50">
+              <div
+                key={event.id}
+                className="grid grid-cols-12 gap-4 py-3 border-b border-gray-100 hover:bg-gray-50"
+              >
                 <div className="col-span-4">
                   <span className="text-sm font-medium text-gray-900">{event.name}</span>
                 </div>
@@ -107,7 +116,10 @@ export default function DayEventsModal({
                 </div>
                 <div className="col-span-3">
                   <span className="text-sm text-gray-600">
-                    {event.description ? event.description.substring(0, 50) + (event.description.length > 50 ? '...' : '') : '-'}
+                    {event.description
+                      ? event.description.substring(0, 50) +
+                        (event.description.length > 50 ? '...' : '')
+                      : '-'}
                   </span>
                 </div>
                 <div className="col-span-2 flex items-center gap-2">

@@ -7,7 +7,13 @@ import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import { X, Edit, Trash2, ExternalLink } from 'lucide-react'
 
-export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdated, onEventDeleted }) {
+export default function EventDetailsModal({
+  event,
+  isOpen,
+  onClose,
+  onEventUpdated,
+  onEventDeleted,
+}) {
   const { user } = useAuth()
   const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
@@ -18,7 +24,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
     description: event?.description || '',
     link: event?.link || '',
     date: event?.date || '',
-    time: event?.time || ''
+    time: event?.time || '',
   })
 
   const handleEdit = () => {
@@ -28,7 +34,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
       description: event.description,
       link: event.link,
       date: event.date,
-      time: event.time
+      time: event.time,
     })
   }
 
@@ -71,24 +77,21 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
       description: event.description,
       link: event.link,
       date: event.date,
-      time: event.time
+      time: event.time,
     })
   }
 
   if (!isOpen || !event) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">
             {isEditing ? 'Edit Event' : 'Event Details'}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-md transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -97,9 +100,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
           /* Edit Form */
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Event Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Event Name</label>
               <input
                 type="text"
                 value={formData.name}
@@ -110,9 +111,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -122,9 +121,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Link
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Link</label>
               <input
                 type="url"
                 value={formData.link}
@@ -135,9 +132,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
                 <input
                   type="date"
                   value={formData.date}
@@ -147,9 +142,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Time
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
                 <input
                   type="time"
                   value={formData.time}
@@ -161,11 +154,7 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button
-                variant="secondary"
-                onClick={handleCancel}
-                type="button"
-              >
+              <Button variant="secondary" onClick={handleCancel} type="button">
                 Cancel
               </Button>
               <Button
@@ -210,17 +199,10 @@ export default function EventDetailsModal({ event, isOpen, onClose, onEventUpdat
             )}
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button
-                variant="danger"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
+              <Button variant="danger" onClick={handleDelete} disabled={isDeleting}>
                 {isDeleting ? 'Deleting...' : 'Delete'}
               </Button>
-              <Button
-                variant="secondary"
-                onClick={handleEdit}
-              >
+              <Button variant="secondary" onClick={handleEdit}>
                 Edit
               </Button>
             </div>

@@ -231,7 +231,7 @@ export default function Sidebar({
       >
         {/* Backdrop */}
         <div
-          className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
             mobileOpen ? 'opacity-100' : 'opacity-0'
           }`}
           onClick={onCloseMobile}
