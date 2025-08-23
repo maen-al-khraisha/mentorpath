@@ -380,19 +380,6 @@ export default function TasksPage() {
             ))}
           </ul>
         </section>
-
-        {showAdd && (
-          <TaskAddModal
-            open={showAdd}
-            onClose={(newId) => {
-              setShowAdd(false)
-              if (newId) {
-                setSelectedId(newId)
-              }
-            }}
-            defaultDate={date}
-          />
-        )}
       </div>
 
       {/* Right column (wider details) */}
@@ -434,6 +421,18 @@ export default function TasksPage() {
             </div>
           </div>
         </div>
+      )}
+      {showAdd && (
+        <TaskAddModal
+          open={showAdd}
+          onClose={(newId) => {
+            setShowAdd(false)
+            if (newId) {
+              setSelectedId(newId)
+            }
+          }}
+          defaultDate={date}
+        />
       )}
     </div>
   )
