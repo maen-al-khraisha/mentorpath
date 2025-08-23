@@ -153,9 +153,9 @@ export default function TaskDetailsPanel({
 
   return (
     <>
-      <div className="space-y-5">
+      <div className="space-y-3">
         {/* Header */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-3 shadow-sm">
           {/* Title Row */}
           <div className="flex items-start justify-between gap-3">
             <h3 className="font-semibold text-lg text-gray-900 leading-tight flex-1">
@@ -296,7 +296,7 @@ export default function TaskDetailsPanel({
         </div>
 
         {/* Timer Controls */}
-        <div className="space-y-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-3 shadow-sm">
           <div className="flex items-center gap-2 text-sm font-semibold text-[var(--neutral-700)]">
             <Clock size={16} />
             <span>Timer</span>
@@ -333,31 +333,6 @@ export default function TaskDetailsPanel({
           </div>
         </div>
 
-        {/* Properties */}
-        <div>
-          <label className="block text-sm font-semibold text-[var(--neutral-700)] mb-1">
-            Priority
-          </label>
-          <div className="flex items-center gap-2">
-            {['High', 'Medium', 'Low'].map((p) => (
-              <label
-                key={p}
-                className={`px-2 h-9 inline-flex items-center rounded-md border border-[var(--border)] cursor-pointer ${(task.priority || 'Medium') === p ? 'bg-[var(--primary)] text-[var(--neutral-900)]' : ''}`}
-              >
-                <input
-                  type="radio"
-                  name="priority"
-                  value={p}
-                  className="sr-only"
-                  onChange={() => updateTask(task.id, { priority: p })}
-                  checked={(task.priority || 'Medium') === p}
-                />
-                {p}
-              </label>
-            ))}
-          </div>
-        </div>
-
         {/* Description */}
         <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-3 shadow-sm">
           <div className="flex items-center justify-between mb-2 border-b-2 border-gray-200 pb-2">
@@ -387,8 +362,33 @@ export default function TaskDetailsPanel({
           </div>
         </div>
 
+        {/* Properties */}
+        <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-3 shadow-sm">
+          <label className="block text-sm font-semibold text-[var(--neutral-700)] mb-1">
+            Priority
+          </label>
+          <div className="flex items-center gap-2">
+            {['High', 'Medium', 'Low'].map((p) => (
+              <label
+                key={p}
+                className={`px-2 h-9 inline-flex items-center rounded-md border border-[var(--border)] cursor-pointer ${(task.priority || 'Medium') === p ? 'bg-[var(--primary)] text-[var(--neutral-900)]' : ''}`}
+              >
+                <input
+                  type="radio"
+                  name="priority"
+                  value={p}
+                  className="sr-only"
+                  onChange={() => updateTask(task.id, { priority: p })}
+                  checked={(task.priority || 'Medium') === p}
+                />
+                {p}
+              </label>
+            ))}
+          </div>
+        </div>
+
         {/* Labels */}
-        <div>
+        <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-3 shadow-sm">
           <div className="flex items-center gap-1 mb-2">
             <Tag size={16} className="text-[var(--neutral-700)]" />
             <label className="text-sm font-semibold text-[var(--neutral-700)]">Labels</label>
@@ -397,7 +397,7 @@ export default function TaskDetailsPanel({
             {task.labels?.map((label) => (
               <span
                 key={label}
-                className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded"
+                className="inline-flex items-center gap-1 text-xs px-2 h-9 bg-blue-100 text-blue-800 rounded-md"
               >
                 {label}
                 <button onClick={() => handleRemoveLabel(label)} className="hover:text-blue-900">
@@ -411,15 +411,14 @@ export default function TaskDetailsPanel({
               onChange={(e) => setNewLabel(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAddLabel()}
               placeholder="Add label"
-              className="h-7 px-2 rounded border border-dashed border-[var(--border)] bg-[var(--bg-card)] text-xs"
+              className="w-max h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
             />
             <Button
               variant="primary"
-              className="p-1"
+              className="px-3 h-9"
               onClick={handleAddLabel}
               aria-label="Add label"
               title="Add label"
-              style={{ height: '24px' }}
             >
               <Plus size={18} />
             </Button>
@@ -427,7 +426,7 @@ export default function TaskDetailsPanel({
         </div>
 
         {/* Checklist */}
-        <div>
+        <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-3 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1">
               <List size={16} className="text-[var(--neutral-700)]" />
@@ -485,11 +484,11 @@ export default function TaskDetailsPanel({
                 onChange={(e) => setNewChecklistItem(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
                 placeholder="Add checklist item"
-                className="flex-1 h-7 px-2 rounded border border-dashed border-[var(--border)] bg-[var(--bg-card)] text-xs"
+                className="w-max h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
               />
               <Button
                 variant="primary"
-                style={{ height: '24px' }}
+                className="h-9 px-3"
                 onClick={handleAddChecklistItem}
                 aria-label="Add checklist item"
                 title="Add checklist item"
@@ -501,10 +500,10 @@ export default function TaskDetailsPanel({
         </div>
 
         {/* Attachments */}
-        <div>
+        <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-3 shadow-sm">
           <div className="flex items-center gap-1 mb-2">
-            <Paperclip size={14} className="text-[var(--neutral-700)]" />
-            <label className="text-xs text-[var(--neutral-700)]">Attachments</label>
+            <Paperclip size={16} className="text-[var(--neutral-700)]" />
+            <label className="text-sm font-semibold text-[var(--neutral-700)]">Attachments</label>
           </div>
           <div className="space-y-2">
             <div className="pt-1">

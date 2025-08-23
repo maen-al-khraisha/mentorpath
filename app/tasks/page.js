@@ -318,56 +318,59 @@ export default function TasksPage() {
       <div className="space-y-3 lg:col-span-2 h-full overflow-hidden flex flex-col">
         {/* Toolbar */}
         <div className="flex  items-center gap-2 justify-between">
-          <div className="flex items-center gap-1 border px-1 py-1 rounded-md bg-[var(--bg-card)] flex-1">
-            <Button
-              variant="ghost"
-              className="p-1"
-              onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
-              aria-label="Previous day"
-            >
-              <ChevronLeft size={16} />
-            </Button>
-
-            <div className="px-3 h-9 inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--bg-card)] text-sm">
-              {date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
+          <div className="flex items-center justify-between gap-1 border px-1 py-1 rounded-lg bg-[var(--bg-card)] flex-1">
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                className="p-1"
+                onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
+                aria-label="Previous day"
+              >
+                <ChevronLeft size={16} />
+              </Button>
+              <div className="px-1 h-9 inline-flex items-center rounded-md  bg-[var(--bg-card)] text-lg">
+                {date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
+              </div>
+              <Button
+                variant="ghost"
+                className="p-1"
+                onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
+                aria-label="Next day"
+              >
+                <ChevronRight size={16} />
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              className="p-1"
-              onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
-              aria-label="Next day"
-            >
-              <ChevronRight size={16} />
-            </Button>
-            <select
-              className="h-9 ml-2 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              aria-label="Filter by priority"
-            >
-              <option value="All">All priorities</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-            <select
-              className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
-              value={labelFilter}
-              onChange={(e) => setLabelFilter(e.target.value)}
-              aria-label="Filter by label"
-            >
-              <option value="All">All labels</option>
-              {allLabels.map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
-              ))}
-            </select>
+            <div>
+              <select
+                className="h-9 ml-2 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+                aria-label="Filter by priority"
+              >
+                <option value="All">All priorities</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+              <select
+                className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                value={labelFilter}
+                onChange={(e) => setLabelFilter(e.target.value)}
+                aria-label="Filter by label"
+              >
+                <option value="All">All labels</option>
+                {allLabels.map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Lists */}
-        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft flex-1 overflow-hidden flex flex-col">
+        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft  overflow-hidden flex flex-col">
           <div className="font-semibold mb-2 flex-shrink-0 flex items-center justify-between">
             <span>To Do</span>
             <Button variant="primary" onClick={() => setShowAdd(true)}>
@@ -379,23 +382,26 @@ export default function TasksPage() {
             {todo.map((t) => (
               <li
                 key={t.id}
-                className={`rounded-md border border-[var(--border)] p-2 transition-colors ${selectedId === t.id ? 'bg-green-50' : 'bg-[var(--bg-card)]'}`}
+                className={`border border-gray-200 rounded-xl p-2 space-y-3 shadow-md  ${selectedId === t.id ? 'bg-green-500 text-white' : 'bg-[var(--bg-card)]'}`}
               >
                 <div className="flex items-center gap-2">
                   <Checkbox
                     checked={!!t.completed}
                     onChange={(e) => toggleTaskCompleted(t.id, e.target.checked)}
                     aria-label="Complete task"
+                    className={`border-white bg-transparent`}
                   />
                   <button className="flex-1 text-left" onClick={() => setSelectedId(t.id)}>
                     {t.title}
                   </button>
-                  <span className="text-xs font-mono text-green-700 min-w-[60px] text-right">
+                  <span
+                    className={`text-xs font-mono  ${selectedId === t.id ? 'text-white' : 'text-green-700'}  min-w-[60px] text-right`}
+                  >
                     {formatTotalTime(getTaskTotalTime(t.id))}
                   </span>
                   {activeTimer && activeTimer.taskId === t.id ? (
                     <button
-                      className="p-1.5 rounded-md border border-green-500 bg-green-50 text-green-700 flex items-center gap-1"
+                      className="p-1.5 rounded-md border  border-green-500 bg-green-50 text-green-700 flex items-center gap-1"
                       aria-label="Stop timer"
                       onClick={() => handleStopTimer(t.id)}
                     >
@@ -422,7 +428,7 @@ export default function TasksPage() {
           </ul>
         </section>
 
-        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft flex-1 overflow-hidden flex flex-col">
+        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft overflow-hidden flex flex-col">
           <div className="font-semibold mb-2 flex-shrink-0">Completed</div>
           <ul className="space-y-2 overflow-y-auto flex-1">
             {completed.map((t) => (
