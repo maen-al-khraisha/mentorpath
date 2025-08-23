@@ -254,7 +254,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-4 lg:gap-4">
+    <div className="lg:grid lg:grid-cols-4 lg:gap-4 h-full">
       {/* Full-width KPI header row */}
       <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-3  sm:grid-cols-3 gap-10">
@@ -301,7 +301,7 @@ export default function TasksPage() {
       </div>
 
       {/* Left column (2fr) */}
-      <div className="space-y-3 lg:col-span-2">
+      <div className="space-y-3 lg:col-span-2 h-full overflow-hidden flex flex-col">
         {/* Toolbar */}
         <div className="flex  items-center gap-2 justify-between">
           <div className="flex items-center gap-1 border px-1 py-1 rounded-md bg-[var(--bg-card)] flex-1">
@@ -350,17 +350,18 @@ export default function TasksPage() {
               ))}
             </select>
           </div>
-
-          <Button variant="primary" onClick={() => setShowAdd(true)}>
-            <Plus size={16} />
-            <span className="ml-1">Add task</span>
-          </Button>
         </div>
 
         {/* Lists */}
-        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft">
-          <div className="font-semibold mb-2">To Do</div>
-          <ul className="space-y-2">
+        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft flex-1 overflow-hidden flex flex-col">
+          <div className="font-semibold mb-2 flex-shrink-0 flex items-center justify-between">
+            <span>To Do</span>
+            <Button variant="primary" onClick={() => setShowAdd(true)}>
+              <Plus size={16} />
+              <span className="ml-1">Add task</span>
+            </Button>
+          </div>
+          <ul className="space-y-2 overflow-y-auto flex-1">
             {todo.map((t) => (
               <li
                 key={t.id}
@@ -407,9 +408,9 @@ export default function TasksPage() {
           </ul>
         </section>
 
-        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft">
-          <div className="font-semibold mb-2">Completed</div>
-          <ul className="space-y-2">
+        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft flex-1 overflow-hidden flex flex-col">
+          <div className="font-semibold mb-2 flex-shrink-0">Completed</div>
+          <ul className="space-y-2 overflow-y-auto flex-1">
             {completed.map((t) => (
               <li
                 key={t.id}
@@ -472,7 +473,7 @@ export default function TasksPage() {
 
       {/* Desktop TaskDetailsPanel */}
       <aside className="hidden lg:block lg:col-span-2">
-        <div className="sticky top-20 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft min-h-[320px] max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="sticky top-20 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft h-fit">
           <TaskDetailsPanel
             task={selectedTask}
             onUpdate={updateTask}
@@ -899,6 +900,31 @@ export default function TasksPage() {
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+          transition: background 0.2s ease;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+
+        .overflow-y-auto {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 transparent;
+        }
+      `}</style>
     </div>
   )
 }

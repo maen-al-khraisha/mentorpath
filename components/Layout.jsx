@@ -11,13 +11,13 @@ import { useSidebar } from '@/lib/SidebarContext'
 // - columns: string like "2|1" or "1|2|1" to control main area grid on large screens
 // - onPrevDate / onNextDate: optional callbacks passed to Header for date navigation
 export default function Layout({ children, columns = '1', onPrevDate, onNextDate }) {
-  const { 
-    sidebarCollapsed, 
-    mobileSidebarOpen, 
-    toggleSidebar, 
-    toggleMobileSidebar, 
-    closeMobileSidebar, 
-    openMobileSidebar 
+  const {
+    sidebarCollapsed,
+    mobileSidebarOpen,
+    toggleSidebar,
+    toggleMobileSidebar,
+    closeMobileSidebar,
+    openMobileSidebar,
   } = useSidebar()
 
   // Compute grid template columns from prop for large screens
@@ -57,10 +57,10 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
             sidebarCollapsed={sidebarCollapsed}
           />
 
-          <main id="main" className="flex-1 min-w-0 p-3 md:p-5">
+          <main id="main" className="flex-1 min-w-0 p-3 md:p-5 ">
             {/* Responsive columns wrapper. Large screens use custom grid from prop. */}
             <div
-              className="grid gap-4"
+              className="grid gap-4 h-full"
               style={{
                 gridTemplateColumns: '1fr',
               }}
@@ -68,13 +68,13 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
               <div className="contents lg:block" style={{ display: 'contents' }} />
               {/* On lg and up, we apply the grid template columns */}
               <div
-                className="hidden lg:grid"
+                className="hidden lg:grid overflow-hidden"
                 style={{ gridTemplateColumns: gridColsLg, gap: '1rem' }}
               >
                 {children}
               </div>
               {/* On small/medium, just show children stacked */}
-              <div className="lg:hidden">{children}</div>
+              <div className="lg:hidden overflow-hidden">{children}</div>
             </div>
           </main>
 

@@ -241,8 +241,8 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                 }}
               />
               <label
-                for="attachment-input-v8R23CqhUnvhRvanCMFA"
-                class="inline-flex items-center rounded-md font-medium 
+                htmlFor="attachment-input-v8R23CqhUnvhRvanCMFA"
+                className="inline-flex items-center rounded-md font-medium 
               transition-colors whitespace-nowrap 
               border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2
                    cursor-pointer hover:bg-[var(--muted1)] hover:border-[var(--neutral-600)]"
@@ -255,10 +255,10 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-paperclip"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-paperclip"
                 >
                   <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                 </svg>

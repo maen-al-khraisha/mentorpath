@@ -151,16 +151,22 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
               <div>
                 <label className="block text-xs text-[var(--neutral-700)] mb-1">Priority</label>
                 <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-gray-500" />
-                  <select
-                    className="flex-1 h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm focus:border-[var(--primary)] transition-colors"
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
-                  >
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                  </select>
+                  {['High', 'Medium', 'Low'].map((p) => (
+                    <label
+                      key={p}
+                      className={`px-3 h-10 inline-flex items-center rounded-lg border-2 border-[var(--border)] cursor-pointer transition-colors ${priority === p ? 'bg-[var(--primary)] text-[var(--neutral-900)] border-[var(--primary)]' : 'hover:border-[var(--primary)]'}`}
+                    >
+                      <input
+                        type="radio"
+                        name="priority"
+                        value={p}
+                        className="sr-only"
+                        onChange={() => setPriority(p)}
+                        checked={priority === p}
+                      />
+                      {p}
+                    </label>
+                  ))}
                 </div>
               </div>
             </div>
