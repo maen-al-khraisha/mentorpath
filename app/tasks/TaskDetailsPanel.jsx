@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { updateTask, addAttachment, deleteTask } from '@/lib/tasksApi'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
 import Button from '@/components/Button'
+import DescriptionEditModal from './DescriptionEditModal'
 import {
   Play,
   Pause,
@@ -38,7 +39,7 @@ export default function TaskDetailsPanel({
   onShowCopyModal,
   onPreviewAttachment,
 }) {
-  const [editingDescription, setEditingDescription] = useState(false)
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false)
   const [description, setDescription] = useState(task?.description || '')
   const [editingLabels, setEditingLabels] = useState(false)
   const [newLabel, setNewLabel] = useState('')
@@ -102,11 +103,12 @@ export default function TaskDetailsPanel({
     return <div className="text-sm text-[var(--neutral-700)]">Select a task to see details.</div>
   }
 
-  const handleSaveDescription = () => {
-    if (description !== task.description) {
-      updateTask(task.id, { description })
+  const handleSaveDescription = async (newDescription) => {
+    if (newDescription !== task.description) {
+      await updateTask(task.id, { description: newDescription })
+      setDescription(newDescription)
+      onUpdate && onUpdate()
     }
-    setEditingDescription(false)
   }
 
   const handleAddLabel = () => {
@@ -323,47 +325,21 @@ export default function TaskDetailsPanel({
               className="inline-flex items-center rounded-md font-medium 
               transition-colors whitespace-nowrap 
               border border-gray-300 text-gray-700 hover:bg-gray-100 p-1 text-xs"
-              onClick={() => setEditingDescription(!editingDescription)}
+              onClick={() => setShowDescriptionModal(true)}
             >
-              {editingDescription ? 'Cancel' : <Edit size={14} />}
+              <Edit size={14} />
             </Button>
           </div>
-          {editingDescription ? (
-            <div>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded-md border border-[var(--border)] bg-[var(--bg-card)] p-2 text-sm"
-                rows={4}
-                placeholder="Add task description..."
+          <div className="text-sm bg-[var(--muted1)] p-2 rounded min-h-[60px]">
+            {task.description ? (
+              <div
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: task.description }}
               />
-              <div className="flex items-center gap-2 mt-2">
-                <Button
-                  variant="primary"
-                  className="px-3 py-1 text-sm"
-                  onClick={handleSaveDescription}
-                >
-                  Save
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="px-3 py-1 text-sm"
-                  onClick={() => {
-                    setDescription(task.description || '')
-                    setEditingDescription(false)
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="text-sm bg-[var(--muted1)] p-2 rounded min-h-[60px]">
-              {task.description || (
-                <span className="text-[var(--neutral-700)] italic">No description added</span>
-              )}
-            </div>
-          )}
+            ) : (
+              <span className="text-[var(--neutral-700)] italic">No description added</span>
+            )}
+          </div>
         </div>
 
         {/* Labels */}
@@ -590,6 +566,14 @@ export default function TaskDetailsPanel({
 
       {/* Attachment Preview Modal */}
       {/* Removed as per edit hint */}
+
+      {/* Description Edit Modal */}
+      <DescriptionEditModal
+        isOpen={showDescriptionModal}
+        onClose={() => setShowDescriptionModal(false)}
+        description={task.description || ''}
+        onSave={handleSaveDescription}
+      />
     </>
   )
 }

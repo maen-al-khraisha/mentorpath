@@ -87,6 +87,50 @@ textarea.border-dashed:focus {
   border-color: var(--primary);
 }
 
+/* Quill Editor Customization */
+.ql-editor {
+  min-height: 200px;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ql-toolbar {
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: none;
+  background: var(--bg-card);
+}
+
+.ql-container {
+  border-bottom: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-top: none;
+  background: var(--bg-card);
+}
+
+.ql-editor.ql-blank::before {
+  color: var(--neutral-700);
+  font-style: italic;
+}
+
+/* Dark mode adjustments for Quill */
+html[data-theme='dark'] .ql-toolbar,
+html[data-theme='dark'] .ql-container {
+  border-color: var(--border);
+  background: var(--bg-card);
+}
+
+html[data-theme='dark'] .ql-editor {
+  color: var(--neutral-900);
+}
+
+html[data-theme='dark'] .ql-editor.ql-blank::before {
+  color: var(--neutral-700);
+}
+
 /* Sketch card style for KPI widgets */
 .sketch-card {
   position: relative;
