@@ -359,8 +359,8 @@ export default function TaskDetailsPanel({
         </div>
 
         {/* Description */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-3 shadow-sm">
+          <div className="flex items-center justify-between mb-2 border-b-2 border-gray-200 pb-2">
             <label className="text-sm font-semibold text-[var(--neutral-700)] flex items-center gap-1">
               <FileText size={16} />
               Description
@@ -375,7 +375,7 @@ export default function TaskDetailsPanel({
               <Edit size={14} />
             </Button>
           </div>
-          <div className="text-sm font-semibold  bg-[var(--muted1)] p-2 rounded min-h-[60px]">
+          <div className=" min-h-[60px]">
             {task.description ? (
               <div
                 className="prose prose-sm max-w-none"

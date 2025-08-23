@@ -268,7 +268,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-4 lg:gap-4 h-full">
+    <div className="lg:grid lg:grid-cols-4 lg:gap-4 auto-rows-max h-full">
       {/* Full-width KPI header row */}
       <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-3  sm:grid-cols-3 gap-10">
