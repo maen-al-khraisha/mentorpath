@@ -302,11 +302,7 @@ export default function TasksPage() {
             <div className="sketch-count mt-2">{formatTotalTime(getTotalFocusTime())}</div>
           </div>
           <div className="flex justify-end">
-            <Button
-              variant="sketchButton"
-              href="/insights"
-              className="h-min flex align-center justify-center"
-            >
+            <Button variant="primary" href="/insights">
               <span>Insights</span>
               <ArrowRight size={16} />
             </Button>
@@ -340,7 +336,7 @@ export default function TasksPage() {
                 <ChevronRight size={16} />
               </Button>
             </div>
-            <div>
+            <div className="flex items-center gap-2">
               <select
                 className="h-9 ml-2 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
                 value={priorityFilter}
@@ -371,7 +367,7 @@ export default function TasksPage() {
 
         {/* Lists */}
         <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft  overflow-hidden flex flex-col">
-          <div className="font-semibold mb-2 flex-shrink-0 flex items-center justify-between">
+          <div className="font-semibold mb-2 flex-shrink-0 flex items-center justify-between pb-2 border-b-2">
             <span>To Do</span>
             <Button variant="primary" onClick={() => setShowAdd(true)}>
               <Plus size={16} />

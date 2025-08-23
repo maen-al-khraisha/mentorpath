@@ -208,14 +208,6 @@ html[data-theme='dark'] .sketch-card .text-light-black {
   -webkit-line-clamp: 3;
 }
 
-.sketch-button {
-  --sketch-bg: #4aa13b;
-  border: none;
-}
-.sketch-button-dark {
-  --sketch-bg: #f6d9dc;
-}
-
 /* Additional dark mode utilities */
 html[data-theme='dark'] .border-gray-200 {
   border-color: var(--border);
