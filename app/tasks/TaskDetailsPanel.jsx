@@ -22,6 +22,7 @@ import {
   Clock as ClockIcon,
   Copy as CopyIcon,
   Trash2,
+  Edit,
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -319,10 +320,12 @@ export default function TaskDetailsPanel({
             </label>
             <Button
               variant="ghost"
-              className="p-1 text-xs"
+              className="inline-flex items-center rounded-md font-medium 
+              transition-colors whitespace-nowrap 
+              border border-gray-300 text-gray-700 hover:bg-gray-100 p-1 text-xs"
               onClick={() => setEditingDescription(!editingDescription)}
             >
-              {editingDescription ? 'Cancel' : 'Edit'}
+              {editingDescription ? 'Cancel' : <Edit size={14} />}
             </Button>
           </div>
           {editingDescription ? (
@@ -516,11 +519,14 @@ export default function TaskDetailsPanel({
               />
               <label
                 htmlFor={isUploading || reachedAttachmentLimit ? undefined : attachmentInputId}
-                className={`inline-flex items-center gap-2 px-3 py-2 border border-dashed border-[var(--border)] rounded-md text-sm transition-colors ${
-                  isUploading || reachedAttachmentLimit
-                    ? 'opacity-70 cursor-not-allowed'
-                    : 'cursor-pointer hover:bg-[var(--muted1)] hover:border-[var(--neutral-600)]'
-                }`}
+                className={`inline-flex items-center rounded-md font-medium 
+              transition-colors whitespace-nowrap 
+              border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2
+                   ${
+                     isUploading || reachedAttachmentLimit
+                       ? 'opacity-70 cursor-not-allowed'
+                       : 'cursor-pointer hover:bg-[var(--muted1)] hover:border-[var(--neutral-600)]'
+                   }`}
                 aria-disabled={isUploading}
               >
                 {isUploading ? (
