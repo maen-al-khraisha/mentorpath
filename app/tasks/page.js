@@ -524,13 +524,15 @@ export default function TasksPage() {
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setShowShiftModal(false)}
-                  className="px-3 py-2 border border-[var(--border)] rounded text-sm"
+                  className="inline-flex items-center rounded-lg font-medium transition-colors whitespace-nowrap border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2 "
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleShiftToTomorrow}
-                  className="px-3 py-2 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
+                  className="inline-flex items-center rounded-lg font-medium 
+                  transition-colors whitespace-nowrap
+                   bg-green-600 text-white hover:bg-green-700 px-3 py-2 "
                 >
                   Shift Task
                 </button>
@@ -569,7 +571,7 @@ export default function TasksPage() {
               </div>
               <div className="flex justify-end gap-2">
                 <button
-                  className="px-3 py-2 border border-[var(--border)] rounded text-sm"
+                  className="inline-flex items-center rounded-lg font-medium transition-colors whitespace-nowrap border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2 "
                   onClick={() => setShowChangeDate(false)}
                 >
                   Cancel
@@ -593,7 +595,9 @@ export default function TasksPage() {
                       setIsSubmittingChangeDate(false)
                     }
                   }}
-                  className="px-3 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-60"
+                  className="inline-flex items-center rounded-lg font-medium 
+                  transition-colors whitespace-nowrap
+                   bg-green-600 text-white hover:bg-green-700 px-3 py-2 "
                 >
                   {isSubmittingChangeDate ? 'Saving...' : 'Save'}
                 </button>
@@ -681,7 +685,7 @@ export default function TasksPage() {
               </div>
               <div className="flex justify-end gap-2">
                 <button
-                  className="px-3 py-2 border border-[var(--border)] rounded text-sm"
+                  className="inline-flex items-center rounded-lg font-medium transition-colors whitespace-nowrap border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2 "
                   onClick={() => setShowAddTime(false)}
                 >
                   Cancel
@@ -719,7 +723,9 @@ export default function TasksPage() {
                       setIsSubmittingTime(false)
                     }
                   }}
-                  className="px-3 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-60"
+                  className="inline-flex items-center rounded-lg font-medium 
+                  transition-colors whitespace-nowrap
+                   bg-green-600 text-white hover:bg-green-700 px-3 py-2 "
                 >
                   {isSubmittingTime ? 'Saving...' : 'Save'}
                 </button>
@@ -795,7 +801,7 @@ export default function TasksPage() {
               </div>
               <div className="flex justify-end gap-2">
                 <button
-                  className="px-3 py-2 border border-[var(--border)] rounded text-sm"
+                  className="inline-flex items-center rounded-lg font-medium transition-colors whitespace-nowrap border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2 "
                   onClick={() => setShowCopyModal(false)}
                 >
                   Cancel
@@ -827,7 +833,9 @@ export default function TasksPage() {
                       setIsSubmittingCopy(false)
                     }
                   }}
-                  className="px-3 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-60"
+                  className="inline-flex items-center rounded-lg font-medium 
+                  transition-colors whitespace-nowrap
+                   bg-green-600 text-white hover:bg-green-700 px-3 py-2 "
                 >
                   {isSubmittingCopy ? 'Creating...' : 'Create task'}
                 </button>
