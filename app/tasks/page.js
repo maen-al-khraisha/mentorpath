@@ -79,6 +79,22 @@ export default function TasksPage() {
   const [previewItem, setPreviewItem] = useState(null) // { url, name }
   const [showDescriptionModal, setShowDescriptionModal] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState(null)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+
+  // Close date picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showDatePicker) {
+        const datePickerElement = document.querySelector('[data-date-picker]')
+        if (datePickerElement && !datePickerElement.contains(event.target)) {
+          setShowDatePicker(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showDatePicker])
 
   // Modal handlers
   const handleShiftToTomorrow = async () => {
@@ -416,13 +432,124 @@ export default function TasksPage() {
             >
               <ChevronLeft size={20} />
             </Button>
-            <div className="px-6 py-3 bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200">
-              <Calendar size={18} className="inline mr-2 text-blue-600" />
-              {date.toLocaleDateString(undefined, {
-                weekday: 'long',
-                day: '2-digit',
-                month: 'long',
-              })}
+            <div className="relative">
+              <div
+                className="px-6 py-3 bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200 cursor-pointer hover:from-slate-200 hover:to-blue-200 transition-all"
+                onClick={() => setShowDatePicker(true)}
+              >
+                <Calendar size={18} className="inline mr-2 text-blue-600" />
+                {date.toLocaleDateString(undefined, {
+                  weekday: 'long',
+                  day: '2-digit',
+                  month: 'long',
+                })}
+              </div>
+
+              {/* Inline Calendar */}
+              {showDatePicker && (
+                <div
+                  data-date-picker
+                  className="absolute top-full left-0 mt-2 z-40 bg-white border border-slate-200 rounded-2xl shadow-2xl w-80 overflow-hidden"
+                >
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-slate-900 font-display">
+                        Select Date
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowDatePicker(false)}
+                        aria-label="Close"
+                      >
+                        <X size={16} />
+                      </Button>
+                    </div>
+
+                    {/* Calendar Header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newDate = new Date(date.getFullYear(), date.getMonth() - 1, 1)
+                          setDate(newDate)
+                        }}
+                        className="p-2 hover:bg-slate-100 rounded-lg"
+                      >
+                        <ChevronLeft size={16} />
+                      </Button>
+                      <span className="font-semibold text-slate-900">
+                        {date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newDate = new Date(date.getFullYear(), date.getMonth() + 1, 1)
+                          setDate(newDate)
+                        }}
+                        className="p-2 hover:bg-slate-100 rounded-lg"
+                      >
+                        <ChevronRight size={16} />
+                      </Button>
+                    </div>
+
+                    {/* Calendar Grid */}
+                    <div className="grid grid-cols-7 gap-1 mb-4">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                        <div
+                          key={day}
+                          className="text-center text-xs font-medium text-slate-500 py-2"
+                        >
+                          {day}
+                        </div>
+                      ))}
+
+                      {(() => {
+                        const year = date.getFullYear()
+                        const month = date.getMonth()
+                        const firstDay = new Date(year, month, 1)
+                        const lastDay = new Date(year, month + 1, 0)
+                        const startDate = new Date(firstDay)
+                        startDate.setDate(startDate.getDate() - firstDay.getDay())
+
+                        const days = []
+                        for (let i = 0; i < 42; i++) {
+                          const currentDate = new Date(startDate)
+                          currentDate.setDate(startDate.getDate() + i)
+                          days.push(currentDate)
+                        }
+
+                        return days.map((day, index) => {
+                          const isCurrentMonth = day.getMonth() === month
+                          const isToday = day.toDateString() === new Date().toDateString()
+                          const isSelected = day.toDateString() === date.toDateString()
+
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                setDate(day)
+                                setShowDatePicker(false)
+                              }}
+                              className={`
+                                p-2 text-sm rounded-lg transition-all
+                                ${isCurrentMonth ? 'text-slate-900' : 'text-slate-400'}
+                                ${isToday ? 'bg-blue-100 text-blue-700 font-semibold' : ''}
+                                ${isSelected ? 'bg-blue-600 text-white font-semibold' : ''}
+                                ${!isCurrentMonth ? 'hover:bg-slate-50' : 'hover:bg-slate-100'}
+                              `}
+                            >
+                              {day.getDate()}
+                            </button>
+                          )
+                        })
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <Button
               variant="ghost"
@@ -495,7 +622,7 @@ export default function TasksPage() {
       </div>
 
       {/* Main Content */}
-      <div className="lg:grid lg:grid-cols-5 lg:gap-8">
+      <div className="lg:grid lg:grid-cols-6 lg:gap-8">
         {/* Left column - Task Lists */}
         <div className="space-y-6 lg:col-span-3">
           {/* To Do List */}
@@ -689,7 +816,7 @@ export default function TasksPage() {
         </div>
 
         {/* Right column - Task Details */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <div className="sticky top-20">
             {selectedTask ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -1176,6 +1303,104 @@ export default function TasksPage() {
                     </Button>
                   </div>
                 )
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inline Calendar */}
+      {showDatePicker && (
+        <div className="absolute top-full left-0 mt-2 z-40 bg-white border border-slate-200 rounded-2xl shadow-2xl w-80 overflow-hidden">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 font-display">Select Date</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowDatePicker(false)}
+                aria-label="Close"
+              >
+                <X size={16} />
+              </Button>
+            </div>
+
+            {/* Calendar Header */}
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const newDate = new Date(date.getFullYear(), date.getMonth() - 1, 1)
+                  setDate(newDate)
+                }}
+                className="p-2 hover:bg-slate-100 rounded-lg"
+              >
+                <ChevronLeft size={16} />
+              </Button>
+              <span className="font-semibold text-slate-900">
+                {date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const newDate = new Date(date.getFullYear(), date.getMonth() + 1, 1)
+                  setDate(newDate)
+                }}
+                className="p-2 hover:bg-slate-100 rounded-lg"
+              >
+                <ChevronRight size={16} />
+              </Button>
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-1 mb-4">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div key={day} className="text-center text-xs font-medium text-slate-500 py-2">
+                  {day}
+                </div>
+              ))}
+
+              {(() => {
+                const year = date.getFullYear()
+                const month = date.getMonth()
+                const firstDay = new Date(year, month, 1)
+                const lastDay = new Date(year, month + 1, 0)
+                const startDate = new Date(firstDay)
+                startDate.setDate(startDate.getDate() - firstDay.getDay())
+
+                const days = []
+                for (let i = 0; i < 42; i++) {
+                  const currentDate = new Date(startDate)
+                  currentDate.setDate(startDate.getDate() + i)
+                  days.push(currentDate)
+                }
+
+                return days.map((day, index) => {
+                  const isCurrentMonth = day.getMonth() === month
+                  const isToday = day.toDateString() === new Date().toDateString()
+                  const isSelected = day.toDateString() === date.toDateString()
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setDate(day)
+                        setShowDatePicker(false)
+                      }}
+                      className={`
+                        p-2 text-sm rounded-lg transition-all
+                        ${isCurrentMonth ? 'text-slate-900' : 'text-slate-400'}
+                        ${isToday ? 'bg-blue-100 text-blue-700 font-semibold' : ''}
+                        ${isSelected ? 'bg-blue-600 text-white font-semibold' : ''}
+                        ${!isCurrentMonth ? 'hover:bg-slate-50' : 'hover:bg-slate-100'}
+                      `}
+                    >
+                      {day.getDate()}
+                    </button>
+                  )
+                })
               })()}
             </div>
           </div>
