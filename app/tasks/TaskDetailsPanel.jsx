@@ -313,6 +313,7 @@ export default function TaskDetailsPanel({
             ) : task.completed ? (
               <Button
                 variant="primary"
+                size="sm"
                 disabled
                 title="Task is completed"
                 className="opacity-60 cursor-not-allowed"
@@ -321,12 +322,12 @@ export default function TaskDetailsPanel({
                 <span className="ml-2">Start Timer</span>
               </Button>
             ) : (
-              <Button variant="primary" onClick={() => onStartTimer?.(task.id)}>
+              <Button variant="primary" size="sm" onClick={() => onStartTimer?.(task.id)}>
                 <Play size={14} />
                 <span className="ml-2">Start Timer</span>
               </Button>
             )}
-            <Button variant="secondary" onClick={() => onShowShiftModal?.()}>
+            <Button variant="secondary" size="sm" onClick={() => onShowShiftModal?.()}>
               <ArrowRight size={14} />
               <span className="ml-2">Shift to Tomorrow</span>
             </Button>
@@ -470,14 +471,14 @@ export default function TaskDetailsPanel({
                     {item.text}
                   </span>
                 </label>
-                <Button
-                  variant="danger"
-                  className="p-1"
+                <button
                   onClick={() => handleRemoveChecklistItem(item.id)}
                   aria-label="Delete checklist item"
+                  className="text-red-300 hover:text-red-600 transition-colors 
+                    hover:border-red-500"
                 >
-                  <X size={14} />
-                </Button>
+                  <Trash2 size={16} />
+                </button>
               </div>
             )) || (
               <span className="text-xs text-[var(--neutral-700)] italic">No checklist items</span>
@@ -579,21 +580,17 @@ export default function TaskDetailsPanel({
                   >
                     <Paperclip size={14} className="text-[var(--neutral-700)]" />
                     <span className="text-sm flex-1 truncate">{attachment.name}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
+                    <button
                       onClick={() => {
                         if (attachment.url) onPreviewAttachment?.(attachment.url, attachment.name)
                       }}
-                      className="w-8 h-8 text-blue-600"
+                      className="text-slate-400 hover:text-blue-500 transition-colors  hover:border-blue-300"
                       title="View"
                       aria-label={`View ${attachment.name}`}
                     >
                       <Eye size={16} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
+                    </button>
+                    <button
                       onClick={async () => {
                         try {
                           await removeAttachment(task.id, attachment)
@@ -603,12 +600,13 @@ export default function TaskDetailsPanel({
                           // You could add a toast notification here
                         }
                       }}
-                      className="w-8 h-8 text-red-600"
+                      className="text-red-300 hover:text-red-600 transition-colors 
+                       hover:border-red-300"
                       title="Remove"
                       aria-label={`Remove ${attachment.name}`}
                     >
                       <Trash2 size={16} />
-                    </Button>
+                    </button>
                   </div>
                 ))
               ) : (
