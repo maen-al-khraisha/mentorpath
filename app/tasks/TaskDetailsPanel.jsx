@@ -372,7 +372,7 @@ export default function TaskDetailsPanel({
             {['High', 'Medium', 'Low'].map((p) => (
               <label
                 key={p}
-                className={`px-2 h-9 inline-flex items-center rounded-md border border-[var(--border)] cursor-pointer ${(task.priority || 'Medium') === p ? 'bg-[var(--primary)] text-[var(--neutral-900)]' : ''}`}
+                className={`px-2 h-9 inline-flex items-center rounded-md border border-[var(--border)] cursor-pointer ${(task.priority || 'Medium') === p ? 'bg-[var(--primary)] text-white' : ''}`}
               >
                 <input
                   type="radio"

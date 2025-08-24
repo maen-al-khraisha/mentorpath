@@ -108,8 +108,8 @@ export default function TasksPage() {
     }
   }
 
-  const handlePreviewAttachment = (attachment) => {
-    setPreviewItem({ url: attachment.url, name: attachment.name })
+  const handlePreviewAttachment = (url, name) => {
+    setPreviewItem({ url, name })
   }
 
   const handleSaveDescription = async (newDescription) => {
@@ -1260,13 +1260,13 @@ export default function TasksPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-3 right-3"
+              className="absolute top-4 right-4 z-10"
               aria-label="Close"
               onClick={() => setPreviewItem(null)}
             >
               <X size={16} />
             </Button>
-            <div className="p-4 flex items-center justify-center w-full h-full">
+            <div className="p-4 pt-16 flex flex-col items-center justify-center w-full h-full">
               {(() => {
                 const name = previewItem?.name || ''
                 const url = previewItem?.url || ''
@@ -1274,20 +1274,38 @@ export default function TasksPage() {
                 const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg']
                 if (imageExts.includes(ext)) {
                   return (
-                    <img
-                      src={url}
-                      alt="Attachment preview"
-                      className="max-h-[85vh] w-auto object-contain"
-                    />
+                    <>
+                      <img
+                        src={url}
+                        alt="Attachment preview"
+                        className="max-h-[70vh] w-auto object-contain mb-4"
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={() => window.open(url, '_blank', 'noopener')}
+                        className="mt-2"
+                      >
+                        Open in new tab
+                      </Button>
+                    </>
                   )
                 }
                 if (ext === 'pdf' || ext === 'txt') {
                   return (
-                    <iframe
-                      src={url}
-                      title="Attachment preview"
-                      className="w-[88vw] max-w-3xl h-[85vh]"
-                    />
+                    <>
+                      <iframe
+                        src={url}
+                        title="Attachment preview"
+                        className="w-[88vw] max-w-3xl h-[70vh] mb-4"
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={() => window.open(url, '_blank', 'noopener')}
+                        className="mt-2"
+                      >
+                        Open in new tab
+                      </Button>
+                    </>
                   )
                 }
                 return (
