@@ -195,7 +195,7 @@ export default function HabitsPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm focus:border-[var(--primary)] transition-colors"
+              className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="">All Categories</option>
               {habitCategories.map((category) => (
@@ -228,7 +228,7 @@ export default function HabitsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm focus:border-[var(--primary)] transition-colors"
+              className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
             >
               <option value="recent">Most Recent</option>
               <option value="streak">Highest Streak</option>
