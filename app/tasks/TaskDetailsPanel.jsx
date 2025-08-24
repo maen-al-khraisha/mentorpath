@@ -172,57 +172,90 @@ export default function TaskDetailsPanel({
                 <MoreVertical size={16} />
               </Button>
               {showActions && (
-                <div className="absolute right-0 top-8 z-10 w-52 bg-white border border-gray-200 rounded-md shadow-lg py-1">
-                  <Button
-                    variant="ghost"
-                    className="w-full px-3 py-2 flex gap-1 justify-start text-sm"
-                    onClick={() => {
-                      setShowActions(false)
-                      onShowChangeDate?.()
-                    }}
-                  >
-                    <Calendar size={14} /> <span>Change date</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full px-3 py-2 flex gap-1 justify-start text-sm"
-                    onClick={() => {
-                      setShowActions(false)
-                      const now = new Date()
-                      const pad = (n) => String(n).padStart(2, '0')
-                      const toDate = (d) =>
-                        `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-                      const toTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
-                      onShowAddTime?.()
-                    }}
-                  >
-                    <ClockIcon size={14} /> <span>Add time</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full px-3 py-2 flex gap-1 justify-start text-sm"
-                    onClick={() => {
-                      setShowActions(false)
-                      onShowCopyModal?.()
-                    }}
-                  >
-                    <CopyIcon size={14} /> <span>Copy task</span>
-                  </Button>
-                  <Button
-                    variant="danger"
-                    className="w-full px-3 py-2 flex gap-1 justify-start text-sm"
-                    onClick={async () => {
-                      setShowActions(false)
-                      if (!confirm('Delete this task? This cannot be undone.')) return
-                      try {
-                        await deleteTask(task.id)
-                      } catch (e) {
-                        console.error('Delete failed', e)
-                      }
-                    }}
-                  >
-                    <Trash2 size={14} /> <span>Delete task</span>
-                  </Button>
+                <div className="absolute right-0 top-8 z-10 w-56 bg-white border border-slate-200 rounded-xl shadow-soft overflow-hidden">
+                  {/* Header */}
+                  <div className="px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
+                    <h4 className="text-sm font-semibold text-slate-700">Task Actions</h4>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-2">
+                    <button
+                      onClick={() => {
+                        setShowActions(false)
+                        onShowChangeDate?.()
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors duration-200 group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-200">
+                        <Calendar size={16} className="text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-slate-900">Change date</div>
+                        <div className="text-xs text-slate-500">Reschedule this task</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowActions(false)
+                        const now = new Date()
+                        const pad = (n) => String(n).padStart(2, '0')
+                        const toDate = (d) =>
+                          `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+                        const toTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
+                        onShowAddTime?.()
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors duration-200 group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors duration-200">
+                        <ClockIcon size={16} className="text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-slate-900">Add time</div>
+                        <div className="text-xs text-slate-500">Log manual work time</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowActions(false)
+                        onShowCopyModal?.()
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors duration-200 group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition-colors duration-200">
+                        <CopyIcon size={16} className="text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-slate-900">Copy task</div>
+                        <div className="text-xs text-slate-500">Duplicate with new settings</div>
+                      </div>
+                    </button>
+
+                    <div className="border-t border-slate-200 my-2"></div>
+
+                    <button
+                      onClick={async () => {
+                        setShowActions(false)
+                        if (!confirm('Delete this task? This cannot be undone.')) return
+                        try {
+                          await deleteTask(task.id)
+                        } catch (e) {
+                          console.error('Delete failed', e)
+                        }
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-red-50 transition-colors duration-200 group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors duration-200">
+                        <Trash2 size={16} className="text-red-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-slate-900">Delete task</div>
+                        <div className="text-xs text-red-500">Remove permanently</div>
+                      </div>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
