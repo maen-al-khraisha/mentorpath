@@ -25,6 +25,7 @@ export default function Button({
     sm: 'px-4 py-2 text-sm',
     lg: 'px-8 py-4 text-lg',
     xl: 'px-10 py-5 text-xl',
+    icon: 'p-0',
   }
 
   const sizeClasses = sizes[size] || sizes.default

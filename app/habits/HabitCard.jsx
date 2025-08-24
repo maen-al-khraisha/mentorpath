@@ -198,9 +198,9 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
                       size="icon"
                       onClick={() => handleToggleDay(day.dateKey)}
                       disabled={!day.isPast || isUpdating}
-                      className={`w-6 h-6 rounded-full border-2 ${
+                      className={`w-8 h-8 rounded-full border-2 ${
                         day.isCompleted
-                          ? 'bg-green-500 border-green-600 text-white'
+                          ? '  text-white'
                           : day.isPast
                             ? 'bg-white border-red-500 text-red-500 hover:border-red-600 hover:bg-red-50'
                             : 'border-gray-300 bg-white text-gray-400'
@@ -220,7 +220,7 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
                       }
                     >
                       {day.isCompleted ? (
-                        <Check size={12} />
+                        <Check size={14} />
                       ) : day.isPast ? (
                         <span className="text-xs font-bold text-red-500">+</span>
                       ) : (

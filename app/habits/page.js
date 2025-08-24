@@ -208,7 +208,7 @@ export default function HabitsPage() {
 
           {/* Search */}
           <div className="flex-1">
-            <div className="relative">
+            <div className="relative ">
               <Search
                 size={16}
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -218,7 +218,7 @@ export default function HabitsPage() {
                 placeholder="Search habits..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] pl-10 pr-3 text-sm focus:border-[var(--primary)] transition-colors"
+                className="w-full h-12 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] pl-10 pr-3 text-sm focus:border-[var(--primary)] transition-colors"
               />
             </div>
           </div>
