@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { updateTask, addAttachment, deleteTask } from '@/lib/tasksApi'
+import { updateTask, addAttachment, deleteTask, removeAttachment } from '@/lib/tasksApi'
 import Button from '@/components/Button'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
 
@@ -541,7 +541,7 @@ export default function TaskDetailsPanel({
                 htmlFor={isUploading || reachedAttachmentLimit ? undefined : attachmentInputId}
                 className={`inline-flex items-center rounded-md font-medium 
               transition-colors whitespace-nowrap 
-              border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2
+              border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-1
                    ${
                      isUploading || reachedAttachmentLimit
                        ? 'opacity-70 cursor-not-allowed'
@@ -555,10 +555,7 @@ export default function TaskDetailsPanel({
                     Uploading...
                   </>
                 ) : (
-                  <>
-                    <Paperclip size={14} />
-                    {reachedAttachmentLimit ? 'Max 3 attachments' : 'Attach file'}
-                  </>
+                  <>{reachedAttachmentLimit ? 'Max 3 attachments' : 'Attach file'}</>
                 )}
               </label>
               {pendingAttachmentName && (
@@ -586,6 +583,22 @@ export default function TaskDetailsPanel({
                       aria-label={`View ${attachment.name}`}
                     >
                       <Eye size={16} />
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await removeAttachment(task.id, attachment)
+                          setLocalAttachments((prev) => prev.filter((_, i) => i !== index))
+                        } catch (error) {
+                          console.error('Failed to remove attachment:', error)
+                          // You could add a toast notification here
+                        }
+                      }}
+                      className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-[var(--muted1)] text-red-600"
+                      title="Remove"
+                      aria-label={`Remove ${attachment.name}`}
+                    >
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 ))

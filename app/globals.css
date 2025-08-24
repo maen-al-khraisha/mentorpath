@@ -168,13 +168,7 @@ html[data-theme='dark'] .sketch-card::before {
 .sketch-pink {
   --sketch-bg: #f6d9dc;
 }
-.sketch-title {
-  font-weight: 600;
-}
-.sketch-count {
-  font-size: 1.4rem;
-  font-weight: 600;
-}
+
 
 /* Light black color for text and icons */
 .sketch-card .text-light-black {

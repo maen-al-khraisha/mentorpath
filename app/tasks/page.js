@@ -273,33 +273,37 @@ export default function TasksPage() {
       <div className="lg:col-span-4 space-y-2 mb-2">
         <div className="grid grid-cols-3  sm:grid-cols-3 gap-10">
           <div
-            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
-            cursor-pointer
-             hover:bg-white/80 hover:border-gray-300
+            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl py-2 px-2 
+            shadow-md      cursor-pointer       hover:bg-white/80 hover:border-gray-300
              transition-all duration-200 transform hover:shadow-xl"
           >
-            <div className="flex items-start justify-between relative">
-              <div className="sketch-title text-[26px]">Task Completed</div>
+            <div className="flex flex-col items-center justify-center h-full relative min-h-[90px]">
+              <div className="text-[22px] ">Task Completed</div>
+              <div className="mt-2 text-[24px] text-green-600 font-semibold text-center">
+                {completed.length.toString().padStart(1, '0')} /
+                <span className="text-green-600 font-bold ms-2">
+                  {tasks.length.toString().padStart(1, '0')}
+                </span>
+              </div>
               <div className="flex items-center absolute top-0 right-0">
                 <Image src="/icons/done-badge.png" alt="Done" width={40} height={40} />
               </div>
             </div>
-            <div className="sketch-count mt-2 ">
-              {completed.length.toString().padStart(1, '0')} /
-              {tasks.length.toString().padStart(1, '0')}
-            </div>
           </div>
           <div
-            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
-            cursor-pointer
-             hover:bg-white/80 hover:border-gray-300
+            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl py-2 px-2 
+            shadow-md cursor-pointer  hover:bg-white/80 hover:border-gray-300
              transition-all duration-200 transform hover:shadow-xl"
           >
-            <div className="flex items-start justify-between">
-              <div className="sketch-title text-[26px]">Focus Time Today</div>
-              <Image src="/icons/focus.png" alt="Done" width={40} height={40} />
+            <div className="flex flex-col items-center justify-center h-full relative min-h-[90px]">
+              <div className="text-[22px]">Focus Time Today</div>
+              <div className="mt-2 text-[24px] text-green-600 font-semibold">
+                {formatTotalTime(getTotalFocusTime())}
+              </div>
+              <div className="flex items-center absolute top-0 right-0">
+                <Image src="/icons/focus.png" alt="Done" width={40} height={40} />
+              </div>
             </div>
-            <div className="sketch-count mt-2">{formatTotalTime(getTotalFocusTime())}</div>
           </div>
           <div className="flex justify-end">
             <Button variant="primary" href="/insights">
@@ -391,7 +395,7 @@ export default function TasksPage() {
                     {t.title}
                   </button>
                   <span
-                    className={`text-xs font-mono  ${selectedId === t.id ? 'text-white' : 'text-green-700'}  min-w-[60px] text-right`}
+                    className={`text-sm font-mono  ${selectedId === t.id ? 'text-white' : 'text-green-700'}  min-w-[60px] text-right`}
                   >
                     {formatTotalTime(getTaskTotalTime(t.id))}
                   </span>
@@ -402,7 +406,7 @@ export default function TasksPage() {
                       onClick={() => handleStopTimer(t.id)}
                     >
                       <Pause size={14} />
-                      <span className="text-xs font-mono">
+                      <span className="text-sm font-mono">
                         {formatElapsedTime(activeTimer.startTime)}
                       </span>
                     </button>
