@@ -281,7 +281,7 @@ export default function TaskDetailsPanel({
                   </svg>
                 )}
               </div>
-              {task.completed ? 'Completed' : 'Mark Done'}
+              <span className="ml-2">{task.completed ? 'Completed' : 'Mark Done'}</span>
             </Button>
           </div>
 
@@ -308,7 +308,7 @@ export default function TaskDetailsPanel({
             {isTimerActive ? (
               <Button variant="danger" size="sm" onClick={() => onStopTimer?.(task.id)}>
                 <Pause size={14} />
-                Stop Timer
+                <span className="ml-2">Stop Timer</span>
               </Button>
             ) : task.completed ? (
               <Button
@@ -318,17 +318,17 @@ export default function TaskDetailsPanel({
                 className="opacity-60 cursor-not-allowed"
               >
                 <Play size={14} />
-                <span>Start Timer</span>
+                <span className="ml-2">Start Timer</span>
               </Button>
             ) : (
               <Button variant="primary" onClick={() => onStartTimer?.(task.id)}>
                 <Play size={14} />
-                <span>Start Timer</span>
+                <span className="ml-2">Start Timer</span>
               </Button>
             )}
             <Button variant="secondary" onClick={() => onShowShiftModal?.()}>
               <ArrowRight size={14} />
-              <span>Shift to Tomorrow</span>
+              <span className="ml-2">Shift to Tomorrow</span>
             </Button>
           </div>
         </div>
