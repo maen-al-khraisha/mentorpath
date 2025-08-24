@@ -4,14 +4,26 @@ import { useState, useEffect } from 'react'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
 
 const toastTypes = {
-  success: { icon: CheckCircle, className: 'bg-green-500 text-white' },
-  error: { icon: AlertCircle, className: 'bg-red-500 text-white' },
-  info: { icon: Info, className: 'bg-blue-500 text-white' },
+  success: {
+    icon: CheckCircle,
+    className: 'bg-emerald-500 text-white border-emerald-600',
+    iconClassName: 'text-emerald-100',
+  },
+  error: {
+    icon: AlertCircle,
+    className: 'bg-red-500 text-white border-red-600',
+    iconClassName: 'text-red-100',
+  },
+  info: {
+    icon: Info,
+    className: 'bg-indigo-500 text-white border-indigo-600',
+    iconClassName: 'text-indigo-100',
+  },
 }
 
 export function Toast({ message, type = 'info', duration = 4000, onClose }) {
   const [isVisible, setIsVisible] = useState(true)
-  const { icon: Icon, className } = toastTypes[type]
+  const { icon: Icon, className, iconClassName } = toastTypes[type]
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,16 +38,18 @@ export function Toast({ message, type = 'info', duration = 4000, onClose }) {
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 flex items-center gap-3 p-4 rounded-lg shadow-lg transition-all duration-300 ${className}`}
+      className={`fixed top-4 right-4 z-50 flex items-center gap-3 p-4 rounded-2xl shadow-elevated border transition-all duration-300 transform ${
+        isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+      } ${className}`}
     >
-      <Icon size={20} />
+      <Icon size={20} className={iconClassName} />
       <span className="font-medium">{message}</span>
       <button
         onClick={() => {
           setIsVisible(false)
           setTimeout(() => onClose(), 300)
         }}
-        className="ml-2 hover:opacity-80 transition-opacity"
+        className="ml-2 hover:opacity-80 transition-opacity p-1 rounded-lg hover:bg-white/20"
       >
         <X size={18} />
       </button>
@@ -56,7 +70,7 @@ export function useToast() {
   }
 
   const ToastContainer = () => (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed top-4 right-4 z-50 space-y-3">
       {toasts.map((toast) => (
         <Toast
           key={toast.id}

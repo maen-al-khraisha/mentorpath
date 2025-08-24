@@ -10,7 +10,16 @@ import { getNotes, getAllLabels } from '@/lib/notesApi'
 import { useToast } from '@/components/Toast'
 import { useRouter } from 'next/navigation'
 
-import { SquareCheck, FileText, Calendar } from 'lucide-react'
+import {
+  SquareCheck,
+  FileText,
+  Calendar,
+  Target,
+  Clock,
+  Plus,
+  CheckCircle,
+  Clock as ClockIcon,
+} from 'lucide-react'
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
@@ -155,7 +164,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading dashboard...</div>
+        <div className="text-slate-500 text-lg">Loading dashboard...</div>
       </div>
     )
   }
@@ -163,7 +172,7 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Please log in to view dashboard</div>
+        <div className="text-slate-500 text-lg">Please log in to view dashboard</div>
       </div>
     )
   }
@@ -196,176 +205,253 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <div>
+          <h1 className="text-3xl font-semibold text-slate-900 mb-2 font-display">Dashboard</h1>
+          <p className="text-slate-600 font-body">
+            Welcome back! Here's your productivity overview.
+          </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Tasks Stats */}
+          <div className="bg-white rounded-lg p-4 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <SquareCheck className="w-4 h-4 text-indigo-600" />
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-slate-900 font-display">
+                  {stats.todayTasks}
+                </div>
+                <div className="text-sm text-slate-500 font-body">Today's Tasks</div>
+              </div>
+            </div>
+            <div className="text-sm text-slate-600 font-body">{stats.completedTasks} completed</div>
+          </div>
+
+          {/* Focus Time */}
+          <div className="bg-white rounded-lg p-4 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <Clock className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-slate-900 font-display">
+                  {formatFocusTime(stats.focusTime)}
+                </div>
+                <div className="text-sm text-slate-500 font-body">Focus Time</div>
+              </div>
+            </div>
+            <div className="text-sm text-slate-600 font-body">Today</div>
+          </div>
+
+          {/* Habits */}
+          <div className="bg-white rounded-lg p-4 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Target className="w-4 h-4 text-purple-600" />
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-slate-900 font-display">
+                  {stats.totalHabits}
+                </div>
+                <div className="text-sm text-slate-500 font-body">Active Habits</div>
+              </div>
+            </div>
+            <div className="text-sm text-slate-600 font-body">Total</div>
+          </div>
+
+          {/* Notes */}
+          <div className="bg-white rounded-lg p-4 border border-slate-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <FileText className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-slate-900 font-display">
+                  {stats.totalNotes}
+                </div>
+                <div className="text-sm text-slate-500 font-body">Total Notes</div>
+              </div>
+            </div>
+            <div className="text-sm text-slate-600 font-body">Ideas captured</div>
+          </div>
+        </div>
+
+        {/* Main Content Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Tasks Box */}
           <div
-            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
-            cursor-pointer
-             hover:bg-white/80 hover:border-gray-300
-             transition-all duration-200 transform hover:shadow-xl"
+            className="bg-white rounded-lg p-5 border border-slate-200 cursor-pointer hover:border-slate-300 transition-colors"
             onClick={() => router.push('/tasks')}
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-blue-700">Tasks</h3>
-              <SquareCheck size={24} className="text-blue-600" />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 font-display">Tasks</h3>
+              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <Plus className="w-4 h-4 text-indigo-600" />
+              </div>
             </div>
-            <div className="text-sm text-blue-600 mb-3">{stats.completedTasks} completed today</div>
 
             {/* Recent Tasks */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-blue-700 mb-2">Recent Tasks</h4>
+              <h4 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2 font-display">
+                <SquareCheck className="w-4 h-4 text-indigo-500" />
+                Recent Tasks
+              </h4>
               {dashboardData.tasks.slice(0, 3).map((task) => (
-                <div key={task.id} className="bg-white/50 rounded p-2 border border-blue-100">
-                  <div className="text-sm font-medium text-blue-800 truncate">{task.title}</div>
-                  <div className="text-xs text-blue-600">
-                    {task.completed ? '✅ Completed' : '⏳ Pending'}
+                <div key={task.id} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-slate-800 truncate flex-1 font-body">
+                      {task.title}
+                    </div>
+                    {task.completed ? (
+                      <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    ) : (
+                      <ClockIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    )}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1 font-body">
+                    {task.completed ? 'Completed' : 'Pending'}
                   </div>
                 </div>
               ))}
               {dashboardData.tasks.length === 0 && (
-                <div className="text-xs text-blue-500 italic">No tasks yet</div>
+                <div className="text-sm text-slate-400 italic text-center py-4 font-body">
+                  No tasks yet
+                </div>
               )}
             </div>
           </div>
 
           {/* Notes Box */}
           <div
-            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
-            cursor-pointer
-             hover:bg-white/80 hover:border-gray-300
-             transition-all duration-200 transform hover:shadow-xl"
+            className="bg-white rounded-lg p-5 border border-slate-200 cursor-pointer hover:border-slate-300 transition-colors"
             onClick={() => router.push('/notes')}
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-yellow-700">Notes</h3>
-              <FileText size={24} className="text-yellow-600" />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 font-display">Notes</h3>
+              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Plus className="w-4 h-4 text-amber-600" />
+              </div>
             </div>
-            <div className="text-sm text-yellow-600 mb-3">Total notes</div>
 
             {/* Recent Notes */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-yellow-700 mb-2">Recent Notes</h4>
+              <h4 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2 font-display">
+                <FileText className="w-4 h-4 text-amber-500" />
+                Recent Notes
+              </h4>
               {dashboardData.notes.slice(0, 3).map((note) => (
-                <div key={note.id} className="bg-white/50 rounded p-2 border border-yellow-100">
-                  <div className="text-sm font-medium text-yellow-800 truncate">{note.title}</div>
-                  <div className="text-xs text-yellow-600 truncate">
+                <div key={note.id} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                  <div className="text-sm font-medium text-slate-800 truncate mb-1 font-body">
+                    {note.title}
+                  </div>
+                  <div className="text-xs text-slate-600 truncate font-body">
                     {note.description || 'No description'}
                   </div>
                 </div>
               ))}
               {dashboardData.notes.length === 0 && (
-                <div className="text-xs text-yellow-500 italic">No notes yet</div>
+                <div className="text-sm text-slate-400 italic text-center py-4 font-body">
+                  No notes yet
+                </div>
               )}
             </div>
           </div>
 
           {/* Calendar Box */}
           <div
-            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl p-6 shadow-md 
-            cursor-pointer
-             hover:bg-white/80 hover:border-gray-300
-             transition-all duration-200 transform hover:shadow-xl"
+            className="bg-white rounded-lg p-5 border border-slate-200 cursor-pointer hover:border-slate-300 transition-colors"
             onClick={() => router.push('/calendar')}
           >
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-green-700">Calendar</h3>
-              <Calendar size={24} className="text-green-600" />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 font-display">Calendar</h3>
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <Plus className="w-4 h-4 text-emerald-600" />
+              </div>
             </div>
-            <div className="text-sm text-green-600 mb-3">Total events</div>
 
-            {/* Recent Events */}
+            {/* Upcoming Events */}
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-green-700 mb-2">Upcoming Events</h4>
+              <h4 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2 font-display">
+                <Calendar className="w-4 h-4 text-emerald-500" />
+                Upcoming Events
+              </h4>
               {dashboardData.events.slice(0, 3).map((event) => (
-                <div key={event.id} className="bg-white/50 rounded p-2 border border-green-100">
-                  <div className="text-sm font-medium text-green-800 truncate">{event.name}</div>
-                  <div className="text-xs text-green-600">
+                <div key={event.id} className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                  <div className="text-sm font-medium text-slate-800 truncate mb-1 font-body">
+                    {event.name}
+                  </div>
+                  <div className="text-xs text-slate-600 font-body">
                     {event.date} at {event.time}
                   </div>
                 </div>
               ))}
               {dashboardData.events.length === 0 && (
-                <div className="text-xs text-green-500 italic">No events scheduled</div>
+                <div className="text-sm text-slate-400 italic text-center py-4 font-body">
+                  No events scheduled
+                </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Additional Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-card border border-border rounded-lg p-4 shadow-soft">
-            <div className="text-sm text-neutral-700 mb-1">Focus Time Today</div>
-            <div className="text-2xl font-semibold text-blue-600">
-              {formatFocusTime(stats.focusTime)}
-            </div>
-            <div className="text-xs text-neutral-500 mt-1">
-              {stats.focusTime > 0 ? 'Great progress!' : 'Start your first task'}
-            </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-4 shadow-soft">
-            <div className="text-sm text-neutral-700 mb-1">Habits</div>
-            <div className="text-2xl font-semibold text-purple-600">{stats.totalHabits}</div>
-            <div className="text-xs text-neutral-500 mt-1">
-              {stats.totalHabits > 0 ? 'Active habits' : 'No habits yet'}
-            </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-4 shadow-soft">
-            <div className="text-sm text-neutral-700 mb-1">Task Completion</div>
-            <div className="text-2xl font-semibold text-purple-600">
-              {stats.todayTasks > 0
-                ? Math.round((stats.completedTasks / stats.todayTasks) * 100)
-                : 0}
-              %
-            </div>
-            <div className="text-xs text-neutral-500 mt-1">
-              {stats.todayTasks > 0 ? "Today's progress" : 'No tasks today'}
-            </div>
-          </div>
-        </div>
-
         {/* Quick Actions */}
-        {/* <div className="bg-card border border-border rounded-lg p-6 shadow-soft">
-          <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg p-6 border border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 font-display">Quick Actions</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <button
-              className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border-2 border-blue-200 hover:border-blue-300 transition-all duration-200 transform hover:scale-105 cursor-pointer"
+              className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
               onClick={() => handleQuickAction('task')}
             >
-              <div className="text-sm font-medium text-blue-700">Add Task</div>
-              <div className="text-xs text-blue-600 mt-1">Create new task</div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Plus className="w-4 h-4 text-indigo-600" />
+                </div>
+                <div className="text-sm font-medium text-slate-700 font-body">Add Task</div>
+              </div>
             </button>
+
             <button
-              className="p-4 bg-green-50 hover:bg-green-100 rounded-lg border-2 border-green-200 hover:border-green-300 transition-all duration-200 transform hover:scale-105 cursor-pointer"
+              className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
               onClick={() => handleQuickAction('event')}
             >
-              <div className="text-sm font-medium text-green-700">Add Event</div>
-              <div className="text-xs text-green-600 mt-1">Schedule event</div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Calendar className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div className="text-sm font-medium text-slate-700 font-body">Add Event</div>
+              </div>
             </button>
+
             <button
-              className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg border-2 border-purple-200 hover:border-purple-300 transition-all duration-200 transform hover:scale-105 cursor-pointer"
+              className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
               onClick={() => handleQuickAction('habit')}
             >
-              <div className="text-sm font-medium text-purple-700">Add Habit</div>
-              <div className="text-xs text-purple-600 mt-1">Track daily habit</div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Target className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="text-sm font-medium text-slate-700 font-body">Add Habit</div>
+              </div>
             </button>
+
             <button
-              className="p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg border-2 border-yellow-200 hover:border-yellow-300 transition-all duration-200 transform hover:scale-105 cursor-pointer"
+              className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
               onClick={() => handleQuickAction('note')}
             >
-              <div className="text-sm font-medium text-yellow-700">Add Note</div>
-              <div className="text-xs text-yellow-600 mt-1">Quick note</div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <FileText className="w-4 h-4 text-amber-600" />
+                </div>
+                <div className="text-sm font-medium text-slate-700 font-body">Add Note</div>
+              </div>
             </button>
           </div>
-        </div> */}
+        </div>
       </div>
 
       <ToastContainer />

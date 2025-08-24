@@ -16,7 +16,7 @@ export default function MobileBottomNav() {
   const pathname = usePathname()
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--neutral-900)] text-white border-t border-white/10 h-14 z-40"
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg text-slate-900 border-t border-slate-200 h-16 z-40 shadow-elevated"
       role="navigation"
       aria-label="Bottom Navigation"
     >
@@ -28,12 +28,18 @@ export default function MobileBottomNav() {
             <li key={item.href} className="flex items-stretch justify-center">
               <Link
                 href={item.href}
-                className={`flex flex-col items-center justify-center gap-1 text-[11px] w-full ${
-                  active ? 'text-white' : 'text-white/70'
+                className={`flex flex-col items-center justify-center gap-1 text-xs w-full transition-all duration-200 ${
+                  active ? 'text-indigo-600' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Icon size={18} />
-                <span className="leading-none">{item.label}</span>
+                <div
+                  className={`p-2 rounded-xl transition-all duration-200 ${
+                    active ? 'bg-indigo-100' : 'hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon size={20} />
+                </div>
+                <span className="leading-none font-medium">{item.label}</span>
               </Link>
             </li>
           )

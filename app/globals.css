@@ -1,3 +1,7 @@
+/* Import modern fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,16 +18,66 @@
   box-shadow: var(--soft-shadow);
 }
 
+.shadow-elevated {
+  box-shadow: var(--elevated-shadow);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+}
+
+.gradient-subtle {
+  background: linear-gradient(135deg, var(--muted1) 0%, var(--muted2) 100%);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Typography utilities */
+.font-display {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.font-body {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.font-mono {
+  font-family:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo,
+    monospace;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
+
+/* Enhanced text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 :root {
-  /* Theme tokens per Phase 1 */
-  --color-primary: #c0db11;
-  --color-accent: #11d72d;
-  --color-danger: #ce4233;
-  --neutral-900: #0b0b0c;
-  --neutral-700: #636257;
-  --bg-page: #f5f6ea;
-  --bg-card: #ffffffb3;
-  --border: #e6e8d8;
+  /* Modern theme tokens for Gen-Z/millennial productivity enthusiasts */
+  --color-primary: #6366f1; /* Indigo - modern, trustworthy */
+  --color-accent: #10b981; /* Emerald - growth, success */
+  --color-danger: #ef4444; /* Red - clear, modern */
+  --color-warning: #f59e0b; /* Amber - attention, energy */
+  --neutral-900: #111827; /* Slate - deep, readable */
+  --neutral-700: #6b7280; /* Gray - balanced, accessible */
+  --neutral-500: #9ca3af; /* Light gray - subtle text */
+  --bg-page: #fafafa; /* Off-white - clean, minimal */
+  --bg-card: #ffffff; /* Pure white - crisp, modern */
+  --border: #e5e7eb; /* Light gray - subtle borders */
+  --border-hover: #d1d5db; /* Slightly darker on hover */
 
   /* Back-compat tokens used by Tailwind theme extension */
   --primary: var(--color-primary);
@@ -32,24 +86,27 @@
   --page: var(--bg-page);
   --card: var(--bg-card);
 
-  --muted1: #e9eedb;
-  --muted2: #d0d3b9;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --soft-shadow: 0 6px 18px rgba(12, 15, 20, 0.06);
+  --muted1: #f3f4f6; /* Very light gray - subtle backgrounds */
+  --muted2: #e5e7eb; /* Light gray - secondary backgrounds */
+  --radius-md: 12px; /* Increased for modern feel */
+  --radius-lg: 16px; /* Larger radius for cards */
+  --soft-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --elevated-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Dark theme variables */
 html[data-theme='dark'] {
-  --bg-page: #1a1d21;
-  --bg-card: #979ca6;
-  --border: #404550;
-  --neutral-900: #f8fafc;
-  --neutral-700: #cbd5e1;
-  --muted1: #374151;
-  --muted2: #4b5563;
-  --box-color: #979ca6;
-  --soft-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  --bg-page: #0f172a; /* Slate 900 - deep, modern dark */
+  --bg-card: #1e293b; /* Slate 800 - elevated dark cards */
+  --border: #334155; /* Slate 600 - subtle dark borders */
+  --border-hover: #475569; /* Slate 500 - hover state */
+  --neutral-900: #f8fafc; /* Slate 50 - light text on dark */
+  --neutral-700: #cbd5e1; /* Slate 300 - secondary text */
+  --neutral-500: #94a3b8; /* Slate 400 - subtle text */
+  --muted1: #1e293b; /* Slate 800 - dark backgrounds */
+  --muted2: #334155; /* Slate 600 - secondary backgrounds */
+  --soft-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --elevated-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 html {
@@ -59,7 +116,9 @@ html {
 body {
   background: var(--page);
   color: var(--neutral-900);
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
@@ -168,7 +227,6 @@ html[data-theme='dark'] .sketch-card::before {
 .sketch-pink {
   --sketch-bg: #f6d9dc;
 }
-
 
 /* Light black color for text and icons */
 .sketch-card .text-light-black {

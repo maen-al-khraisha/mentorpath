@@ -64,23 +64,22 @@ export default function Sidebar({
 
   const navContent = (
     <div
-      className={`flex flex-col h-full transition-all duration-300 bg-[var(--bg-card)] ${collapsed ? 'w-16' : 'w-64'}`}
+      className={`flex flex-col h-full transition-all duration-300 bg-white/90 backdrop-blur-lg border-r border-slate-200 ${collapsed ? 'w-16' : 'w-64'}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-center px-4 py-6 border-b border-green dark:border-gray-800/40">
+      <div className="flex items-center justify-center px-4 py-6 border-b border-slate-200">
         <Link href="/" aria-label="Go to dashboard" className="flex items-center gap-3">
           <div
-            className={`flex items-center justify-center rounded-lg ${
+            className={`flex items-center justify-center rounded-xl ${
               collapsed ? 'w-10 h-10' : 'w-12 h-12'
             } `}
             aria-hidden
           >
-            {/* <span className="font-bold text-sm">MP</span> */}
             <img src="/icons/logo3.png" alt="MentorPath" className="w-10 h-10" />
           </div>
           {!collapsed && (
             <div>
-              <span className="font-bold text-lg text-gray-600">MentorPath</span>
+              <span className="font-bold text-lg text-slate-900">MentorPath</span>
             </div>
           )}
         </Link>
@@ -90,17 +89,17 @@ export default function Sidebar({
       <div className="flex-1 overflow-y-auto py-4">
         {/* Top Navigation Group */}
         <div className="px-3 space-y-2">
-          <ul className="space-y-5">
+          <ul className="space-y-2">
             {navConfig.slice(0, 7).map((item) => {
               const isActive = pathname === item.href
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-3 w-full px-1 py-1 rounded-xl transition-all duration-300 ${
+                    className={`group flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-300 ${
                       isActive
-                        ? 'bg-green-500 text-white shadow-md'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/40'
+                        ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-elevated'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }`}
                     title={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
@@ -111,7 +110,7 @@ export default function Sidebar({
                       } rounded-lg ${
                         isActive
                           ? '' // No hover background for active items
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          : 'hover:bg-slate-200'
                       }`}
                     >
                       {renderIcon(item.icon)}
@@ -126,7 +125,7 @@ export default function Sidebar({
 
         {/* Bottom Navigation Group (Admin) */}
         <div className="px-3 space-y-2 mt-6">
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {navConfig.slice(7).map((item) => {
               if (item.showForAdmin && !item.showForAdminPlaceholder) {
                 return null
@@ -137,10 +136,10 @@ export default function Sidebar({
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-3 w-full px-3 py-2 rounded-xl transition-all duration-300 ${
+                    className={`group flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-300 ${
                       isActive
-                        ? 'bg-green-500 text-white shadow-md'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/40'
+                        ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-elevated'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }`}
                     title={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
@@ -151,7 +150,7 @@ export default function Sidebar({
                       } rounded-lg ${
                         isActive
                           ? '' // No hover background for active items
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          : 'hover:bg-slate-200'
                       }`}
                     >
                       {renderIcon(item.icon)}
@@ -166,10 +165,10 @@ export default function Sidebar({
       </div>
 
       {/* Donate Button */}
-      <div className="px-3 py-2 border-t border-white/20 dark:border-gray-800/40">
+      <div className="px-3 py-2 border-t border-slate-200">
         <button
           onClick={() => setShowDonationDialog(true)}
-          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600 transition-all duration-300 shadow-soft hover:shadow-elevated transform hover:scale-105"
           title={collapsed ? 'Donate' : 'Support Development'}
         >
           <Heart size={collapsed ? 18 : 16} className="animate-pulse" />
@@ -181,7 +180,7 @@ export default function Sidebar({
       <div className="px-3 py-2">
         <button
           onClick={handleShare}
-          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700 transition-all duration-300 shadow-soft hover:shadow-elevated transform hover:scale-105"
           title={collapsed ? 'Share' : 'Share this app'}
         >
           <Share2 size={collapsed ? 18 : 16} />
@@ -190,12 +189,12 @@ export default function Sidebar({
       </div>
 
       {/* Collapse Toggle */}
-      <div className="px-3 py-4 border-t border-white/20 dark:border-gray-800/40">
+      <div className="px-3 py-4 border-t border-slate-200">
         <button
           onClick={onToggleCollapse}
           aria-expanded={!collapsed}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="w-full flex items-center justify-center gap-2 p-2 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-800/40 transition-all duration-300 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+          className="w-full flex items-center justify-center gap-2 p-2 rounded-xl hover:bg-slate-100 transition-all duration-300 text-slate-600 hover:text-slate-900"
         >
           {collapsed ? (
             <ChevronsRight size={18} />
@@ -217,7 +216,7 @@ export default function Sidebar({
         aria-label="Main navigation"
         className={` 
           
-          hidden md:flex flex-col h-screen sticky top-0 z-40 bg-white/70 dark:bg-gray-900/30 backdrop-blur-lg  `}
+          hidden md:flex flex-col h-screen sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-r border-slate-200`}
       >
         {navContent}
       </aside>
@@ -239,26 +238,26 @@ export default function Sidebar({
 
         {/* Panel */}
         <div
-          className={`absolute left-0 top-0 bottom-0 w-64 transform bg-white/40 dark:bg-gray-900/30 backdrop-blur-lg border-r border border-white/20 dark:border-gray-800/40 transition-transform duration-300 ${
+          className={`absolute left-0 top-0 bottom-0 w-64 transform bg-white/95 backdrop-blur-lg border-r border-slate-200 transition-transform duration-300 ${
             mobileOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           {/* Mobile Header */}
-          <div className="flex items-center justify-between px-4 py-6 border-b border-white/20 dark:border-gray-800/40">
+          <div className="flex items-center justify-between px-4 py-6 border-b border-slate-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-accent text-accent-foreground flex items-center justify-center">
-                <span className="font-bold text-sm">MP</span>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 flex items-center justify-center">
+                <img src="/icons/logo3.png" alt="MentorPath" className="w-8 h-8" />
               </div>
               <div>
-                <span className="font-bold text-lg text-white">MentorPath</span>
+                <span className="font-bold text-lg text-slate-900">MentorPath</span>
               </div>
             </div>
             <button
-              className="p-2 rounded-lg hover:bg-gray-800/50 transition-all duration-300"
+              className="p-2 rounded-xl hover:bg-slate-100 transition-all duration-300"
               onClick={onCloseMobile}
               aria-label="Close sidebar"
             >
-              <X size={20} className="text-white" />
+              <X size={20} className="text-slate-600" />
             </button>
           </div>
 
@@ -266,8 +265,8 @@ export default function Sidebar({
           <div className="flex-1 overflow-y-auto py-4">
             {/* Top Navigation Group */}
             <div className="px-3 space-y-2">
-              <div className="text-xs font-medium text-gray-400 px-3 mb-2">Navigation</div>
-              <ul className="space-y-1">
+              <div className="text-xs font-medium text-slate-500 px-3 mb-2">Navigation</div>
+              <ul className="space-y-2">
                 {navConfig.slice(0, 7).map((item) => {
                   if (item.showForAdmin && !item.showForAdminPlaceholder) {
                     return null
@@ -279,10 +278,10 @@ export default function Sidebar({
                       <Link
                         href={item.href}
                         onClick={onCloseMobile}
-                        className={`group flex items-center gap-3 w-full px-3 py-2 rounded-xl transition-all duration-300 ${
+                        className={`group flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-300 ${
                           isActive
-                            ? 'bg-green-500 text-white shadow-md'
-                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/40'
+                            ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-elevated'
+                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                         }`}
                         aria-current={isActive ? 'page' : undefined}
                       >
@@ -292,7 +291,7 @@ export default function Sidebar({
                           } rounded-lg ${
                             isActive
                               ? '' // No hover background for active items
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                              : 'hover:bg-slate-200'
                           }`}
                         >
                           {React.createElement(item.icon, {
@@ -310,8 +309,8 @@ export default function Sidebar({
 
             {/* Bottom Navigation Group (Admin) */}
             <div className="px-3 space-y-2 mt-6">
-              <div className="text-xs font-medium text-gray-400 px-3 mb-2">Admin</div>
-              <ul className="space-y-1">
+              <div className="text-xs font-medium text-slate-500 px-3 mb-2">Admin</div>
+              <ul className="space-y-2">
                 {navConfig.slice(7).map((item) => {
                   if (item.showForAdmin && !item.showForAdminPlaceholder) {
                     return null
@@ -323,10 +322,10 @@ export default function Sidebar({
                       <Link
                         href={item.href}
                         onClick={onCloseMobile}
-                        className={`group flex items-center gap-3 w-full px-3 py-2 rounded-xl transition-all duration-300 ${
+                        className={`group flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-300 ${
                           isActive
-                            ? 'bg-green-500 text-white shadow-md'
-                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/40'
+                            ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-elevated'
+                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                         }`}
                         aria-current={isActive ? 'page' : undefined}
                       >
@@ -336,7 +335,7 @@ export default function Sidebar({
                           } rounded-lg ${
                             isActive
                               ? '' // No hover background for active items
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                              : 'hover:bg-slate-200'
                           }`}
                         >
                           {React.createElement(item.icon, {

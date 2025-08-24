@@ -19,7 +19,24 @@ import TaskAddModal from './TaskAddModal'
 import TaskDetailsPanel from './TaskDetailsPanel'
 import DescriptionEditModal from './DescriptionEditModal'
 
-import { ChevronLeft, ChevronRight, Plus, Play, Pause, Clock, ArrowRight, X } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Play,
+  Pause,
+  Clock,
+  ArrowRight,
+  X,
+  Calendar,
+  Target,
+  TrendingUp,
+  CheckCircle2,
+  Clock3,
+  Search,
+  ListTodo,
+  FileText,
+} from 'lucide-react'
 import Image from 'next/image'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
 import Button from '@/components/Button'
@@ -35,6 +52,8 @@ export default function TasksPage() {
   const [timerTick, setTimerTick] = useState(0)
   const [priorityFilter, setPriorityFilter] = useState('All')
   const [labelFilter, setLabelFilter] = useState('All')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState('list')
 
   // Modal states
   const [showShiftModal, setShowShiftModal] = useState(false)
@@ -177,7 +196,8 @@ export default function TasksPage() {
     return list.filter((t) => {
       const priorityOk = priorityFilter === 'All' || (t.priority || 'Medium') === priorityFilter
       const labelOk = labelFilter === 'All' || (t.labels || []).includes(labelFilter)
-      return priorityOk && labelOk
+      const searchOk = !searchQuery || t.title.toLowerCase().includes(searchQuery.toLowerCase())
+      return priorityOk && labelOk && searchOk
     })
   }
 
@@ -185,7 +205,7 @@ export default function TasksPage() {
   const completed = applyFilters(tasks.filter((t) => t.completed))
   const selectedTask = useMemo(() => tasks.find((t) => t.id === selectedId), [tasks, selectedId])
 
-  // Auto-select first task (prefer first To Do) when list loads
+  // Auto-select first task when list loads
   useEffect(() => {
     const visible = [...todo, ...completed]
     if (!visible.find((t) => t.id === selectedId)) {
@@ -194,7 +214,7 @@ export default function TasksPage() {
       if (first) setSelectedId(first.id)
       else setSelectedId(null)
     }
-  }, [tasks, priorityFilter, labelFilter])
+  }, [tasks, priorityFilter, labelFilter, searchQuery, todo, completed, selectedId])
 
   // Timer tick for live counter
   useEffect(() => {
@@ -243,12 +263,38 @@ export default function TasksPage() {
     return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':')
   }
 
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'High':
+        return 'bg-red-100 text-red-700 border-red-200'
+      case 'Medium':
+        return 'bg-amber-100 text-amber-700 border-amber-200'
+      case 'Low':
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200'
+      default:
+        return 'bg-slate-100 text-slate-700 border-slate-200'
+    }
+  }
+
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'High':
+        return '🔥'
+      case 'Medium':
+        return '⚡'
+      case 'Low':
+        return '🌱'
+      default:
+        return '📋'
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="text-lg font-semibold mb-2">Loading...</div>
-          <div className="text-sm text-[var(--neutral-700)]">
+          <div className="text-lg font-semibold mb-2 text-slate-900 font-display">Loading...</div>
+          <div className="text-sm text-slate-600 font-body">
             Authenticating and loading your tasks
           </div>
         </div>
@@ -260,100 +306,165 @@ export default function TasksPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="text-lg font-semibold mb-2">Authentication Required</div>
-          <div className="text-sm text-[var(--neutral-700)]">Please sign in to view your tasks</div>
+          <div className="text-lg font-semibold mb-2 text-slate-900 font-display">
+            Authentication Required
+          </div>
+          <div className="text-sm text-slate-600 font-body">Please sign in to view your tasks</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-4 lg:gap-4 auto-rows-max h-full">
-      {/* Full-width KPI header row */}
-      <div className="lg:col-span-4 space-y-2 mb-2">
-        <div className="grid grid-cols-3  sm:grid-cols-3 gap-10">
-          <div
-            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl py-2 px-2 
-            shadow-md      cursor-pointer       hover:bg-white/80 hover:border-gray-300
-             transition-all duration-200 transform hover:shadow-xl"
+    <div className="space-y-8">
+      {/* Enhanced Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-4xl font-bold text-slate-900 font-display bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              Task Management
+            </h1>
+            <p className="text-lg text-slate-600 font-body mt-2">
+              Organize, track, and complete your daily objectives with precision
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => setShowAdd(true)}
+            className="px-6 py-3 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            <div className="flex flex-col items-center justify-center h-full relative min-h-[90px]">
-              <div className="text-[22px] ">Task Completed</div>
-              <div className="mt-2 text-[24px] text-green-600 font-semibold text-center">
-                {completed.length.toString().padStart(1, '0')} /
-                <span className="text-green-600 font-bold ms-2">
-                  {tasks.length.toString().padStart(1, '0')}
-                </span>
+            <Plus size={20} className="mr-2" />
+            Create Task
+          </Button>
+        </div>
+
+        {/* Enhanced KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center">
+                <CheckCircle2 size={24} className="text-white" />
               </div>
-              <div className="flex items-center absolute top-0 right-0">
-                <Image src="/icons/done-badge.png" alt="Done" width={40} height={40} />
+              <div>
+                <div className="text-2xl font-bold text-slate-900 font-display">
+                  {completed.length}/{tasks.length}
+                </div>
+                <div className="text-sm text-slate-600 font-body">Tasks Completed</div>
+                <div className="text-xs text-emerald-600 font-medium">
+                  {tasks.length > 0 ? Math.round((completed.length / tasks.length) * 100) : 0}%
+                  success rate
+                </div>
               </div>
             </div>
           </div>
-          <div
-            className="bg-[var(--bg-card)] border border-gray-200 rounded-2xl py-2 px-2 
-            shadow-md cursor-pointer  hover:bg-white/80 hover:border-gray-300
-             transition-all duration-200 transform hover:shadow-xl"
-          >
-            <div className="flex flex-col items-center justify-center h-full relative min-h-[90px]">
-              <div className="text-[22px]">Focus Time Today</div>
-              <div className="mt-2 text-[24px] text-green-600 font-semibold">
-                {formatTotalTime(getTotalFocusTime())}
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center">
+                <Clock3 size={24} className="text-white" />
               </div>
-              <div className="flex items-center absolute top-0 right-0">
-                <Image src="/icons/focus.png" alt="Done" width={40} height={40} />
+              <div>
+                <div className="text-2xl font-bold text-slate-900 font-display">
+                  {formatTotalTime(getTotalFocusTime())}
+                </div>
+                <div className="text-sm text-slate-600 font-body">Focus Time Today</div>
+                <div className="text-xs text-blue-600 font-medium">Productivity tracking</div>
               </div>
             </div>
           </div>
-          <div className="flex justify-end">
-            <Button variant="primary" href="/insights">
-              <span>Insights</span>
-              <ArrowRight size={16} />
-            </Button>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center">
+                <Target size={24} className="text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-slate-900 font-display">{todo.length}</div>
+                <div className="text-sm text-slate-600 font-body">Active Tasks</div>
+                <div className="text-xs text-purple-600 font-medium">Ready to tackle</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center">
+                <TrendingUp size={24} className="text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-slate-900 font-display">
+                  {Math.round((completed.length / Math.max(tasks.length, 1)) * 100)}%
+                </div>
+                <div className="text-sm text-slate-600 font-body">Progress</div>
+                <div className="text-xs text-amber-600 font-medium">Daily achievement</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Left column (2fr) */}
-      <div className="space-y-3 lg:col-span-2 h-full overflow-hidden flex flex-col">
-        {/* Toolbar */}
-        <div className="flex  items-center gap-2 justify-between">
-          <div className="flex items-center justify-between gap-1 border px-1 py-1 rounded-lg bg-[var(--bg-card)] flex-1">
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                className="p-1"
-                onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
-                aria-label="Previous day"
-              >
-                <ChevronLeft size={16} />
-              </Button>
-              <div className="px-1 h-9 inline-flex items-center rounded-md  bg-[var(--bg-card)] text-lg">
-                {date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
-              </div>
-              <Button
-                variant="ghost"
-                className="p-1"
-                onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
-                aria-label="Next day"
-              >
-                <ChevronRight size={16} />
-              </Button>
+      {/* Enhanced Toolbar - Full Width */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+          {/* Date Navigation */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              className="p-3 rounded-xl hover:bg-slate-100 transition-colors"
+              onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
+              aria-label="Previous day"
+            >
+              <ChevronLeft size={20} />
+            </Button>
+            <div className="px-6 py-3 bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200">
+              <Calendar size={18} className="inline mr-2 text-blue-600" />
+              {date.toLocaleDateString(undefined, {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+              })}
             </div>
-            <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              className="p-3 rounded-xl hover:bg-slate-100 transition-colors"
+              onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
+              aria-label="Next day"
+            >
+              <ChevronRight size={20} />
+            </Button>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex-1 flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="text"
+                placeholder="Search tasks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
               <select
-                className="h-9 ml-2 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
                 aria-label="Filter by priority"
               >
                 <option value="All">All priorities</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
+                <option value="High">High priority</option>
+                <option value="Medium">Medium priority</option>
+                <option value="Low">Low priority</option>
               </select>
+
               <select
-                className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                 value={labelFilter}
                 onChange={(e) => setLabelFilter(e.target.value)}
                 aria-label="Filter by label"
@@ -365,115 +476,272 @@ export default function TasksPage() {
                   </option>
                 ))}
               </select>
+
+              <Button
+                variant="ghost"
+                className={`p-3 rounded-xl transition-all ${
+                  viewMode === 'kanban'
+                    ? 'bg-blue-100 text-blue-700 border-blue-200'
+                    : 'hover:bg-slate-100'
+                }`}
+                onClick={() => setViewMode(viewMode === 'list' ? 'kanban' : 'list')}
+                aria-label="Toggle view mode"
+              >
+                <ListTodo size={18} />
+              </Button>
             </div>
           </div>
         </div>
-
-        {/* Lists */}
-        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft  overflow-hidden flex flex-col">
-          <div className="font-semibold mb-2 flex-shrink-0 flex items-center justify-between pb-2 border-b-2">
-            <span>To Do</span>
-            <Button variant="primary" onClick={() => setShowAdd(true)}>
-              <Plus size={16} />
-              <span className="ml-1">Add task</span>
-            </Button>
-          </div>
-          <ul className="space-y-2 overflow-y-auto flex-1">
-            {todo.map((t) => (
-              <li
-                key={t.id}
-                className={`border border-gray-200 rounded-xl p-2 space-y-3 shadow-md  ${selectedId === t.id ? 'bg-green-500 text-white' : 'bg-[var(--bg-card)]'}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    checked={!!t.completed}
-                    onChange={(e) => toggleTaskCompleted(t.id, e.target.checked)}
-                    aria-label="Complete task"
-                    className={`border-white bg-transparent`}
-                  />
-                  <button className="flex-1 text-left" onClick={() => setSelectedId(t.id)}>
-                    {t.title}
-                  </button>
-                  <span
-                    className={`text-sm font-mono  ${selectedId === t.id ? 'text-white' : 'text-green-700'}  min-w-[60px] text-right`}
-                  >
-                    {formatTotalTime(getTaskTotalTime(t.id))}
-                  </span>
-                  {activeTimer && activeTimer.taskId === t.id ? (
-                    <button
-                      className="p-1.5 rounded-md border  border-green-500 bg-green-50 text-green-700 flex items-center gap-1"
-                      aria-label="Stop timer"
-                      onClick={() => handleStopTimer(t.id)}
-                    >
-                      <Pause size={14} />
-                      <span className="text-sm font-mono">
-                        {formatElapsedTime(activeTimer.startTime)}
-                      </span>
-                    </button>
-                  ) : (
-                    !t.completed && (
-                      <Button
-                        variant="primary"
-                        className="p-1"
-                        aria-label="Start timer"
-                        onClick={() => handleStartTimer(t.id)}
-                      >
-                        <Play size={14} />
-                      </Button>
-                    )
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3 shadow-soft overflow-hidden flex flex-col">
-          <div className="font-semibold mb-2 flex-shrink-0">Completed</div>
-          <ul className="space-y-2 overflow-y-auto flex-1">
-            {completed.map((t) => (
-              <li
-                key={t.id}
-                className={`rounded-md border border-[var(--border)] p-2 opacity-80 transition-colors ${selectedId === t.id ? 'bg-green-50' : 'bg-[var(--bg-card)]'}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    checked={!!t.completed}
-                    onChange={(e) => toggleTaskCompleted(t.id, e.target.checked)}
-                    aria-label="Completed"
-                  />
-                  <button
-                    className="flex-1 text-left line-through"
-                    onClick={() => setSelectedId(t.id)}
-                  >
-                    {t.title}
-                  </button>
-                  <span className="text-xs font-mono text-green-700 min-w-[60px] text-right">
-                    {formatTotalTime(getTaskTotalTime(t.id))}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
       </div>
 
-      {/* Mobile/md details modal */}
+      {/* Main Content */}
+      <div className="lg:grid lg:grid-cols-5 lg:gap-8">
+        {/* Left column - Task Lists */}
+        <div className="space-y-6 lg:col-span-3">
+          {/* To Do List */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Target size={18} className="text-blue-600" />
+                </div>
+                <h2 className="text-xl font-semibold text-slate-900 font-display">Active Tasks</h2>
+                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
+                  {todo.length}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {todo.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Target size={24} className="text-slate-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-900 font-display mb-2">
+                    No active tasks
+                  </h3>
+                  <p className="text-slate-600 font-body mb-4">
+                    Create your first task to get started!
+                  </p>
+                  <Button variant="primary" onClick={() => setShowAdd(true)}>
+                    <Plus size={16} className="mr-2" />
+                    Create Task
+                  </Button>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {todo.map((t) => (
+                    <li
+                      key={t.id}
+                      className={`group border border-slate-200 rounded-xl p-4 transition-all duration-200 cursor-pointer ${
+                        selectedId === t.id
+                          ? 'bg-blue-50 border-blue-300 shadow-md ring-2 ring-blue-100'
+                          : 'bg-white hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm'
+                      }`}
+                      onClick={() => setSelectedId(t.id)}
+                    >
+                      <div className="flex items-start gap-4">
+                        <Checkbox
+                          checked={!!t.completed}
+                          onChange={(e) => toggleTaskCompleted(t.id, e.target.checked)}
+                          aria-label="Complete task"
+                          className="mt-1 border-slate-300 bg-white"
+                        />
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-medium text-slate-900 font-body group-hover:text-blue-600 transition-colors">
+                              {t.title}
+                            </h3>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(t.priority)}`}
+                            >
+                              {getPriorityIcon(t.priority)} {t.priority}
+                            </span>
+                          </div>
+
+                          {t.labels && t.labels.length > 0 && (
+                            <div className="flex items-center gap-2 mb-3">
+                              {t.labels.slice(0, 3).map((label, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-medium rounded-full border border-slate-200"
+                                >
+                                  {label}
+                                </span>
+                              ))}
+                              {t.labels.length > 3 && (
+                                <span className="text-xs text-slate-500 font-body">
+                                  +{t.labels.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4 text-sm text-slate-600 font-body">
+                              <span className="flex items-center gap-1">
+                                <Clock size={14} />
+                                {formatTotalTime(getTaskTotalTime(t.id))}
+                              </span>
+                              {t.description && (
+                                <span className="flex items-center gap-1">
+                                  <FileText size={14} />
+                                  Has description
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {activeTimer && activeTimer.taskId === t.id ? (
+                                <button
+                                  className="px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-700 flex items-center gap-2 hover:bg-red-100 transition-colors"
+                                  aria-label="Stop timer"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleStopTimer(t.id)
+                                  }}
+                                >
+                                  <Pause size={14} />
+                                  <span className="text-sm font-mono font-body">
+                                    {formatElapsedTime(activeTimer.startTime)}
+                                  </span>
+                                </button>
+                              ) : (
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  aria-label="Start timer"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleStartTimer(t.id)
+                                  }}
+                                  className="shadow-sm hover:shadow-md transition-all"
+                                >
+                                  <Play size={14} />
+                                  <span className="ml-1">Start</span>
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* Completed List */}
+          {completed.length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-green-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle2 size={18} className="text-emerald-600" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-slate-900 font-display">Completed</h2>
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full">
+                    {completed.length}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <ul className="space-y-3">
+                  {completed.map((t) => (
+                    <li
+                      key={t.id}
+                      className={`group border border-slate-200 rounded-xl p-4 transition-colors cursor-pointer ${
+                        selectedId === t.id ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50'
+                      }`}
+                      onClick={() => setSelectedId(t.id)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <Checkbox
+                          checked={!!t.completed}
+                          onChange={(e) => toggleTaskCompleted(t.id, e.target.checked)}
+                          aria-label="Completed"
+                          className="border-emerald-300 bg-emerald-50"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-slate-600 font-body line-through group-hover:text-slate-800 transition-colors">
+                            {t.title}
+                          </h3>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-slate-500 font-body">
+                            <span className="flex items-center gap-1">
+                              <Clock size={14} />
+                              {formatTotalTime(getTaskTotalTime(t.id))}
+                            </span>
+                            <span className="text-emerald-600 font-medium">✓ Completed</span>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right column - Task Details */}
+        <div className="lg:col-span-2">
+          <div className="sticky top-20">
+            {selectedTask ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <TaskDetailsPanel
+                  task={selectedTask}
+                  onUpdate={updateTask}
+                  onStartTimer={handleStartTimer}
+                  onStopTimer={handleStopTimer}
+                  activeTimer={activeTimer}
+                  onShowShiftModal={() => setShowShiftModal(true)}
+                  onShowChangeDate={() => setShowChangeDate(true)}
+                  onShowAddTime={() => setShowAddTime(true)}
+                  onShowCopyModal={handleShowCopyModal}
+                  onPreviewAttachment={handlePreviewAttachment}
+                  onEditDescription={(taskId) => {
+                    setEditingTaskId(taskId)
+                    setShowDescriptionModal(true)
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target size={24} className="text-slate-400" />
+                </div>
+                <h3 className="text-lg font-medium text-slate-900 font-display mb-2">
+                  Select a Task
+                </h3>
+                <p className="text-slate-600 font-body">
+                  Choose a task from the list to view details and manage it
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Task Details Modal */}
       {selectedTask && (
         <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true">
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setSelectedId(null)}
           />
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg max-h-[90vh] bg-[var(--bg-card)] border border-[var(--border)] rounded-lg shadow-soft overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-              <h3 className="font-semibold">Task Details</h3>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg max-h-[90vh] bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200">
+              <h3 className="font-semibold text-slate-900 font-display">Task Details</h3>
               <button
-                className="px-2 py-1 rounded-md border border-[var(--border)]"
+                className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
                 onClick={() => setSelectedId(null)}
                 aria-label="Close"
               >
-                Close
+                <X size={20} />
               </button>
             </div>
             <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
@@ -498,28 +766,6 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* Desktop TaskDetailsPanel */}
-      <aside className="hidden lg:block lg:col-span-2">
-        <div className="sticky top-20 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft h-fit">
-          <TaskDetailsPanel
-            task={selectedTask}
-            onUpdate={updateTask}
-            onStartTimer={handleStartTimer}
-            onStopTimer={handleStopTimer}
-            activeTimer={activeTimer}
-            onShowShiftModal={() => setShowShiftModal(true)}
-            onShowChangeDate={() => setShowChangeDate(true)}
-            onShowAddTime={() => setShowAddTime(true)}
-            onShowCopyModal={handleShowCopyModal}
-            onPreviewAttachment={handlePreviewAttachment}
-            onEditDescription={(taskId) => {
-              setEditingTaskId(taskId)
-              setShowDescriptionModal(true)
-            }}
-          />
-        </div>
-      </aside>
-
       {/* Add Task Modal */}
       {showAdd && (
         <TaskAddModal
@@ -541,33 +787,33 @@ export default function TasksPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowShiftModal(false)}
           />
-          <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
-            <h3 className="font-semibold mb-3">Shift Task to Tomorrow</h3>
-            <div className="space-y-3">
+          <div className="relative bg-white border border-slate-200 rounded-lg p-6 shadow-soft w-full max-w-md">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 font-display">
+              Shift Task to Tomorrow
+            </h3>
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">
+                <label className="block text-sm text-slate-700 mb-2 font-body">
                   Reason (optional)
                 </label>
                 <textarea
                   value={shiftReason}
                   onChange={(e) => setShiftReason(e.target.value)}
                   placeholder="Why are you shifting this task?"
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--bg-card)] p-2 text-sm"
+                  className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   rows={3}
                 />
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowShiftModal(false)}
-                  className="inline-flex items-center rounded-lg font-medium transition-colors whitespace-nowrap border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2 "
+                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleShiftToTomorrow}
-                  className="inline-flex items-center rounded-lg font-medium 
-                  transition-colors whitespace-nowrap
-                   bg-green-600 text-white hover:bg-green-700 px-3 py-2 "
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-body"
                 >
                   Shift Task
                 </button>
@@ -584,32 +830,33 @@ export default function TasksPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowChangeDate(false)}
           />
-          <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
-            <h3 className="font-semibold mb-3">Change Date</h3>
-            <div className="space-y-3">
+          <div className="relative bg-white border border-slate-200 rounded-lg p-6 shadow-soft w-full max-w-md">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 font-display">Change Date</h3>
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">New date</label>
+                <label className="block text-sm text-slate-700 mb-2 font-body">New date</label>
                 <input
                   type="date"
                   value={targetDate}
                   onChange={(e) => setTargetDate(e.target.value)}
-                  className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
               <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">
+                <label className="block text-sm text-slate-700 mb-2 font-body">
                   Reason (optional)
                 </label>
                 <textarea
                   rows={3}
                   value={targetReason}
                   onChange={(e) => setTargetReason(e.target.value)}
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                  placeholder="Why are you changing the date?"
+                  className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-3">
                 <button
-                  className="inline-flex items-center rounded-lg font-medium transition-colors whitespace-nowrap border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2 "
+                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
                   onClick={() => setShowChangeDate(false)}
                 >
                   Cancel
@@ -633,9 +880,7 @@ export default function TasksPage() {
                       setIsSubmittingChangeDate(false)
                     }
                   }}
-                  className="inline-flex items-center rounded-lg font-medium 
-                  transition-colors whitespace-nowrap
-                   bg-green-600 text-white hover:bg-green-700 px-3 py-2 "
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-body disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmittingChangeDate ? 'Saving...' : 'Save'}
                 </button>
@@ -652,32 +897,34 @@ export default function TasksPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowAddTime(false)}
           />
-          <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
-            <h3 className="font-semibold mb-3">Add Manual Time</h3>
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 gap-3">
+          <div className="relative bg-white border border-slate-200 rounded-lg p-6 shadow-soft w-full max-w-md">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 font-display">
+              Add Manual Time
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-xs text-[var(--neutral-700)] mb-1">Start</label>
+                  <label className="block text-sm text-slate-700 mb-2 font-body">Start</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                      className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     />
                     <input
                       type="time"
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
-                      className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                      className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     />
-                    <span className="text-xs text-[var(--neutral-700)] w-10 text-center">
+                    <span className="text-sm text-slate-600 w-10 text-center font-body">
                       {Number((startTime || '0:0').split(':')[0]) >= 12 ? 'PM' : 'AM'}
                     </span>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-[var(--neutral-700)] mb-1">Duration</label>
+                  <label className="block text-sm text-slate-700 mb-2 font-body">Duration</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -685,21 +932,21 @@ export default function TasksPage() {
                       step="1"
                       value={durationHours}
                       onChange={(e) => setDurationHours(e.target.value)}
-                      className="h-9 w-20 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                      className="h-10 w-20 rounded-lg border border-slate-200 bg-white px-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     />
-                    <span className="text-xs">hours</span>
+                    <span className="text-sm text-slate-600 font-body">hours</span>
                     <input
                       type="number"
                       min="0"
                       step="1"
                       value={durationMinutes}
                       onChange={(e) => setDurationMinutes(e.target.value)}
-                      className="h-9 w-20 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                      className="h-10 w-20 rounded-lg border border-slate-200 bg-white px-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     />
-                    <span className="text-xs">minutes</span>
+                    <span className="text-sm text-slate-600 font-body">minutes</span>
                   </div>
                   {startDate && startTime && (
-                    <div className="mt-2 text-xs text-[var(--neutral-700)]">
+                    <div className="mt-2 text-sm text-slate-600 font-body">
                       {(() => {
                         const [sy, sm, sd] = startDate.split('-').map(Number)
                         const [sh, smin] = startTime.split(':').map(Number)
@@ -724,9 +971,9 @@ export default function TasksPage() {
                   )}
                 </div>
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-3">
                 <button
-                  className="inline-flex items-center rounded-lg font-medium transition-colors whitespace-nowrap border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2 "
+                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
                   onClick={() => setShowAddTime(false)}
                 >
                   Cancel
@@ -783,33 +1030,33 @@ export default function TasksPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowCopyModal(false)}
           />
-          <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-md">
-            <h3 className="font-semibold mb-3">Copy Task</h3>
-            <div className="space-y-3">
+          <div className="relative bg-white border border-slate-200 rounded-lg p-6 shadow-soft w-full max-w-md">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 font-display">Copy Task</h3>
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">Title</label>
+                <label className="block text-sm text-slate-700 mb-2 font-body">Title</label>
                 <input
                   type="text"
                   value={copyTitle}
                   onChange={(e) => setCopyTitle(e.target.value)}
-                  className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
               <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">Date</label>
+                <label className="block text-sm text-slate-700 mb-2 font-body">Date</label>
                 <input
                   type="date"
                   value={copyDate}
                   onChange={(e) => setCopyDate(e.target.value)}
-                  className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
               <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">Priority</label>
+                <label className="block text-sm text-slate-700 mb-2 font-body">Priority</label>
                 <select
                   value={copyPriority}
                   onChange={(e) => setCopyPriority(e.target.value)}
-                  className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
+                  className="w-full h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 >
                   <option value="High">High</option>
                   <option value="Medium">Medium</option>
@@ -817,20 +1064,22 @@ export default function TasksPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">Description</label>
+                <label className="block text-sm text-slate-700 mb-2 font-body">Description</label>
                 <textarea
                   rows={3}
                   value={copyDescription}
                   onChange={(e) => setCopyDescription(e.target.value)}
-                  className="w-full rounded-md border border-[var(--border)] bg-[var(--bg-card)] p-2 text-sm"
+                  placeholder="Task description..."
+                  className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                 />
               </div>
-              <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-4 text-sm font-body">
                 <label className="inline-flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={copyLabels}
                     onChange={(e) => setCopyLabels(e.target.checked)}
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                   />
                   Copy labels
                 </label>
@@ -839,13 +1088,14 @@ export default function TasksPage() {
                     type="checkbox"
                     checked={copyChecklist}
                     onChange={(e) => setCopyChecklist(e.target.checked)}
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                   />
                   Copy checklist
                 </label>
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-3">
                 <button
-                  className="inline-flex items-center rounded-lg font-medium transition-colors whitespace-nowrap border border-gray-300 text-gray-700 hover:bg-gray-100 px-3 py-2 "
+                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
                   onClick={() => setShowCopyModal(false)}
                 >
                   Cancel
@@ -877,9 +1127,7 @@ export default function TasksPage() {
                       setIsSubmittingCopy(false)
                     }
                   }}
-                  className="inline-flex items-center rounded-lg font-medium 
-                  transition-colors whitespace-nowrap
-                   bg-green-600 text-white hover:bg-green-700 px-3 py-2 "
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-body disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmittingCopy ? 'Creating...' : 'Create task'}
                 </button>
@@ -896,15 +1144,15 @@ export default function TasksPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setPreviewItem(null)}
           />
-          <div className="relative bg-white border border-[var(--border)] rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
+          <div className="relative bg-white border border-slate-200 rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
             <button
-              className="absolute top-2 right-2 p-1 rounded-md border border-[var(--border)] hover:bg-[var(--muted1)]"
+              className="absolute top-3 right-3 p-2 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
               aria-label="Close"
               onClick={() => setPreviewItem(null)}
             >
               <X size={16} />
             </button>
-            <div className="p-2 flex items-center justify-center w-full h-full">
+            <div className="p-4 flex items-center justify-center w-full h-full">
               {(() => {
                 const name = previewItem?.name || ''
                 const url = previewItem?.url || ''
@@ -930,11 +1178,11 @@ export default function TasksPage() {
                 }
                 return (
                   <div className="p-6 text-center">
-                    <div className="mb-3 text-sm text-[var(--neutral-700)]">
+                    <div className="mb-3 text-sm text-slate-600 font-body">
                       Preview not available for this file type.
                     </div>
                     <button
-                      className="px-3 py-2 rounded-md border border-[var(--border)] text-sm"
+                      className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
                       onClick={() => window.open(url, '_blank', 'noopener')}
                     >
                       Open in new tab
@@ -959,31 +1207,6 @@ export default function TasksPage() {
         }
         onSave={handleSaveDescription}
       />
-
-      <style jsx>{`
-        .overflow-y-auto::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .overflow-y-auto::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .overflow-y-auto::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 3px;
-          transition: background 0.2s ease;
-        }
-
-        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
-        }
-
-        .overflow-y-auto {
-          scrollbar-width: thin;
-          scrollbar-color: #cbd5e1 transparent;
-        }
-      `}</style>
     </div>
   )
 }

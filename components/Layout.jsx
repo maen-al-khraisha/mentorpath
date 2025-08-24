@@ -30,11 +30,11 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
   }, [columns])
 
   return (
-    <div className="min-h-screen w-full bg-[var(--page)] text-[var(--neutral-900)]">
+    <div className="min-h-screen w-full bg-slate-50 text-slate-900">
       {/* Skip link for accessibility */}
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[100] bg-[var(--card)] border border-[var(--border)] rounded-md px-3 py-2 shadow"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[100] bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-elevated"
       >
         Skip to content
       </a>
@@ -57,10 +57,10 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
             sidebarCollapsed={sidebarCollapsed}
           />
 
-          <main id="main" className="flex-1 min-w-0 p-3 md:p-5 ">
+          <main id="main" className="flex-1 min-w-0 p-4 md:p-6">
             {/* Responsive columns wrapper. Large screens use custom grid from prop. */}
             <div
-              className="grid gap-4 h-full"
+              className="grid gap-6 h-full"
               style={{
                 gridTemplateColumns: '1fr',
               }}
@@ -69,7 +69,7 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
               {/* On lg and up, we apply the grid template columns */}
               <div
                 className="hidden lg:grid overflow-hidden"
-                style={{ gridTemplateColumns: gridColsLg, gap: '1rem' }}
+                style={{ gridTemplateColumns: gridColsLg, gap: '1.5rem' }}
               >
                 {children}
               </div>
