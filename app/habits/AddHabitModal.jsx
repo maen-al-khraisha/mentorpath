@@ -36,12 +36,13 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
   function validateForm() {
     const newErrors = {}
-    
+
     if (!name.trim()) newErrors.name = 'Habit name is required'
     if (!category) newErrors.category = 'Category is required'
     if (!startDate) newErrors.startDate = 'Start date is required'
-    if (!streakPeriod || streakPeriod < 1) newErrors.streakPeriod = 'Streak period must be at least 1 day'
-    
+    if (!streakPeriod || streakPeriod < 1)
+      newErrors.streakPeriod = 'Streak period must be at least 1 day'
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -56,13 +57,13 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
     try {
       setBusy(true)
-      
+
       const habitData = {
         name: name.trim(),
         category,
         startDate,
         streakPeriod: parseInt(streakPeriod),
-        icon: selectedIcon
+        icon: selectedIcon,
       }
 
       if (isEditing) {
@@ -73,7 +74,7 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
       onSave?.()
       onClose?.()
-      
+
       // Reset form
       if (!isEditing) {
         setName('')
@@ -94,28 +95,20 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
       <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold">
-            {isEditing ? 'Edit Habit' : 'Add New Habit'}
-          </h3>
-          <button
-            onClick={() => onClose?.()}
-            className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-            aria-label="Close modal"
-          >
+          <h3 className="text-xl font-semibold">{isEditing ? 'Edit Habit' : 'Add New Habit'}</h3>
+          <Button variant="ghost" size="icon" onClick={() => onClose?.()} aria-label="Close modal">
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-6">
           {/* Habit Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Habit Name *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Habit Name *</label>
             <input
               className={`w-full h-12 rounded-lg border-2 ${
                 errors.name ? 'border-red-500' : 'border-[var(--border)]'
@@ -124,16 +117,12 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
             <select
               className={`w-full h-12 rounded-lg border-2 ${
                 errors.category ? 'border-red-500' : 'border-[var(--border)]'
@@ -148,19 +137,18 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
                 </option>
               ))}
             </select>
-            {errors.category && (
-              <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-            )}
+            {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
           </div>
 
           {/* Start Date and Streak Period */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
               <div className="relative">
-                <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Calendar
+                  size={16}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
                 <input
                   type="date"
                   className={`w-full h-12 rounded-lg border-2 ${
@@ -170,9 +158,7 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
                   onChange={(e) => setStartDate(e.target.value)}
                 />
               </div>
-              {errors.startDate && (
-                <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
-              )}
+              {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
             </div>
 
             <div>
@@ -180,7 +166,10 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
                 Streak Period (days) *
               </label>
               <div className="relative">
-                <Target size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Target
+                  size={16}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
                 <input
                   type="number"
                   min="1"
@@ -201,36 +190,30 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
           {/* Icon Selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Choose an Icon
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Choose an Icon</label>
             <div className="grid grid-cols-8 gap-2">
               {habitIcons.map((icon) => (
-                <button
+                <Button
                   key={icon}
-                  type="button"
+                  variant={selectedIcon === icon ? 'primary' : 'ghost'}
+                  size="icon"
                   onClick={() => setSelectedIcon(icon)}
-                  className={`w-12 h-12 rounded-lg border-2 text-2xl flex items-center justify-center transition-all ${
+                  className={`w-12 h-12 text-2xl ${
                     selectedIcon === icon
                       ? 'border-[var(--primary)] bg-[var(--primary)]/10'
                       : 'border-[var(--border)] hover:border-[var(--primary)]/50'
                   }`}
                 >
                   {icon}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
           {/* Save Button */}
           <div className="flex justify-end pt-4">
-            <Button
-              variant="primary"
-              onClick={handleSave}
-              disabled={busy}
-              className="px-6 py-2"
-            >
-              {busy ? 'Saving...' : (isEditing ? 'Update Habit' : 'Add Habit')}
+            <Button variant="primary" onClick={handleSave} disabled={busy} className="px-6 py-2">
+              {busy ? 'Saving...' : isEditing ? 'Update Habit' : 'Add Habit'}
             </Button>
           </div>
         </div>

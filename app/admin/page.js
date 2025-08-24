@@ -4,6 +4,7 @@ import { useRequireAuth } from '@/utils/protectedRoute'
 import { useEffect, useState } from 'react'
 import { firestore } from '@/lib/firebaseClient'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
+import Button from '@/components/Button'
 
 const COLOR_KEYS = [
   'primary',
@@ -143,13 +144,9 @@ export default function AdminPage() {
         </section>
       </div>
       <div className="mt-4">
-        <button
-          onClick={save}
-          disabled={busy}
-          className="rounded-md px-4 py-2 bg-primary text-neutral-900 shadow-soft"
-        >
+        <Button variant="primary" onClick={save} disabled={busy}>
           {busy ? 'Saving...' : 'Save to Firestore'}
-        </button>
+        </Button>
       </div>
     </AppShell>
   )

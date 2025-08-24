@@ -91,9 +91,9 @@ export default function EventDetailsModal({
           <h2 className="text-xl font-semibold text-gray-900">
             {isEditing ? 'Edit Event' : 'Event Details'}
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-md transition-colors">
+          <Button variant="ghost" size="icon" onClick={onClose}>
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {isEditing ? (

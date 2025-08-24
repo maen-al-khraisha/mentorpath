@@ -89,13 +89,9 @@ export default function DescriptionEditModal({ isOpen, onClose, description, onS
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Edit Task Description
           </h3>
-          <button
-            onClick={handleClose}
-            disabled={isLoading}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-          >
+          <Button variant="ghost" size="icon" onClick={handleClose} disabled={isLoading}>
             <X size={20} className="text-gray-500" />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { firestore } from '@/lib/firebaseClient'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import Button from '@/components/Button'
 
 export default function FooterLanding() {
   const [form, setForm] = useState({ name: '', email: '', type: 'suggestion', message: '' })
@@ -151,13 +152,9 @@ export default function FooterLanding() {
             </div>
           </div>
           <div className="mt-4 flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={status === 'submitting'}
-              className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 bg-[var(--primary)] text-[var(--neutral-900)] font-semibold shadow-soft focus:outline-none focus:ring-2 focus:ring-[var(--accent)] disabled:opacity-60"
-            >
+            <Button type="submit" variant="primary" disabled={status === 'submitting'}>
               {status === 'submitting' ? 'Sending…' : 'Send feedback'}
-            </button>
+            </Button>
             {status === 'success' && (
               <span role="status" className="text-sm text-[var(--neutral-700)]">
                 Thanks! We received your message.

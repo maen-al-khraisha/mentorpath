@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import Button from '@/components/Button'
 
 export default function DonatePage() {
   return (
@@ -39,15 +40,16 @@ export default function DonatePage() {
               </p>
 
               <div className="flex justify-center">
-                <button
-                  className="inline-flex items-center px-8 py-4 text-lg font-semibold rounded-xl bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                <Button
+                  variant="primary"
+                  size="xl"
                   onClick={() =>
                     window.open('https://paypal.me/maenalkhraisha', '_blank', 'noopener,noreferrer')
                   }
                 >
                   <span className="mr-2">💳</span>
                   Donate via PayPal 💳
-                </button>
+                </Button>
               </div>
 
               <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">

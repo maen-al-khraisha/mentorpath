@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { format, isSameDay } from 'date-fns'
 import { ChevronDown, ChevronRight, Play, Clock, Tag } from 'lucide-react'
+import Button from '@/components/Button'
 
 export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
   const [expandedDates, setExpandedDates] = useState(new Set())
@@ -109,9 +110,10 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
           return (
             <div key={dateKey} className="border border-gray-200 rounded-lg overflow-hidden">
               {/* Date Header */}
-              <button
-                onClick={() => toggleDate(dateKey)}
+              <Button
+                variant="ghost"
                 className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-all duration-200"
+                onClick={() => toggleDate(dateKey)}
               >
                 <div className="flex items-center gap-3">
                   {isExpanded ? (
@@ -127,7 +129,7 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
                     </div>
                   </div>
                 </div>
-              </button>
+              </Button>
 
               {/* Tasks List */}
               {isExpanded && (
@@ -177,16 +179,18 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
                           </div>
                         </div>
 
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={(e) => {
                             e.stopPropagation()
                             onTaskSelect(task)
                           }}
-                          className="p-2 rounded-lg hover:bg-green-100 text-green-600 hover:text-green-700 transition-all duration-200"
+                          className="p-2 text-green-600 hover:text-green-700 hover:bg-green-100"
                           title="View task details"
                         >
                           <Play size={16} />
-                        </button>
+                        </Button>
                       </div>
                     )
                   })}

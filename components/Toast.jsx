@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
+import Button from '@/components/Button'
 
 const toastTypes = {
   success: {
@@ -44,7 +45,9 @@ export function Toast({ message, type = 'info', duration = 4000, onClose }) {
     >
       <Icon size={20} className={iconClassName} />
       <span className="font-medium">{message}</span>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => {
           setIsVisible(false)
           setTimeout(() => onClose(), 300)
@@ -52,7 +55,7 @@ export function Toast({ message, type = 'info', duration = 4000, onClose }) {
         className="ml-2 hover:opacity-80 transition-opacity p-1 rounded-lg hover:bg-white/20"
       >
         <X size={18} />
-      </button>
+      </Button>
     </div>
   )
 }

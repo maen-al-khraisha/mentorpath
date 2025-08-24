@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns'
 import { X, Clock, Tag, CheckCircle, Circle, TrendingUp } from 'lucide-react'
+import Button from '@/components/Button'
 
 export default function TaskDetailsDrawer({ task, isOpen, onClose }) {
   if (!task) return null
@@ -69,12 +70,9 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Task Details</h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose}>
             <X size={20} className="text-gray-600" />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}

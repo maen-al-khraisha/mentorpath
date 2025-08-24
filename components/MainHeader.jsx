@@ -13,6 +13,7 @@ import {
   getRedirectResult,
 } from 'firebase/auth'
 import { auth } from '@/lib/firebaseClient'
+import Button from '@/components/Button'
 
 export default function MainHeader() {
   const authClient = auth
@@ -120,26 +121,19 @@ export default function MainHeader() {
           <>
             <span className="text-[var(--neutral-700)]">Hi, {user.displayName || 'User'}</span>
 
-            <Link
-              href="/dashboard"
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-[var(--neutral-900)] shadow-soft hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-            >
-              Dashboard
+            <Link href="/dashboard">
+              <Button variant="primary" size="sm">
+                Dashboard
+              </Button>
             </Link>
-            <button
-              onClick={handleSignOut}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-[var(--neutral-900)] shadow-soft hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-            >
+            <Button variant="primary" size="sm" onClick={handleSignOut}>
               Sign Out
-            </button>
+            </Button>
           </>
         ) : (
-          <button
-            onClick={handleSignIn}
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-[var(--neutral-900)] shadow-soft hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-          >
+          <Button variant="primary" size="sm" onClick={handleSignIn}>
             Sign In
-          </button>
+          </Button>
         )}
       </div>
     </header>

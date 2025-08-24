@@ -162,13 +162,15 @@ export default function TaskDetailsPanel({
               {task.title}
             </h3>
             <div className="relative flex-shrink-0" ref={actionsRef}>
-              <button
-                className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              <Button
+                variant="ghost"
+                size="icon"
+                className="p-1.5"
                 aria-label="More options"
                 onClick={() => setShowActions((v) => !v)}
               >
                 <MoreVertical size={16} />
-              </button>
+              </Button>
               {showActions && (
                 <div className="absolute right-0 top-8 z-10 w-52 bg-white border border-gray-200 rounded-md shadow-lg py-1">
                   <Button
@@ -260,9 +262,10 @@ export default function TaskDetailsPanel({
             </div>
 
             {/* Completion Button */}
-            <button
+            <Button
+              variant={task.completed ? 'primary' : 'secondary'}
+              size="sm"
               onClick={() => updateTask(task.id, { completed: !task.completed })}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border border-gray-200 hover:border-green-300 hover:bg-green-50 hover:text-green-700"
             >
               <div className="w-4 h-4 rounded border border-current flex items-center justify-center">
                 {task.completed && (
@@ -279,7 +282,7 @@ export default function TaskDetailsPanel({
                 )}
               </div>
               {task.completed ? 'Completed' : 'Mark Done'}
-            </button>
+            </Button>
           </div>
 
           {/* Shifted Date Info (if applicable) */}
@@ -303,13 +306,10 @@ export default function TaskDetailsPanel({
           </div>
           <div className="flex items-center gap-2">
             {isTimerActive ? (
-              <button
-                onClick={() => onStopTimer?.(task.id)}
-                className="flex items-center gap-2 px-3 py-2 bg-red-500 text-white rounded-md text-sm hover:bg-red-600"
-              >
+              <Button variant="danger" size="sm" onClick={() => onStopTimer?.(task.id)}>
                 <Pause size={14} />
                 Stop Timer
-              </button>
+              </Button>
             ) : task.completed ? (
               <Button
                 variant="primary"
@@ -400,9 +400,14 @@ export default function TaskDetailsPanel({
                 className="inline-flex items-center gap-1 text-xs px-2 h-9 bg-blue-100 text-blue-800 rounded-md"
               >
                 {label}
-                <button onClick={() => handleRemoveLabel(label)} className="hover:text-blue-900">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hover:text-blue-900 p-0 h-auto"
+                  onClick={() => handleRemoveLabel(label)}
+                >
                   <X size={12} />
-                </button>
+                </Button>
               </span>
             ))}
             <input
@@ -574,17 +579,21 @@ export default function TaskDetailsPanel({
                   >
                     <Paperclip size={14} className="text-[var(--neutral-700)]" />
                     <span className="text-sm flex-1 truncate">{attachment.name}</span>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => {
                         if (attachment.url) onPreviewAttachment?.(attachment.url, attachment.name)
                       }}
-                      className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-[var(--muted1)] text-blue-600"
+                      className="w-8 h-8 text-blue-600"
                       title="View"
                       aria-label={`View ${attachment.name}`}
                     >
                       <Eye size={16} />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={async () => {
                         try {
                           await removeAttachment(task.id, attachment)
@@ -594,12 +603,12 @@ export default function TaskDetailsPanel({
                           // You could add a toast notification here
                         }
                       }}
-                      className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-[var(--muted1)] text-red-600"
+                      className="w-8 h-8 text-red-600"
                       title="Remove"
                       aria-label={`Remove ${attachment.name}`}
                     >
                       <Trash2 size={16} />
-                    </button>
+                    </Button>
                   </div>
                 ))
               ) : (

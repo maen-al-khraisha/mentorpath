@@ -259,9 +259,10 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
       {/* Sheet Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
             title={isCollapsed ? 'Expand sheet' : 'Collapse sheet'}
           >
             {isCollapsed ? (
@@ -269,7 +270,7 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
             ) : (
               <ChevronDown size={20} className="text-gray-600" />
             )}
-          </button>
+          </Button>
           <div>
             <div className="flex items-center gap-3 mb-2">
               {isEditingName ? (
@@ -304,12 +305,14 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
                   className="pl-8 pr-8 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none w-48"
                 />
                 {searchQuery && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={clearSearch}
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <X size={14} />
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -374,14 +377,15 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
                       key={column.name}
                       className="text-left p-3 font-semibold text-gray-700 bg-gray-50"
                     >
-                      <button
+                      <Button
+                        variant="ghost"
+                        className="group flex items-center gap-2 w-full hover:text-blue-600 transition-colors p-0 h-auto"
                         onClick={() => handleSort(column.name)}
-                        className="group flex items-center gap-2 w-full hover:text-blue-600 transition-colors"
                         title={`Sort by ${column.name}`}
                       >
                         {getSortIcon(column.name)}
                         <span>{column.name}</span>
-                      </button>
+                      </Button>
                     </th>
                   ))}
                   <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-24">

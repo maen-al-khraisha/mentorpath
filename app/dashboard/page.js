@@ -9,6 +9,7 @@ import { subscribeToSheets } from '@/lib/sheetsApi'
 import { getNotes, getAllLabels } from '@/lib/notesApi'
 import { useToast } from '@/components/Toast'
 import { useRouter } from 'next/navigation'
+import Button from '@/components/Button'
 
 import {
   SquareCheck,
@@ -403,8 +404,9 @@ export default function DashboardPage() {
         <div className="bg-white rounded-lg p-6 border border-slate-200">
           <h3 className="text-lg font-semibold text-slate-900 mb-4 font-display">Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <button
-              className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
+            <Button
+              variant="secondary"
+              className="p-4 h-auto"
               onClick={() => handleQuickAction('task')}
             >
               <div className="text-center">
@@ -413,10 +415,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-sm font-medium text-slate-700 font-body">Add Task</div>
               </div>
-            </button>
+            </Button>
 
-            <button
-              className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
+            <Button
+              variant="secondary"
+              className="p-4 h-auto"
               onClick={() => handleQuickAction('event')}
             >
               <div className="text-center">
@@ -425,10 +428,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-sm font-medium text-slate-700 font-body">Add Event</div>
               </div>
-            </button>
+            </Button>
 
-            <button
-              className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
+            <Button
+              variant="secondary"
+              className="p-4 h-auto"
               onClick={() => handleQuickAction('habit')}
             >
               <div className="text-center">
@@ -437,10 +441,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-sm font-medium text-slate-700 font-body">Add Habit</div>
               </div>
-            </button>
+            </Button>
 
-            <button
-              className="p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors cursor-pointer"
+            <Button
+              variant="secondary"
+              className="p-4 h-auto"
               onClick={() => handleQuickAction('note')}
             >
               <div className="text-center">
@@ -449,7 +454,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-sm font-medium text-slate-700 font-body">Add Note</div>
               </div>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

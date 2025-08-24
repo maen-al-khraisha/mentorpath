@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/useAuth'
 import { auth, firestore } from '@/lib/firebaseClient'
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore'
+import Button from '@/components/Button'
 
 export default function DebugPage() {
   const { user, loading } = useAuth()
@@ -80,13 +81,9 @@ export default function DebugPage() {
       <h1 className="text-2xl font-bold mb-4">Firestore Diagnostics</h1>
 
       <div className="mb-4">
-        <button
-          onClick={runDiagnostics}
-          disabled={loading}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
-        >
+        <Button variant="primary" onClick={runDiagnostics} disabled={loading}>
           {loading ? 'Loading...' : 'Run Diagnostics'}
-        </button>
+        </Button>
       </div>
 
       {testResult && (

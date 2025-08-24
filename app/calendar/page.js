@@ -135,19 +135,13 @@ export default function CalendarPage() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
-                onClick={goToPreviousMonth}
-                className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-              >
+              <Button variant="ghost" size="icon" onClick={goToPreviousMonth}>
                 <ChevronLeft size={20} />
-              </button>
+              </Button>
               <h1 className="text-2xl font-bold text-gray-900">{monthName}</h1>
-              <button
-                onClick={goToNextMonth}
-                className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-              >
+              <Button variant="ghost" size="icon" onClick={goToNextMonth}>
                 <ChevronRight size={20} />
-              </button>
+              </Button>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="secondary" onClick={goToToday} className="px-4 py-2">

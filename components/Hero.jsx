@@ -5,6 +5,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import ScreenshotModal from '@/components/ScreenshotModal'
 import { useState } from 'react'
 import { ArrowRight, Play, Zap, Target, TrendingUp } from 'lucide-react'
+import Button from '@/components/Button'
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
@@ -40,23 +41,19 @@ export default function Hero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link
-              href="/login"
-              className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-2xl shadow-elevated hover:shadow-lg transition-all duration-300 hover:scale-105"
-            >
-              Start Building — Free
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <Link href="/login">
+              <Button variant="primary" size="lg" className="group">
+                Start Building — Free
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </Link>
 
             <Dialog.Root open={open} onOpenChange={setOpen}>
               <Dialog.Trigger asChild>
-                <button
-                  className="group inline-flex items-center gap-3 px-8 py-4 bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-700 font-semibold rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-105"
-                  aria-haspopup="dialog"
-                >
+                <Button variant="secondary" size="lg">
                   <Play className="w-5 h-5 text-indigo-500" />
                   Watch Demo
-                </button>
+                </Button>
               </Dialog.Trigger>
               <ScreenshotModal onClose={() => setOpen(false)} />
             </Dialog.Root>

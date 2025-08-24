@@ -102,7 +102,7 @@ export default function NoteDetailsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-                    className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => {
           setIsEditing(false)
           onClose?.()
@@ -126,16 +126,17 @@ export default function NoteDetailsModal({
                 </Button>
               </>
             ) : null}
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => {
                 setIsEditing(false)
                 onClose?.()
               }}
-              className="p-2 rounded-md hover:bg-gray-100 transition-colors"
               aria-label="Close modal"
             >
               <X size={20} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -188,13 +189,15 @@ export default function NoteDetailsModal({
                   >
                     {label}
                     {isEditing && (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-1 text-yellow-600 hover:text-yellow-800 transition-colors p-0 h-auto"
                         onClick={() => removeLabel(label)}
-                        className="ml-1 text-yellow-600 hover:text-yellow-800 transition-colors"
                         aria-label={`Remove label ${label}`}
                       >
                         <CloseIcon size={12} />
-                      </button>
+                      </Button>
                     )}
                   </span>
                 ))}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { createTask } from '@/lib/tasksApi'
 import { useAuth } from '@/lib/useAuth'
+import Button from '@/components/Button'
 
 // Dynamically import React-Quill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill'), {
@@ -101,7 +102,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center ">
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
       <div className="relative bg-white border border-[var(--border)] rounded-lg p-4 shadow-soft w-full max-w-2xl">
         <h3 className="font-semibold mb-2">Add Task</h3>
         <div className="space-y-4">
@@ -150,23 +151,22 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                   onChange={(e) => setLabelInput(e.target.value)}
                   placeholder="Label Name"
                 />
-                <button
-                  className="h-9 px-3 rounded-md border border-[var(--border)]"
-                  onClick={addLabel}
-                >
+                <Button variant="secondary" size="sm" onClick={addLabel}>
                   Add
-                </button>
+                </Button>
               </div>
               <div className="flex items-center gap-1 flex-wrap mt-1">
                 {labels.map((l) => (
                   <span key={l} className="text-xs px-2 py-1 rounded bg-[var(--muted1)]">
                     {l}
-                    <button
-                      className="ml-1 text-[var(--danger)]"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-1 text-[var(--danger)] p-0 h-auto"
                       onClick={() => setLabels((ls) => ls.filter((x) => x !== l))}
                     >
                       ×
-                    </button>
+                    </Button>
                   </span>
                 ))}
               </div>
@@ -200,12 +200,9 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                   onChange={(e) => setCheckInput(e.target.value)}
                   placeholder="Add checklist item"
                 />
-                <button
-                  className="h-9 px-3 rounded-md border border-[var(--border)]"
-                  onClick={addCheck}
-                >
+                <Button variant="secondary" size="sm" onClick={addCheck}>
                   Add
-                </button>
+                </Button>
               </div>
               <ul className="text-sm mt-1">
                 {checklist.map((c) => (
@@ -220,12 +217,14 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                       }
                     />
                     <span className="flex-1">{c.text}</span>
-                    <button
-                      className="text-[var(--danger)]"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[var(--danger)] p-0 h-auto"
                       onClick={() => setChecklist((ls) => ls.filter((x) => x.id !== c.id))}
                     >
                       Delete
-                    </button>
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -268,23 +267,12 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
           </div>
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <button
-            className="px-3 h-9 rounded-md border border-[var(--border)]"
-            onClick={() => onClose?.()}
-          >
+          <Button variant="secondary" onClick={() => onClose?.()}>
             Cancel
-          </button>
-          <button
-            className={`px-3 h-9 rounded-md text-[var(--neutral-900)] ${
-              !user || loading || busy
-                ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-[var(--primary)] hover:opacity-90'
-            }`}
-            onClick={onSave}
-            disabled={!user || loading || busy}
-          >
+          </Button>
+          <Button variant="primary" onClick={onSave} disabled={!user || loading || busy}>
             {loading ? 'Loading...' : busy ? 'Saving...' : 'Save Task'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

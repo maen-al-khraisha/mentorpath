@@ -193,10 +193,12 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
                 {/* Actual habit days */}
                 {rowDays.map((day, index) => (
                   <div key={day.dateKey} className="flex-1 flex justify-center">
-                    <button
+                    <Button
+                      variant={day.isCompleted ? 'primary' : day.isPast ? 'secondary' : 'ghost'}
+                      size="icon"
                       onClick={() => handleToggleDay(day.dateKey)}
                       disabled={!day.isPast || isUpdating}
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                      className={`w-6 h-6 rounded-full border-2 ${
                         day.isCompleted
                           ? 'bg-green-500 border-green-600 text-white'
                           : day.isPast
@@ -224,7 +226,7 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
                       ) : (
                         <span className="text-xs text-gray-400">-</span>
                       )}
-                    </button>
+                    </Button>
                   </div>
                 ))}
 

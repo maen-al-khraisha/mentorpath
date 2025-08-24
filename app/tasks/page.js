@@ -595,8 +595,9 @@ export default function TasksPage() {
 
                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                               {activeTimer && activeTimer.taskId === t.id ? (
-                                <button
-                                  className="px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-700 flex items-center gap-2 hover:bg-red-100 transition-colors"
+                                <Button
+                                  variant="danger"
+                                  size="sm"
                                   aria-label="Stop timer"
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -607,7 +608,7 @@ export default function TasksPage() {
                                   <span className="text-sm font-mono font-body">
                                     {formatElapsedTime(activeTimer.startTime)}
                                   </span>
-                                </button>
+                                </Button>
                               ) : (
                                 <Button
                                   variant="primary"
@@ -736,13 +737,14 @@ export default function TasksPage() {
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-lg max-h-[90vh] bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-slate-200">
               <h3 className="font-semibold text-slate-900 font-display">Task Details</h3>
-              <button
-                className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setSelectedId(null)}
                 aria-label="Close"
               >
                 <X size={20} />
-              </button>
+              </Button>
             </div>
             <div className="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
               <TaskDetailsPanel
@@ -805,18 +807,12 @@ export default function TasksPage() {
                 />
               </div>
               <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowShiftModal(false)}
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
-                >
+                <Button variant="secondary" onClick={() => setShowShiftModal(false)}>
                   Cancel
-                </button>
-                <button
-                  onClick={handleShiftToTomorrow}
-                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-body"
-                >
+                </Button>
+                <Button variant="primary" onClick={handleShiftToTomorrow}>
                   Shift Task
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -855,13 +851,11 @@ export default function TasksPage() {
                 />
               </div>
               <div className="flex justify-end gap-3">
-                <button
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
-                  onClick={() => setShowChangeDate(false)}
-                >
+                <Button variant="secondary" onClick={() => setShowChangeDate(false)}>
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
                   disabled={!targetDate || isSubmittingChangeDate}
                   onClick={async () => {
                     if (!targetDate) return
@@ -880,10 +874,9 @@ export default function TasksPage() {
                       setIsSubmittingChangeDate(false)
                     }
                   }}
-                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-body disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmittingChangeDate ? 'Saving...' : 'Save'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -972,13 +965,11 @@ export default function TasksPage() {
                 </div>
               </div>
               <div className="flex justify-end gap-3">
-                <button
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
-                  onClick={() => setShowAddTime(false)}
-                >
+                <Button variant="secondary" onClick={() => setShowAddTime(false)}>
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
                   disabled={
                     !startDate ||
                     !startTime ||
@@ -1011,12 +1002,9 @@ export default function TasksPage() {
                       setIsSubmittingTime(false)
                     }
                   }}
-                  className="inline-flex items-center rounded-lg font-medium 
-                  transition-colors whitespace-nowrap
-                   bg-green-600 text-white hover:bg-green-700 px-3 py-2 "
                 >
                   {isSubmittingTime ? 'Saving...' : 'Save'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1094,13 +1082,11 @@ export default function TasksPage() {
                 </label>
               </div>
               <div className="flex justify-end gap-3">
-                <button
-                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
-                  onClick={() => setShowCopyModal(false)}
-                >
+                <Button variant="secondary" onClick={() => setShowCopyModal(false)}>
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
                   disabled={!copyTitle || isSubmittingCopy}
                   onClick={async () => {
                     setIsSubmittingCopy(true)
@@ -1127,10 +1113,9 @@ export default function TasksPage() {
                       setIsSubmittingCopy(false)
                     }
                   }}
-                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-body disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmittingCopy ? 'Creating...' : 'Create task'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1145,13 +1130,15 @@ export default function TasksPage() {
             onClick={() => setPreviewItem(null)}
           />
           <div className="relative bg-white border border-slate-200 rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
-            <button
-              className="absolute top-3 right-3 p-2 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-3 right-3"
               aria-label="Close"
               onClick={() => setPreviewItem(null)}
             >
               <X size={16} />
-            </button>
+            </Button>
             <div className="p-4 flex items-center justify-center w-full h-full">
               {(() => {
                 const name = previewItem?.name || ''
@@ -1181,12 +1168,12 @@ export default function TasksPage() {
                     <div className="mb-3 text-sm text-slate-600 font-body">
                       Preview not available for this file type.
                     </div>
-                    <button
-                      className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors font-body"
+                    <Button
+                      variant="secondary"
                       onClick={() => window.open(url, '_blank', 'noopener')}
                     >
                       Open in new tab
-                    </button>
+                    </Button>
                   </div>
                 )
               })()}

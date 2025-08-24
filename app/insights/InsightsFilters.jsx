@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, Calendar, Filter } from 'lucide-react'
 import { format, subDays, subMonths, addDays, addMonths } from 'date-fns'
+import Button from '@/components/Button'
 
 export default function InsightsFilters({
   selectedPeriod,
@@ -71,44 +72,42 @@ export default function InsightsFilters({
         <div className="flex items-center gap-4">
           {/* Period Toggle */}
           <div className="flex items-center bg-gray-100 rounded-lg p-1">
-            <button
+            <Button
+              variant={selectedPeriod === 'week' ? 'primary' : 'ghost'}
+              size="sm"
               onClick={() => onPeriodChange('week')}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                selectedPeriod === 'week'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className="px-3 py-2 text-sm font-medium"
             >
               Week
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={selectedPeriod === 'month' ? 'primary' : 'ghost'}
+              size="sm"
               onClick={() => onPeriodChange('month')}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                selectedPeriod === 'month'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className="px-3 py-2 text-sm font-medium"
             >
               Month
-            </button>
+            </Button>
           </div>
 
           {/* Navigation Arrows */}
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => navigatePeriod('prev')}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
               aria-label="Previous period"
             >
               <ChevronLeft size={20} className="text-gray-600" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => navigatePeriod('next')}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
               aria-label="Next period"
             >
               <ChevronRight size={20} className="text-gray-600" />
-            </button>
+            </Button>
           </div>
 
           {/* Period Display */}
@@ -150,13 +149,15 @@ export default function InsightsFilters({
         </div>
 
         {/* Mobile Filters Toggle */}
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 lg:hidden"
+          className="lg:hidden"
         >
           <Filter size={16} />
           <span className="text-sm font-medium">More Filters</span>
-        </button>
+        </Button>
       </div>
     </div>
   )

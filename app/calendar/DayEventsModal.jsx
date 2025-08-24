@@ -70,12 +70,9 @@ export default function DayEventsModal({
             >
               {isClearing ? 'Clearing...' : 'Clear Events'}
             </Button>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-            >
+            <Button variant="ghost" size="icon" onClick={onClose}>
               <X size={20} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -123,13 +120,15 @@ export default function DayEventsModal({
                   </span>
                 </div>
                 <div className="col-span-2 flex items-center gap-2">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onViewEvent(event)}
                     className="p-2 hover:bg-blue-100 rounded-md transition-colors"
                     title="View event details"
                   >
                     <Eye size={16} className="text-blue-600" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

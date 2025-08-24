@@ -1,27 +1,23 @@
 // components/Header.jsx
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { Bell, Sun, User, Settings, LogOut } from 'lucide-react'
 import Link from 'next/link'
-import { Sun, Bell, User, LogOut, Settings } from 'lucide-react'
-import { useAuth } from '@/lib/useAuth'
-import { signOut as firebaseSignOut } from 'firebase/auth'
-import { auth } from '@/lib/firebaseClient'
 import { useRouter } from 'next/navigation'
-import ThemeToggle from './ThemeToggle' // optional; fallback implemented below if missing
+import { firebaseSignOut } from '@/lib/useAuth'
+import { auth } from '@/lib/firebaseClient'
+import Button from '@/components/Button'
 
 export default function Header({
-  title = 'Dashboard',
-  subtitle = 'Simplify Your Day, Every Day',
+  title,
+  subtitle,
+  user,
+  isAdmin,
   onOpenMobileSidebar,
+  ThemeToggle,
 }) {
-  const { user } = useAuth()
   const router = useRouter()
-  const isAdmin =
-    typeof window !== 'undefined' &&
-    (localStorage.getItem('mentorpath.isAdmin') === 'true' ||
-      process.env.NEXT_PUBLIC_ADMIN_MODE === 'true')
-
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   return (
@@ -29,9 +25,11 @@ export default function Header({
       <div className="max-w-[1400px] mx-auto px-4 py-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onOpenMobileSidebar}
+            className="md:hidden"
             aria-label="Open menu"
           >
             <svg
@@ -47,7 +45,7 @@ export default function Header({
                 d="M4 6h16M4 12h16M4 18h16"
               />
             </svg>
-          </button>
+          </Button>
 
           {/* Left: tab name + slogan */}
           <div className="flex flex-col">
@@ -64,27 +62,22 @@ export default function Header({
           {ThemeToggle ? (
             <ThemeToggle />
           ) : (
-            <button
-              className="p-2 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
-              aria-label="Toggle theme"
-            >
+            <Button variant="ghost" size="icon" aria-label="Toggle theme">
               <Sun size={18} className="text-slate-600" />
-            </button>
+            </Button>
           )}
 
-          <button
-            className="p-2 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 relative"
-            aria-label="Notifications"
-          >
+          <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
             <Bell size={18} className="text-slate-600" />
             {/* Notification indicator */}
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-          </button>
+          </Button>
 
           <div className="relative">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setDropdownOpen((d) => !d)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+              className="flex items-center gap-3"
               aria-expanded={dropdownOpen}
               aria-haspopup="true"
             >
@@ -97,7 +90,7 @@ export default function Header({
                 </div>
                 <div className="text-xs text-slate-600">{user?.email ?? ''}</div>
               </div>
-            </button>
+            </Button>
 
             {dropdownOpen && (
               <div
@@ -105,14 +98,14 @@ export default function Header({
                 aria-label="User menu"
                 className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-elevated py-2 z-50"
               >
-                <button className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors duration-200">
+                <Button variant="ghost" className="w-full justify-start px-4 py-3">
                   <User size={16} className="text-slate-600" />
                   <span className="text-slate-700">Profile</span>
-                </button>
-                <button className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors duration-200">
+                </Button>
+                <Button variant="ghost" className="w-full justify-start px-4 py-3">
                   <Settings size={16} className="text-slate-600" />
                   <span className="text-slate-700">Settings</span>
-                </button>
+                </Button>
                 {isAdmin && (
                   <Link
                     href="/admin"
@@ -122,7 +115,8 @@ export default function Header({
                   </Link>
                 )}
                 <hr className="my-2 border-slate-200" />
-                <button
+                <Button
+                  variant="ghost"
                   onClick={async () => {
                     try {
                       await firebaseSignOut(auth)
@@ -130,11 +124,11 @@ export default function Header({
                       router.replace('/')
                     }
                   }}
-                  className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center gap-3 transition-colors duration-200"
+                  className="w-full justify-start px-4 py-3"
                 >
                   <LogOut size={16} className="text-slate-600" />
                   <span className="text-slate-700">Sign out</span>
-                </button>
+                </Button>
               </div>
             )}
           </div>

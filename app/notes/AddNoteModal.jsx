@@ -70,18 +70,14 @@ export default function AddNoteModal({ open, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
       <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft w-full max-w-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold">add Note</h3>
-          <button
-            onClick={() => onClose?.()}
-            className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-            aria-label="Close modal"
-          >
+          <Button variant="ghost" size="icon" onClick={() => onClose?.()} aria-label="Close modal">
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-6">
@@ -125,13 +121,15 @@ export default function AddNoteModal({ open, onClose }) {
                       className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200"
                     >
                       {label}
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-1 text-yellow-600 hover:text-yellow-800 transition-colors p-0 h-auto"
                         onClick={() => removeLabel(label)}
-                        className="ml-1 text-yellow-600 hover:text-yellow-800 transition-colors"
                         aria-label={`Remove label ${label}`}
                       >
                         <X size={14} />
-                      </button>
+                      </Button>
                     </span>
                   ))}
                 </div>

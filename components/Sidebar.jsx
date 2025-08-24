@@ -9,6 +9,7 @@ import navConfig from '../lib/navConfig'
 import DonationDialog from './DonationDialog'
 import ShareDialog from './ShareDialog'
 import { useRouter } from 'next/navigation'
+import Button from '@/components/Button'
 
 export default function Sidebar({
   collapsed = false,
@@ -166,35 +167,38 @@ export default function Sidebar({
 
       {/* Donate Button */}
       <div className="px-3 py-2 border-t border-slate-200">
-        <button
+        <Button
+          variant="primary"
           onClick={() => setShowDonationDialog(true)}
-          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600 transition-all duration-300 shadow-soft hover:shadow-elevated transform hover:scale-105"
+          className="w-full"
           title={collapsed ? 'Donate' : 'Support Development'}
         >
           <Heart size={collapsed ? 18 : 16} className="animate-pulse" />
           {!collapsed && <span className="text-sm font-medium">Donate</span>}
-        </button>
+        </Button>
       </div>
 
       {/* Share Button */}
       <div className="px-3 py-2">
-        <button
+        <Button
+          variant="primary"
           onClick={handleShare}
-          className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700 transition-all duration-300 shadow-soft hover:shadow-elevated transform hover:scale-105"
+          className="w-full"
           title={collapsed ? 'Share' : 'Share this app'}
         >
           <Share2 size={collapsed ? 18 : 16} />
           {!collapsed && <span className="text-sm font-medium">Share</span>}
-        </button>
+        </Button>
       </div>
 
       {/* Collapse Toggle */}
       <div className="px-3 py-4 border-t border-slate-200">
-        <button
+        <Button
+          variant="ghost"
           onClick={onToggleCollapse}
           aria-expanded={!collapsed}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="w-full flex items-center justify-center gap-2 p-2 rounded-xl hover:bg-slate-100 transition-all duration-300 text-slate-600 hover:text-slate-900"
+          className="w-full"
         >
           {collapsed ? (
             <ChevronsRight size={18} />
@@ -204,7 +208,7 @@ export default function Sidebar({
               <span className="text-sm">Collapse</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -252,13 +256,9 @@ export default function Sidebar({
                 <span className="font-bold text-lg text-slate-900">MentorPath</span>
               </div>
             </div>
-            <button
-              className="p-2 rounded-xl hover:bg-slate-100 transition-all duration-300"
-              onClick={onCloseMobile}
-              aria-label="Close sidebar"
-            >
+            <Button variant="ghost" size="icon" onClick={onCloseMobile} aria-label="Close sidebar">
               <X size={20} className="text-slate-600" />
-            </button>
+            </Button>
           </div>
 
           {/* Mobile Navigation */}
@@ -357,13 +357,15 @@ export default function Sidebar({
       {/* Mobile Header Bar */}
       <div className="md:hidden flex items-center justify-between px-3 py-2 bg-white/40 dark:bg-gray-900/30 backdrop-blur-lg border-b border border-white/20 dark:border-gray-800/40">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onMobileOpen}
             className="p-2 rounded-lg hover:bg-gray-800/50 transition-all duration-300"
             aria-label="Open menu"
           >
             <Menu size={20} className="text-white" />
-          </button>
+          </Button>
           <div className="font-bold text-white">MentorPath</div>
         </div>
       </div>

@@ -65,17 +65,14 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
   if (!isOpen) return null
 
   return (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">Add Event</h2>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-          >
+          <Button variant="ghost" size="icon" onClick={handleClose}>
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}

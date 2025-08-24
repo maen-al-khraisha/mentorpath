@@ -92,18 +92,14 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
       <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold">Convert Note to Task</h3>
-          <button
-            onClick={() => onClose?.()}
-            className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-            aria-label="Close modal"
-          >
+          <Button variant="ghost" size="icon" onClick={() => onClose?.()} aria-label="Close modal">
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-6">
@@ -184,13 +180,15 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
                       className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200"
                     >
                       {label}
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-1 text-green-600 hover:text-green-800 transition-colors p-0 h-auto"
                         onClick={() => removeLabel(label)}
-                        className="ml-1 text-green-600 hover:text-green-800 transition-colors"
                         aria-label={`Remove label ${label}`}
                       >
                         <X size={14} />
-                      </button>
+                      </Button>
                     </span>
                   ))}
                 </div>
@@ -243,13 +241,15 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
                       >
                         {item.text}
                       </span>
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500 hover:text-red-700 transition-colors p-0 h-auto"
                         onClick={() => removeCheck(item.id)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
                         aria-label="Remove checklist item"
                       >
                         <X size={14} />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>

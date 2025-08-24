@@ -4,27 +4,29 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none',
+  'inline-flex items-center justify-center font-semibold transition-all duration-300 whitespace-nowrap',
   {
     variants: {
       variant: {
-        primary: 'bg-green-600 text-white hover:bg-green-700',
+        primary:
+          'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-2xl shadow-elevated hover:shadow-lg hover:scale-105',
         secondary:
-          'bg-gradient-to-b from-gray-50 to-gray-100 text-gray-700 border border-gray-300 rounded-lg shadow-sm hover:from-gray-100 hover:to-gray-200 hover:shadow-md active:from-gray-200 active:to-gray-300 active:shadow-inner transition-all duration-150',
-        boder:
-          'border border-green-500 text-green-600 bg-transparent rounded-sm px-3 font-medium hover:bg-green-50 hover:border-green-600 hover:text-green-700 active:bg-green-100 transition-colors duration-150 focus:outline-none',
-        ghost: 'text-gray-500 hover:text-gray-700',
-        danger: 'text-red-500 hover:text-red-700',
+          'bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-700 rounded-2xl shadow-soft hover:shadow-lg hover:scale-105',
+        ghost: 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl',
+        danger: 'bg-red-600 text-white hover:bg-red-700 rounded-xl',
+        border:
+          'border border-indigo-500 text-indigo-600 bg-transparent rounded-xl hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700',
       },
       size: {
-        default: 'px-3 h-[31px]',
-        sm: 'px-3 h-[31px]',
-        lg: 'px-6 h-[31px]',
-        icon: 'w-[31px] h-[31px]',
+        default: 'px-6 py-3 text-base',
+        sm: 'px-4 py-2 text-sm',
+        lg: 'px-8 py-4 text-lg',
+        xl: 'px-10 py-5 text-xl',
+        icon: 'w-10 h-10',
       },
     },
     defaultVariants: {
-      variant: 'default',
+      variant: 'primary',
       size: 'default',
     },
   }

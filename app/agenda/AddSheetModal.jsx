@@ -83,18 +83,14 @@ export default function AddSheetModal({ open, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
       <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold">Create New Sheet</h3>
-          <button
-            onClick={() => onClose?.()}
-            className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-            aria-label="Close modal"
-          >
+          <Button variant="ghost" size="icon" onClick={() => onClose?.()} aria-label="Close modal">
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-6">
