@@ -174,7 +174,7 @@ export default function Sidebar({
           title={collapsed ? 'Donate' : 'Support Development'}
         >
           <Heart size={collapsed ? 18 : 16} className="animate-pulse" />
-          {!collapsed && <span className="text-sm font-medium">Donate</span>}
+          {!collapsed && <span className="text-sm font-medium ml-2">Donate</span>}
         </Button>
       </div>
 
@@ -187,7 +187,7 @@ export default function Sidebar({
           title={collapsed ? 'Share' : 'Share this app'}
         >
           <Share2 size={collapsed ? 18 : 16} />
-          {!collapsed && <span className="text-sm font-medium">Share</span>}
+          {!collapsed && <span className="text-sm font-medium ml-2">Share</span>}
         </Button>
       </div>
 
