@@ -688,12 +688,32 @@ export default function TasksPage() {
                       onClick={() => setSelectedId(t.id)}
                     >
                       <div className="flex items-start gap-4">
-                        <Checkbox
-                          checked={!!t.completed}
-                          onChange={(e) => toggleTaskCompleted(t.id, e.target.checked)}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleTaskCompleted(t.id, !t.completed)
+                          }}
+                          className={`mt-1 w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200 hover:scale-110 ${
+                            t.completed
+                              ? 'border-emerald-500 bg-emerald-500 text-white shadow-md'
+                              : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'
+                          }`}
                           aria-label="Complete task"
-                          className="mt-1 border-slate-300 bg-white"
-                        />
+                        >
+                          {t.completed ? (
+                            <svg
+                              className="w-3.5 h-3.5"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                            >
+                              <path d="M5 12l5 5L20 7" />
+                            </svg>
+                          ) : (
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                          )}
+                        </button>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-3">
@@ -817,12 +837,24 @@ export default function TasksPage() {
                       onClick={() => setSelectedId(t.id)}
                     >
                       <div className="flex items-center gap-4">
-                        <Checkbox
-                          checked={!!t.completed}
-                          onChange={(e) => toggleTaskCompleted(t.id, e.target.checked)}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleTaskCompleted(t.id, !t.completed)
+                          }}
+                          className="mt-1 w-6 h-6 rounded border-2 border-emerald-500 bg-emerald-500 text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
                           aria-label="Completed"
-                          className="border-emerald-300 bg-emerald-50"
-                        />
+                        >
+                          <svg
+                            className="w-3.5 h-3.5"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                          >
+                            <path d="M5 12l5 5L20 7" />
+                          </svg>
+                        </button>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-slate-600 font-body line-through group-hover:text-slate-800 transition-colors text-base mb-3">
                             {t.title}
