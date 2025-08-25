@@ -311,7 +311,6 @@ export default function TaskDetailsPanel({
                       onClick={() => {
                         setShowActions(false)
                         onShowChangeDate?.()
-                        toast.info('Opening date changer... 📅')
                       }}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-slate-50 transition-colors duration-200 group"
                     >
@@ -333,7 +332,6 @@ export default function TaskDetailsPanel({
                           `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
                         const toTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
                         onShowAddTime?.()
-                        toast.info('Opening time logger... ⏰')
                       }}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-slate-50 transition-colors duration-200 group"
                     >
@@ -350,7 +348,6 @@ export default function TaskDetailsPanel({
                       onClick={() => {
                         setShowActions(false)
                         onShowCopyModal?.()
-                        toast.info('Opening task copier... 📋')
                       }}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-slate-50 transition-colors duration-200 group"
                     >
@@ -476,7 +473,6 @@ export default function TaskDetailsPanel({
               className="px-3 py-2 rounded-xl hover:bg-slate-100 transition-all duration-200 text-slate-600 hover:text-slate-900"
               onClick={() => {
                 onEditDescription?.(task.id)
-                toast.info('Opening description editor... ✏️')
               }}
             >
               <Edit size={16} className="mr-2" />
@@ -825,7 +821,6 @@ export default function TaskDetailsPanel({
                         onClick={() => {
                           if (attachment.url) {
                             onPreviewAttachment?.(attachment.url, attachment.name)
-                            toast.info(`Opening "${attachment.name}"... 👁️`)
                           }
                         }}
                         className="w-8 h-8 rounded-lg bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors duration-200"
