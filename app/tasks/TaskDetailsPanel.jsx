@@ -332,77 +332,77 @@ export default function TaskDetailsPanel({
 
         {/* Quick Actions Bar */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
-          <div className="flex items-center justify-between">
-            {/* Left: Timer Controls */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                  <Clock size={18} className="text-slate-600" />
-                </div>
-                <span className="text-sm font-semibold text-slate-700">Timer</span>
+          {/* Top Row: Timer Controls */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+                <Clock size={18} className="text-slate-600" />
               </div>
-
-              <div className="flex items-center gap-2">
-                {isTimerActive ? (
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => onStopTimer?.(task.id)}
-                    className="px-4 py-2 rounded-xl font-medium"
-                  >
-                    <Pause size={16} />
-                    <span className="ml-2">Stop Timer</span>
-                  </Button>
-                ) : task.completed ? (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    disabled
-                    title="Task is completed"
-                    className="px-4 py-2 rounded-xl font-medium opacity-60 cursor-not-allowed"
-                  >
-                    <Play size={16} />
-                    <span className="ml-2">Start Timer</span>
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => onStartTimer?.(task.id)}
-                    className="px-4 py-2 rounded-xl font-medium"
-                  >
-                    <Play size={16} />
-                    <span className="ml-2">Start Timer</span>
-                  </Button>
-                )}
-
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => onShowShiftModal?.()}
-                  className="px-4 py-2 rounded-xl font-medium"
-                >
-                  <ArrowRight size={16} />
-                  <span className="ml-2">Shift to Tomorrow</span>
-                </Button>
-              </div>
+              <span className="text-sm font-semibold text-slate-700">Timer</span>
             </div>
 
-            {/* Right: Completion Button */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {isTimerActive ? (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => onStopTimer?.(task.id)}
+                  className="px-4 py-2 rounded-xl font-medium"
+                >
+                  <Pause size={16} />
+                  <span className="ml-2">Stop Timer</span>
+                </Button>
+              ) : task.completed ? (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled
+                  title="Task is completed"
+                  className="px-4 py-2 rounded-xl font-medium opacity-60 cursor-not-allowed"
+                >
+                  <Play size={16} />
+                  <span className="ml-2">Start Timer</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onStartTimer?.(task.id)}
+                  className="px-4 py-2 rounded-xl font-medium"
+                >
+                  <Play size={16} />
+                  <span className="ml-2">Start Timer</span>
+                </Button>
+              )}
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onShowShiftModal?.()}
+                className="px-4 py-2 rounded-xl font-medium"
+              >
+                <ArrowRight size={16} />
+                <span className="ml-2">Shift to Tomorrow</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Bottom Row: Completion Button - Centered and Prominent */}
+          <div className="flex justify-center">
             <Button
               variant={task.completed ? 'primary' : 'secondary'}
               size="lg"
               onClick={() => updateTask(task.id, { completed: !task.completed })}
-              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+              className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
                 task.completed
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl'
+                  : 'bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 border-2 border-slate-300 hover:border-slate-400 shadow-md hover:shadow-lg'
               }`}
             >
               {task.completed ? (
                 <>
                   <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-6 h-6 mr-3"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -410,14 +410,14 @@ export default function TaskDetailsPanel({
                   >
                     <path d="M5 12l5 5L20 7" />
                   </svg>
-                  Completed
+                  <span className="text-lg">Completed</span>
                 </>
               ) : (
                 <>
-                  <div className="w-5 h-5 rounded border-2 border-current flex items-center justify-center mr-2">
-                    <div className="w-2 h-2 rounded-full bg-current"></div>
+                  <div className="w-6 h-6 rounded border-2 border-current flex items-center justify-center mr-3">
+                    <div className="w-3 h-3 rounded-full bg-current"></div>
                   </div>
-                  Mark Done
+                  <span className="text-lg">Mark Done</span>
                 </>
               )}
             </Button>
