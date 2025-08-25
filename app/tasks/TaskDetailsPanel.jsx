@@ -157,7 +157,7 @@ export default function TaskDetailsPanel({
         {/* Hero Section - Task Title & Primary Actions */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
           {/* Title & Actions Row */}
-          <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-bold text-slate-900 leading-tight mb-2">{task.title}</h1>
 
@@ -207,6 +207,42 @@ export default function TaskDetailsPanel({
                     Completed
                   </span>
                 )}
+              </div>
+
+              {/* Bottom Row: Completion Button - Centered and Prominent */}
+              <div className="flex justify-center mt-6">
+                <Button
+                  variant={task.completed ? 'primary' : 'secondary'}
+                  size="lg"
+                  onClick={() => updateTask(task.id, { completed: !task.completed })}
+                  className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
+                    task.completed
+                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl'
+                      : 'bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 border-2 border-slate-300 hover:border-slate-400 shadow-md hover:shadow-lg'
+                  }`}
+                >
+                  {task.completed ? (
+                    <>
+                      <svg
+                        className="w-6 h-6 mr-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                      >
+                        <path d="M5 12l5 5L20 7" />
+                      </svg>
+                      <span className="text-lg">Completed</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-6 h-6 rounded border-2 border-current flex items-center justify-center mr-3">
+                        <div className="w-3 h-3 rounded-full bg-current"></div>
+                      </div>
+                      <span className="text-lg">Mark Done</span>
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
 
@@ -385,42 +421,6 @@ export default function TaskDetailsPanel({
                 <span className="ml-2">Shift to Tomorrow</span>
               </Button>
             </div>
-          </div>
-
-          {/* Bottom Row: Completion Button - Centered and Prominent */}
-          <div className="flex justify-center">
-            <Button
-              variant={task.completed ? 'primary' : 'secondary'}
-              size="lg"
-              onClick={() => updateTask(task.id, { completed: !task.completed })}
-              className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
-                task.completed
-                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl'
-                  : 'bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 border-2 border-slate-300 hover:border-slate-400 shadow-md hover:shadow-lg'
-              }`}
-            >
-              {task.completed ? (
-                <>
-                  <svg
-                    className="w-6 h-6 mr-3"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  >
-                    <path d="M5 12l5 5L20 7" />
-                  </svg>
-                  <span className="text-lg">Completed</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-6 h-6 rounded border-2 border-current flex items-center justify-center mr-3">
-                    <div className="w-3 h-3 rounded-full bg-current"></div>
-                  </div>
-                  <span className="text-lg">Mark Done</span>
-                </>
-              )}
-            </Button>
           </div>
         </div>
 
