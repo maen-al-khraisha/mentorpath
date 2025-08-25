@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createHabit, updateHabit, habitCategories, habitIcons } from '@/lib/habitsApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
+import CustomDatePicker from '@/components/CustomDatePicker'
 import { X, Plus, Calendar, Target, Hash } from 'lucide-react'
 
 export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
@@ -144,20 +145,12 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
-              <div className="relative">
-                <Calendar
-                  size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                />
-                <input
-                  type="date"
-                  className={`w-full h-12 rounded-lg border-2 ${
-                    errors.startDate ? 'border-red-500' : 'border-[var(--border)]'
-                  } bg-[var(--bg-card)] pl-10 pr-4 text-base focus:border-[var(--primary)] transition-colors`}
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </div>
+              <CustomDatePicker
+                value={startDate}
+                onChange={(date) => setStartDate(date.toISOString().split('T')[0])}
+                name="startDate"
+                required
+              />
               {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
             </div>
 

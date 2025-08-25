@@ -5,6 +5,7 @@ import { updateEvent, deleteEvent } from '@/lib/eventsApi'
 import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
+import CustomDatePicker from '@/components/CustomDatePicker'
 import { X, Edit, Trash2, ExternalLink } from 'lucide-react'
 
 export default function EventDetailsModal({
@@ -133,11 +134,12 @@ export default function EventDetailsModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                <input
-                  type="date"
+                <CustomDatePicker
                   value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[var(--primary)]"
+                  onChange={(date) =>
+                    setFormData({ ...formData, date: date.toISOString().split('T')[0] })
+                  }
+                  name="eventDate"
                   required
                 />
               </div>

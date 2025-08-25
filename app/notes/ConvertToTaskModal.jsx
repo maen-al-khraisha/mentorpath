@@ -5,6 +5,7 @@ import { createTask } from '@/lib/tasksApi'
 import { deleteNote } from '@/lib/notesApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
+import CustomDatePicker from '@/components/CustomDatePicker'
 import { X, Calendar, Clock } from 'lucide-react'
 
 export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert }) {
@@ -133,15 +134,12 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-[var(--neutral-700)] mb-1">Task date</label>
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} className="text-gray-500" />
-                  <input
-                    type="date"
-                    className="flex-1 h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm focus:border-[var(--primary)] transition-colors"
-                    value={new Date(date).toISOString().slice(0, 10)}
-                    onChange={(e) => setDate(new Date(e.target.value))}
-                  />
-                </div>
+                <CustomDatePicker
+                  value={date}
+                  onChange={(selectedDate) => setDate(selectedDate)}
+                  name="taskDate"
+                  required
+                />
               </div>
 
               <div>

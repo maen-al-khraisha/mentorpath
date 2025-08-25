@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { createTask } from '@/lib/tasksApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
+import CustomDatePicker from '@/components/CustomDatePicker'
 
 // Dynamically import React-Quill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill'), {
@@ -116,11 +117,11 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                 onChange={(e) => setTitle(e.target.value)}
               />
               <label className="block text-xs text-[var(--neutral-700)]">Task date</label>
-              <input
-                type="date"
-                className="w-full h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2 text-sm"
-                value={new Date(date).toISOString().slice(0, 10)}
-                onChange={(e) => setDate(new Date(e.target.value))}
+              <CustomDatePicker
+                value={date}
+                onChange={(selectedDate) => setDate(selectedDate)}
+                name="taskDate"
+                required
               />
               <label className="block text-xs text-[var(--neutral-700)]">Priority</label>
               <div className="flex items-center gap-2">

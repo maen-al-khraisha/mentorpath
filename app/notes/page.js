@@ -12,6 +12,7 @@ import {
 import AddNoteModal from './AddNoteModal'
 import NoteCard from './NoteCard'
 import Button from '@/components/Button'
+import CustomDatePicker from '@/components/CustomDatePicker'
 import { Plus, Search, Filter, Calendar } from 'lucide-react'
 
 export default function NotesPage() {
@@ -180,11 +181,11 @@ export default function NotesPage() {
 
             {/* Date Filter */}
             <div className="flex items-center gap-2">
-              <input
-                type="date"
-                className="h-9 rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm"
+              <CustomDatePicker
                 value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
+                onChange={(date) => setDateFilter(date.toISOString().split('T')[0])}
+                name="dateFilter"
+                placeholder="Filter by date"
               />
             </div>
 

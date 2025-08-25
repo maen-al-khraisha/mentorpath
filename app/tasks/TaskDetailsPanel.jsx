@@ -209,6 +209,30 @@ export default function TaskDetailsPanel({
                 )}
               </div>
 
+              {/* Shifted Date Info (if applicable) */}
+              {isShifted && (
+                <div className="px-4 py-3 mt-2 bg-orange-50 rounded-xl border border-orange-200">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-orange-600"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    <p className="text-sm font-medium text-orange-700">
+                      Originally scheduled for{' '}
+                      <span className="font-semibold">
+                        {format(
+                          normalizeDateLocal(task?.originalDate) || new Date(),
+                          'MMM dd, yyyy'
+                        )}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Bottom Row: Completion Button - Centered and Prominent */}
               <div className="flex justify-center mt-6">
                 <Button
@@ -347,23 +371,6 @@ export default function TaskDetailsPanel({
               )}
             </div>
           </div>
-
-          {/* Shifted Date Info (if applicable) */}
-          {isShifted && (
-            <div className="px-4 py-3 bg-orange-50 rounded-xl border border-orange-200">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-orange-600" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                <p className="text-sm font-medium text-orange-700">
-                  Originally scheduled for{' '}
-                  <span className="font-semibold">
-                    {format(normalizeDateLocal(task?.originalDate) || new Date(), 'MMM dd, yyyy')}
-                  </span>
-                </p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Quick Actions Bar */}
