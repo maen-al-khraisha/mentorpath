@@ -1,5 +1,6 @@
 import './globals.css'
 import { SidebarProvider } from '@/lib/SidebarContext'
+import { Toaster } from 'react-hot-toast'
 
 export const metadata = {
   title: {
@@ -93,6 +94,77 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <SidebarProvider>{children}</SidebarProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#ffffff',
+              color: '#212529',
+              border: '1px solid #dee2e6',
+              borderRadius: '8px',
+              boxShadow: '0 0.5rem 1rem rgba(0, 0, 0, 0.15)',
+              padding: '12px 16px',
+              fontSize: '14px',
+              fontWeight: '400',
+              minWidth: '320px',
+              maxWidth: '400px',
+              lineHeight: '1.5',
+            },
+            success: {
+              duration: 4000,
+              style: {
+                background: '#d1e7dd',
+                color: '#0f5132',
+                border: '1px solid #badbcc',
+                borderLeft: '4px solid #198754',
+              },
+              iconTheme: {
+                primary: '#198754',
+                secondary: '#ffffff',
+              },
+            },
+            error: {
+              duration: 6000,
+              style: {
+                background: '#f8d7da',
+                color: '#721c24',
+                border: '1px solid #f5c2c7',
+                borderLeft: '4px solid #dc3545',
+              },
+              iconTheme: {
+                primary: '#dc3545',
+                secondary: '#ffffff',
+              },
+            },
+            warning: {
+              duration: 5000,
+              style: {
+                background: '#fff3cd',
+                color: '#856404',
+                border: '1px solid #ffeaa7',
+                borderLeft: '4px solid #ffc107',
+              },
+              iconTheme: {
+                primary: '#ffc107',
+                secondary: '#ffffff',
+              },
+            },
+            info: {
+              duration: 4000,
+              style: {
+                background: '#d1ecf1',
+                color: '#0c5460',
+                border: '1px solid #bee5eb',
+                borderLeft: '4px solid #0dcaf0',
+              },
+              iconTheme: {
+                primary: '#0dcaf0',
+                secondary: '#ffffff',
+              },
+            },
+          }}
+        />
       </body>
     </html>
   )

@@ -418,9 +418,9 @@ export default function TasksPage() {
 
         {/* Enhanced Toolbar - Full Width */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-2">
             {/* Date Navigation */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -428,7 +428,7 @@ export default function TasksPage() {
                 onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
                 aria-label="Previous day"
               >
-                <ChevronLeft size={20} className="text-slate-600" />
+                <ChevronLeft size={28} className="text-slate-600" />
               </Button>
               <CustomDatePicker
                 value={date}
@@ -443,15 +443,12 @@ export default function TasksPage() {
                 onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
                 aria-label="Next day"
               >
-                <ChevronRight size={20} className="text-slate-600" />
+                <ChevronRight size={28} className="text-slate-600" />
               </Button>
             </div>
 
             {/* Search and Filters */}
-            <div
-              className="flex-1 flex flex-col sm:flex-row gap
-            -4"
-            >
+            <div className="flex-1 flex flex-col sm:flex-row gap-6">
               <div className="relative flex-1">
                 <Search
                   size={20}
@@ -462,7 +459,7 @@ export default function TasksPage() {
                   placeholder="Search tasks by title, description, or labels..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+                  className="w-full h-12 pl-12 pr-4  rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
                 />
               </div>
 

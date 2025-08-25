@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { updateTask, addAttachment, deleteTask, removeAttachment } from '@/lib/tasksApi'
 import Button from '@/components/Button'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
+import toast from 'react-hot-toast'
 
 import {
   Play,
@@ -108,12 +109,14 @@ export default function TaskDetailsPanel({
       const updatedLabels = [...(task.labels || []), newLabel.trim()]
       updateTask(task.id, { labels: updatedLabels })
       setNewLabel('')
+      toast.success(`Label "${newLabel.trim()}" added successfully!`)
     }
   }
 
   const handleRemoveLabel = (labelToRemove) => {
     const updatedLabels = task.labels?.filter((label) => label !== labelToRemove) || []
     updateTask(task.id, { labels: updatedLabels })
+    toast.success(`Label "${labelToRemove}" removed successfully!`)
   }
 
   const handleAddChecklistItem = () => {
@@ -124,6 +127,7 @@ export default function TaskDetailsPanel({
       ]
       updateTask(task.id, { checklist: updatedChecklist })
       setNewChecklistItem('')
+      toast.success(`Checklist item "${newChecklistItem.trim()}" added successfully!`)
     }
   }
 
@@ -132,11 +136,17 @@ export default function TaskDetailsPanel({
       task.checklist?.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)) ||
       []
     updateTask(task.id, { checklist: updatedChecklist })
+
+    const item = task.checklist?.find((item) => item.id === itemId)
+    if (item) {
+      toast.success(item.done ? 'Item unchecked!' : 'Item checked! ✅')
+    }
   }
 
   const handleRemoveChecklistItem = (itemId) => {
     const updatedChecklist = task.checklist?.filter((item) => item.id !== itemId) || []
     updateTask(task.id, { checklist: updatedChecklist })
+    toast.success('Checklist item removed successfully!')
   }
 
   const isTimerActive = activeTimer?.taskId === task.id
@@ -238,7 +248,13 @@ export default function TaskDetailsPanel({
                 <Button
                   variant={task.completed ? 'primary' : 'secondary'}
                   size="lg"
-                  onClick={() => updateTask(task.id, { completed: !task.completed })}
+                  onClick={() => {
+                    const newStatus = !task.completed
+                    updateTask(task.id, { completed: newStatus })
+                    toast.success(
+                      newStatus ? 'Task marked as completed! 🎉' : 'Task marked as incomplete'
+                    )
+                  }}
                   className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
                     task.completed
                       ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl'
@@ -295,6 +311,7 @@ export default function TaskDetailsPanel({
                       onClick={() => {
                         setShowActions(false)
                         onShowChangeDate?.()
+                        toast.info('Opening date changer... 📅')
                       }}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-slate-50 transition-colors duration-200 group"
                     >
@@ -316,6 +333,7 @@ export default function TaskDetailsPanel({
                           `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
                         const toTime = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
                         onShowAddTime?.()
+                        toast.info('Opening time logger... ⏰')
                       }}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-slate-50 transition-colors duration-200 group"
                     >
@@ -332,6 +350,7 @@ export default function TaskDetailsPanel({
                       onClick={() => {
                         setShowActions(false)
                         onShowCopyModal?.()
+                        toast.info('Opening task copier... 📋')
                       }}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-slate-50 transition-colors duration-200 group"
                     >
@@ -350,10 +369,13 @@ export default function TaskDetailsPanel({
                       onClick={async () => {
                         setShowActions(false)
                         if (!confirm('Delete this task? This cannot be undone.')) return
+                        toast.warning('Deleting task...')
                         try {
                           await deleteTask(task.id)
+                          toast.success('Task deleted successfully!')
                         } catch (e) {
                           console.error('Delete failed', e)
+                          toast.error('Failed to delete task. Please try again.')
                         }
                       }}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-red-50 transition-colors duration-200 group"
@@ -389,7 +411,10 @@ export default function TaskDetailsPanel({
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => onStopTimer?.(task.id)}
+                  onClick={() => {
+                    onStopTimer?.(task.id)
+                    toast.success('Timer stopped!')
+                  }}
                   className="px-4 py-2 rounded-xl font-medium"
                 >
                   <Pause size={16} />
@@ -410,7 +435,10 @@ export default function TaskDetailsPanel({
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => onStartTimer?.(task.id)}
+                  onClick={() => {
+                    onStartTimer?.(task.id)
+                    toast.success('Timer started! ⏱️')
+                  }}
                   className="px-4 py-2 rounded-xl font-medium"
                 >
                   <Play size={16} />
@@ -421,7 +449,10 @@ export default function TaskDetailsPanel({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => onShowShiftModal?.()}
+                onClick={() => {
+                  onShowShiftModal?.()
+                  toast.success('Task shifted to tomorrow! 📅')
+                }}
                 className="px-4 py-2 rounded-xl font-medium"
               >
                 <ArrowRight size={16} />
@@ -443,7 +474,10 @@ export default function TaskDetailsPanel({
             <Button
               variant="ghost"
               className="px-3 py-2 rounded-xl hover:bg-slate-100 transition-all duration-200 text-slate-600 hover:text-slate-900"
-              onClick={() => onEditDescription?.(task.id)}
+              onClick={() => {
+                onEditDescription?.(task.id)
+                toast.info('Opening description editor... ✏️')
+              }}
             >
               <Edit size={16} className="mr-2" />
               Edit
@@ -606,11 +640,29 @@ export default function TaskDetailsPanel({
                   key={item.id}
                   className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200"
                 >
-                  <Checkbox
-                    checked={item.done}
-                    onChange={() => handleToggleChecklistItem(item.id)}
-                    className="flex-shrink-0"
-                  />
+                  <button
+                    onClick={() => handleToggleChecklistItem(item.id)}
+                    className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200 hover:scale-110 ${
+                      item.done
+                        ? 'border-emerald-500 bg-emerald-500 text-white shadow-md'
+                        : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'
+                    }`}
+                    aria-label="Toggle checklist item"
+                  >
+                    {item.done ? (
+                      <svg
+                        className="w-3.5 h-3.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                      >
+                        <path d="M5 12l5 5L20 7" />
+                      </svg>
+                    ) : (
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                    )}
+                  </button>
                   <span
                     className={`flex-1 text-sm font-medium ${
                       item.done ? 'text-slate-500 line-through' : 'text-slate-900'
@@ -680,11 +732,21 @@ export default function TaskDetailsPanel({
                 onChange={async (e) => {
                   const file = e.target.files?.[0]
                   if (!file) return
-                  if (reachedAttachmentLimit) {
-                    setUploadError('Attachment limit reached (max 3 per task)')
+
+                  // Check file size (20MB limit) - 20971520 bytes exactly as specified
+                  const maxSize = 20971520 // 20 MB in bytes
+                  if (file.size > maxSize) {
+                    toast.error('The file is too large. Please upload a file smaller than 20 MB.')
                     if (e.target) e.target.value = ''
                     return
                   }
+
+                  if (reachedAttachmentLimit) {
+                    toast.warning('Attachment limit reached (max 3 per task)')
+                    if (e.target) e.target.value = ''
+                    return
+                  }
+
                   setUploadError('')
                   setPendingAttachmentName(file.name)
                   setIsUploading(true)
@@ -692,10 +754,11 @@ export default function TaskDetailsPanel({
                     const url = await addAttachment(task.id, file)
                     setPendingAttachmentName('')
                     setLocalAttachments((prev) => [...(prev || []), { name: file.name, url }])
+                    toast.success(`File "${file.name}" uploaded successfully!`)
                   } catch (err) {
                     console.error('Attachment upload failed:', err)
                     const message = err?.message || 'Failed to upload. Please try again.'
-                    setUploadError(message)
+                    toast.error(message)
                   } finally {
                     setIsUploading(false)
                     if (e.target) e.target.value = ''
@@ -760,7 +823,10 @@ export default function TaskDetailsPanel({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => {
-                          if (attachment.url) onPreviewAttachment?.(attachment.url, attachment.name)
+                          if (attachment.url) {
+                            onPreviewAttachment?.(attachment.url, attachment.name)
+                            toast.info(`Opening "${attachment.name}"... 👁️`)
+                          }
                         }}
                         className="w-8 h-8 rounded-lg bg-blue-100 hover:bg-blue-200 flex items-center justify-center transition-colors duration-200"
                         title="View attachment"
@@ -774,15 +840,17 @@ export default function TaskDetailsPanel({
                           try {
                             await removeAttachment(task.id, attachment)
                             setLocalAttachments((prev) => prev.filter((_, i) => i !== index))
+                            toast.success(`Attachment "${attachment.name}" removed successfully!`)
                           } catch (error) {
                             console.error('Failed to remove attachment:', error)
+                            toast.error('Failed to remove attachment. Please try again.')
                           }
                         }}
                         className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200"
                         title="Remove attachment"
                         aria-label={`Remove ${attachment.name}`}
                       >
-                        <Trash2 size={16} className="text-red-600" />
+                        <X size={14} className="text-red-600" />
                       </button>
                     </div>
                   </div>
@@ -800,20 +868,6 @@ export default function TaskDetailsPanel({
           </div>
         </div>
       </div>
-      {/* Shift to Tomorrow Modal */}
-      {/* Removed as per edit hint */}
-
-      {/* Change Date Modal */}
-      {/* Removed as per edit hint */}
-
-      {/* Add Time Modal */}
-      {/* Removed as per edit hint */}
-
-      {/* Copy Task Modal */}
-      {/* Removed as per edit hint */}
-
-      {/* Attachment Preview Modal */}
-      {/* Removed as per edit hint */}
     </>
   )
 }
