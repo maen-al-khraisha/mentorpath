@@ -18,17 +18,74 @@ export default function CustomDatePicker({
   ...props
 }) {
   const [isOpen, setIsOpen] = useState(false)
-  const [currentMonth, setCurrentMonth] = useState(value ? new Date(value) : new Date())
-  const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : null)
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    try {
+      if (value) {
+        let date
+        if (value instanceof Date) {
+          date = value
+        } else if (value.toDate && typeof value.toDate === 'function') {
+          date = value.toDate()
+        } else {
+          date = new Date(value)
+        }
+        return date && !isNaN(date.getTime()) ? date : new Date()
+      }
+      return new Date()
+    } catch (error) {
+      console.error('Error initializing currentMonth:', error)
+      return new Date()
+    }
+  })
+
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (value) {
+      let date
+      if (value instanceof Date) {
+        date = value
+      } else if (value.toDate && typeof value.toDate === 'function') {
+        date = value.toDate()
+      } else {
+        date = new Date(value)
+      }
+      return date && !isNaN(date.getTime()) ? date : null
+    }
+    return null
+  })
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 })
   const buttonRef = useRef(null)
 
   // Update current month when value changes
   useEffect(() => {
     if (value) {
-      const date = new Date(value)
-      setCurrentMonth(date)
-      setSelectedDate(date)
+      let date
+
+      // Handle different date formats
+      if (value instanceof Date) {
+        date = value
+      } else if (value.toDate && typeof value.toDate === 'function') {
+        // Firestore timestamp
+        date = value.toDate()
+      } else {
+        // Try to create a Date from the value
+        date = new Date(value)
+      }
+
+      // Validate the date before setting state
+      if (date && !isNaN(date.getTime())) {
+        setCurrentMonth(date)
+        setSelectedDate(date)
+      } else {
+        // If invalid date, use current date
+        const now = new Date()
+        setCurrentMonth(now)
+        setSelectedDate(now)
+      }
+    } else {
+      // No value provided, use current date
+      const now = new Date()
+      setCurrentMonth(now)
+      setSelectedDate(now)
     }
   }, [value])
 
@@ -97,51 +154,131 @@ export default function CustomDatePicker({
   }
 
   const goToPreviousMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
+    try {
+      const newMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+      if (!isNaN(newMonth.getTime())) {
+        setCurrentMonth(newMonth)
+      }
+    } catch (error) {
+      console.error('Error going to previous month:', error)
+    }
   }
 
   const goToNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
+    try {
+      const newMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+      if (!isNaN(newMonth.getTime())) {
+        setCurrentMonth(newMonth)
+      }
+    } catch (error) {
+      console.error('Error going to next month:', error)
+    }
   }
 
   const isDateDisabled = (date) => {
-    if (minDate && date < new Date(minDate)) return true
-    if (maxDate && date > new Date(maxDate)) return true
-    return false
+    if (!date || isNaN(date.getTime())) return false
+
+    try {
+      if (minDate) {
+        const minDateObj = new Date(minDate)
+        if (!isNaN(minDateObj.getTime()) && date < minDateObj) return true
+      }
+      if (maxDate) {
+        const maxDateObj = new Date(maxDate)
+        if (!isNaN(maxDateObj.getTime()) && date > maxDateObj) return true
+      }
+      return false
+    } catch (error) {
+      console.error('Error checking if date is disabled:', error)
+      return false
+    }
   }
 
   const formatDisplayDate = (date) => {
     if (!date) return placeholder
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+
+    // Ensure date is a valid Date object
+    const dateObj = date instanceof Date ? date : new Date(date)
+
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) {
+      return placeholder
+    }
+
+    try {
+      return dateObj.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    } catch (error) {
+      console.error('Error formatting display date:', error)
+      return placeholder
+    }
   }
 
   const getISOString = (date) => {
     if (!date) return ''
-    return date.toISOString().split('T')[0] // YYYY-MM-DD format
+
+    // Ensure date is a valid Date object
+    const dateObj = date instanceof Date ? date : new Date(date)
+
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) {
+      return ''
+    }
+
+    try {
+      return dateObj.toISOString().split('T')[0] // YYYY-MM-DD format
+    } catch (error) {
+      console.error('Error converting date to ISO string:', error)
+      return ''
+    }
   }
 
   // Generate calendar days
   const generateCalendarDays = () => {
-    const year = currentMonth.getFullYear()
-    const month = currentMonth.getMonth()
-    const firstDay = new Date(year, month, 1)
-    const lastDay = new Date(year, month + 1, 0)
-    const startDate = new Date(firstDay)
-    startDate.setDate(startDate.getDate() - firstDay.getDay())
+    try {
+      if (!currentMonth || isNaN(currentMonth.getTime())) {
+        return []
+      }
 
-    const days = []
-    for (let i = 0; i < 42; i++) {
-      const currentDate = new Date(startDate)
-      currentDate.setDate(startDate.getDate() + i)
-      days.push(currentDate)
+      const year = currentMonth.getFullYear()
+      const month = currentMonth.getMonth()
+      const firstDay = new Date(year, month, 1)
+      const lastDay = new Date(year, month + 1, 0)
+
+      if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
+        return []
+      }
+
+      const startDate = new Date(firstDay)
+      startDate.setDate(startDate.getDate() - firstDay.getDay())
+
+      const days = []
+      for (let i = 0; i < 42; i++) {
+        const currentDate = new Date(startDate)
+        currentDate.setDate(startDate.getDate() + i)
+        if (!isNaN(currentDate.getTime())) {
+          days.push(currentDate)
+        }
+      }
+
+      return days
+    } catch (error) {
+      console.error('Error generating calendar days:', error)
+      return []
     }
-    return days
   }
+
+  // Ensure currentMonth is always valid
+  useEffect(() => {
+    if (!currentMonth || isNaN(currentMonth.getTime())) {
+      console.log('Resetting invalid currentMonth to current date')
+      setCurrentMonth(new Date())
+    }
+  }, [currentMonth])
 
   const calendarDays = generateCalendarDays()
 
@@ -213,7 +350,9 @@ export default function CustomDatePicker({
                   <ChevronLeft size={16} />
                 </Button>
                 <span className="font-semibold text-slate-900">
-                  {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  {currentMonth && !isNaN(currentMonth.getTime())
+                    ? currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                    : 'Invalid Date'}
                 </span>
                 <Button
                   variant="ghost"
@@ -237,29 +376,46 @@ export default function CustomDatePicker({
               {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-1">
                 {calendarDays.map((day, index) => {
-                  const isCurrentMonth = day.getMonth() === currentMonth.getMonth()
-                  const isToday = day.toDateString() === new Date().toDateString()
-                  const isSelected =
-                    selectedDate && day.toDateString() === selectedDate.toDateString()
-                  const isDisabled = isDateDisabled(day)
+                  try {
+                    if (!day || isNaN(day.getTime())) {
+                      return (
+                        <div key={index} className="p-2 text-sm text-slate-300">
+                          -
+                        </div>
+                      )
+                    }
 
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => !isDisabled && handleDateSelect(day)}
-                      disabled={isDisabled}
-                      className={`
-                        p-2 text-sm rounded-lg transition-all
-                        ${isCurrentMonth ? 'text-slate-900' : 'text-slate-400'}
-                        ${isToday ? 'bg-blue-100 text-blue-700 font-semibold' : ''}
-                        ${isSelected ? 'bg-blue-600 text-white font-semibold' : ''}
-                        ${!isCurrentMonth ? 'hover:bg-slate-50' : 'hover:bg-slate-100'}
-                        ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
-                      `}
-                    >
-                      {day.getDate()}
-                    </button>
-                  )
+                    const isCurrentMonth = day.getMonth() === currentMonth.getMonth()
+                    const isToday = day.toDateString() === new Date().toDateString()
+                    const isSelected =
+                      selectedDate && day.toDateString() === selectedDate.toDateString()
+                    const isDisabled = isDateDisabled(day)
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => !isDisabled && handleDateSelect(day)}
+                        disabled={isDisabled}
+                        className={`
+                          p-2 text-sm rounded-lg transition-all
+                          ${isCurrentMonth ? 'text-slate-900' : 'text-slate-400'}
+                          ${isToday ? 'bg-blue-100 text-blue-700 font-semibold' : ''}
+                          ${isSelected ? 'bg-blue-600 text-white font-semibold' : ''}
+                          ${!isCurrentMonth ? 'hover:bg-slate-50' : 'hover:bg-slate-100'}
+                          ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
+                        `}
+                      >
+                        {day.getDate()}
+                      </button>
+                    )
+                  } catch (error) {
+                    console.error('Error rendering calendar day:', error)
+                    return (
+                      <div key={index} className="p-2 text-sm text-slate-300">
+                        -
+                      </div>
+                    )
+                  }
                 })}
               </div>
             </div>

@@ -20,7 +20,7 @@ const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default
   ),
 })
 
-export default function TaskAddModal({ open, onClose, defaultDate }) {
+export default function TaskCopyModal({ open, onClose, task, defaultDate }) {
   const { user, loading } = useAuth()
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(defaultDate || new Date())
@@ -34,6 +34,68 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
   const [selectedFiles, setSelectedFiles] = useState([])
   const [uploadingFiles, setUploadingFiles] = useState(new Set())
   const [uploadProgress, setUploadProgress] = useState({})
+
+  // Initialize form with task data when modal opens
+  useEffect(() => {
+    if (open && task) {
+      setTitle(task.title ? `${task.title} (Copy)` : '')
+
+      // Handle date conversion properly
+      let initialDate
+      if (task.date) {
+        console.log('Task date value:', task.date)
+        console.log('Task date type:', typeof task.date)
+        console.log('Task date constructor:', task.date.constructor?.name)
+
+        try {
+          // Handle different date formats (Firestore timestamp, Date object, string, etc.)
+          if (task.date.toDate && typeof task.date.toDate === 'function') {
+            // Firestore timestamp
+            initialDate = task.date.toDate()
+            console.log('Converted from Firestore timestamp:', initialDate)
+          } else if (task.date instanceof Date) {
+            // Already a Date object
+            initialDate = task.date
+            console.log('Already a Date object:', initialDate)
+          } else {
+            // Try to create a Date from the value
+            initialDate = new Date(task.date)
+            console.log('Created new Date from value:', initialDate)
+          }
+
+          // Validate the date
+          if (isNaN(initialDate.getTime())) {
+            console.log('Invalid date, using default')
+            initialDate = defaultDate || new Date()
+          } else {
+            console.log('Valid date set:', initialDate)
+          }
+        } catch (error) {
+          console.error('Error processing task date:', error)
+          initialDate = defaultDate || new Date()
+        }
+      } else {
+        console.log('No task date, using default')
+        initialDate = defaultDate || new Date()
+      }
+
+      // Ensure we always set a valid date
+      if (initialDate && !isNaN(initialDate.getTime())) {
+        setDate(initialDate)
+        console.log('Setting valid date:', initialDate)
+      } else {
+        const fallbackDate = new Date()
+        setDate(fallbackDate)
+        console.log('Setting fallback date:', fallbackDate)
+      }
+
+      setDescription(task.description || '')
+      setPriority(task.priority || 'Medium')
+      setLabels([...(task.labels || [])])
+      setChecklist([...(task.checklist || [])])
+      setSelectedFiles([])
+    }
+  }, [open, task, defaultDate])
 
   // Dynamically import Quill CSS when modal opens
   useEffect(() => {
@@ -229,9 +291,9 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
       <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">
+        <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-purple-50 border-b border-slate-200">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -242,14 +304,17 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-blue-600"
+                className="text-purple-600"
               >
-                <path d="M12 5v14M5 12h14" />
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
               </svg>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-slate-900 font-display">Create New Task</h3>
-              <p className="text-slate-600 font-body">Add a new task to your productivity system</p>
+              <h3 className="text-2xl font-bold text-slate-900 font-display">Copy Task</h3>
+              <p className="text-slate-600 font-body">
+                Create a copy of "{task?.title}" with your modifications
+              </p>
             </div>
           </div>
         </div>
@@ -264,7 +329,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                   Task Name
                 </label>
                 <input
-                  className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
+                  className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter task name..."
@@ -291,7 +356,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                   {['High', 'Medium', 'Low'].map((p) => (
                     <label
                       key={p}
-                      className={`px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium  ${
+                      className={`px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium ${
                         priority === p
                           ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
@@ -319,7 +384,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                 <label className="block text-base font-semibold text-slate-900 mb-1">Labels</label>
                 <div className="flex items-center gap-3">
                   <input
-                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
+                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200"
                     value={labelInput}
                     onChange={(e) => setLabelInput(e.target.value)}
                     placeholder="Enter label name..."
@@ -362,7 +427,6 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                   </div>
                 )}
               </div>
-
               {/* Checklist */}
               <div>
                 <label className="block text-base font-semibold text-slate-900 mb-1">
@@ -370,7 +434,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                 </label>
                 <div className="flex items-center gap-3 mb-4">
                   <input
-                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
+                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200"
                     value={checkInput}
                     onChange={(e) => setCheckInput(e.target.value)}
                     placeholder="Add checklist item..."
@@ -419,7 +483,6 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
               </div>
             </div>
           </div>
-
           {/* Task Description */}
           <div>
             <label className="block text-base font-semibold text-slate-900 mb-1">
@@ -436,7 +499,9 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
               />
             </div>
           </div>
-
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4"></div>
+          </div>
           {/* Attachments */}
           <div className="space-y-4">
             <div>
@@ -556,7 +621,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
           <Button
             variant="secondary"
             onClick={() => onClose?.()}
-            className="px-6  rounded-xl font-medium"
+            className="px-6 rounded-xl font-medium"
           >
             Cancel
           </Button>
@@ -564,7 +629,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
             variant="primary"
             onClick={onSave}
             disabled={!user || loading || busy || !title.trim()}
-            className="px-8  rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            className="px-8 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 bg-purple-600 hover:bg-purple-700"
           >
             {loading ? (
               <>
@@ -589,7 +654,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                 >
                   <path d="M12 5v14M5 12h14" />
                 </svg>
-                Create Task
+                Create Copy
               </>
             )}
           </Button>

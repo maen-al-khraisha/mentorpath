@@ -19,16 +19,7 @@ import {
 import TaskAddModal from './TaskAddModal'
 import TaskDetailsPanel from './TaskDetailsPanel'
 import DescriptionEditModal from './DescriptionEditModal'
-
-// Dynamically import React-Quill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default), {
-  ssr: false,
-  loading: () => (
-    <div className="h-32 bg-gray-100 animate-pulse rounded flex items-center justify-center">
-      <span className="text-gray-500">Loading editor...</span>
-    </div>
-  ),
-})
+import TaskCopyModal from './TaskCopyModal'
 
 import {
   ChevronLeft,
@@ -48,7 +39,6 @@ import {
   ListTodo,
   FileText,
   Clock as ClockIcon,
-  Copy as CopyIcon,
 } from 'lucide-react'
 import Image from 'next/image'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
@@ -83,50 +73,9 @@ export default function TasksPage() {
   const [durationMinutes, setDurationMinutes] = useState('30')
   const [isSubmittingTime, setIsSubmittingTime] = useState(false)
   const [showCopyModal, setShowCopyModal] = useState(false)
-  const [copyTitle, setCopyTitle] = useState('')
-  const [copyDate, setCopyDate] = useState('')
-  const [copyPriority, setCopyPriority] = useState('Medium')
-  const [copyDescription, setCopyDescription] = useState('')
-  const [copyLabels, setCopyLabels] = useState(true)
-  const [copyChecklist, setCopyChecklist] = useState(true)
-  const [isSubmittingCopy, setIsSubmittingCopy] = useState(false)
   const [previewItem, setPreviewItem] = useState(null) // { url, name }
   const [showDescriptionModal, setShowDescriptionModal] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState(null)
-
-  // Quill editor configuration
-  const quillModules = {
-    toolbar: [
-      [{ header: [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      [{ color: [] }, { background: [] }],
-      ['link', 'blockquote', 'code-block'],
-      ['clean'],
-    ],
-  }
-
-  const quillFormats = [
-    'header',
-    'bold',
-    'italic',
-    'underline',
-    'strike',
-    'list',
-    'bullet',
-    'color',
-    'background',
-    'link',
-    'blockquote',
-    'code-block',
-  ]
-
-  // Dynamically import Quill CSS when copy modal opens
-  useEffect(() => {
-    if (showCopyModal) {
-      import('react-quill/dist/quill.snow.css')
-    }
-  }, [showCopyModal])
 
   // Modal handlers
   const handleShiftToTomorrow = async () => {
@@ -157,12 +106,6 @@ export default function TasksPage() {
 
   const handleShowCopyModal = () => {
     if (selectedTask) {
-      setCopyTitle(selectedTask.title || '')
-      setCopyDate('')
-      setCopyDescription(selectedTask.description || '')
-      setCopyPriority(selectedTask.priority || 'Medium')
-      setCopyLabels(true)
-      setCopyChecklist(true)
       setShowCopyModal(true)
     }
   }
@@ -1002,7 +945,18 @@ export default function TasksPage() {
                 </label>
                 <CustomDatePicker
                   value={targetDate}
-                  onChange={(date) => setTargetDate(date.toISOString().split('T')[0])}
+                  onChange={(date) => {
+                    try {
+                      if (date && !isNaN(date.getTime())) {
+                        setTargetDate(date.toISOString().split('T')[0])
+                      } else {
+                        setTargetDate('')
+                      }
+                    } catch (error) {
+                      console.error('Error setting target date:', error)
+                      setTargetDate('')
+                    }
+                  }}
                   name="targetDate"
                   required
                 />
@@ -1127,7 +1081,18 @@ export default function TasksPage() {
                   <div className="flex items-center gap-3">
                     <CustomDatePicker
                       value={startDate}
-                      onChange={(date) => setStartDate(date.toISOString().split('T')[0])}
+                      onChange={(date) => {
+                        try {
+                          if (date && !isNaN(date.getTime())) {
+                            setStartDate(date.toISOString().split('T')[0])
+                          } else {
+                            setStartDate('')
+                          }
+                        } catch (error) {
+                          console.error('Error setting start date:', error)
+                          setStartDate('')
+                        }
+                      }}
                       name="startDate"
                       required
                     />
@@ -1246,178 +1211,17 @@ export default function TasksPage() {
 
       {/* Copy Task Modal */}
       {showCopyModal && selectedTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
-            onClick={() => setShowCopyModal(false)}
-          />
-          <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
-            {/* Header */}
-            <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-purple-50 border-b border-slate-200 flex-shrink-0">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
-                  <CopyIcon size={24} className="text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-900 font-display">Copy Task</h3>
-                  <p className="text-slate-600 font-body">Duplicate this task with new settings</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-8 space-y-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-              {/* Current Task Info */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center">
-                    <Target size={16} className="text-slate-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-slate-700">Original Task</span>
-                </div>
-                <h4 className="text-lg font-semibold text-slate-900">{selectedTask.title}</h4>
-                <p className="text-sm text-slate-600">
-                  Task scheduled for:{' '}
-                  <span className="font-medium">
-                    {selectedTask.date
-                      ? new Date(selectedTask.date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })
-                      : 'No date set'}
-                  </span>
-                </p>
-              </div>
-
-              {/* Form Fields */}
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-base font-semibold text-slate-900 mb-1">Title</label>
-                  <input
-                    type="text"
-                    value={copyTitle}
-                    onChange={(e) => setCopyTitle(e.target.value)}
-                    className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold text-slate-900 mb-1">Date</label>
-                  <CustomDatePicker
-                    value={copyDate}
-                    onChange={(date) => setCopyDate(date.toISOString().split('T')[0])}
-                    name="copyDate"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold text-slate-900 mb-1">
-                    Priority Level
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {['High', 'Medium', 'Low'].map((p) => (
-                      <label
-                        key={p}
-                        className={`px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium ${
-                          copyPriority === p
-                            ? 'border-purple-500 bg-purple-500 text-white shadow-lg'
-                            : 'border-slate-200 bg-white text-slate-700 hover:border-purple-300 hover:bg-purple-50'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="copyPriority"
-                          value={p}
-                          className="sr-only"
-                          onChange={() => setCopyPriority(p)}
-                          checked={copyPriority === p}
-                        />
-                        {p}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-base font-semibold text-slate-900 mb-1">
-                    Description
-                  </label>
-                  <div className="border-2 border-slate-200 rounded-xl overflow-hidden">
-                    <ReactQuill
-                      value={copyDescription}
-                      onChange={setCopyDescription}
-                      modules={quillModules}
-                      formats={quillFormats}
-                      placeholder="Task description..."
-                      className="min-h-[120px]"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center gap-6 text-sm font-body">
-                  <label className="inline-flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={copyLabels}
-                      onChange={(e) => setCopyLabels(e.target.checked)}
-                      className="w-5 h-5 rounded border-2 border-slate-300 text-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:ring-offset-0"
-                    />
-                    <span className="font-medium text-slate-700">Copy labels</span>
-                  </label>
-                  <label className="inline-flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={copyChecklist}
-                      onChange={(e) => setCopyChecklist(e.target.checked)}
-                      className="w-5 h-5 rounded border-2 border-slate-300 text-purple-600 focus:ring-2 focus:ring-purple-500/20 focus:ring-offset-0"
-                    />
-                    <span className="font-medium text-slate-700">Copy checklist</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 pt-4">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowCopyModal(false)}
-                  className="px-6 py-3 rounded-xl font-medium"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={!copyTitle || isSubmittingCopy}
-                  onClick={async () => {
-                    setIsSubmittingCopy(true)
-                    try {
-                      const d = copyDate
-                        ? new Date(
-                            Number(copyDate.split('-')[0]),
-                            Number(copyDate.split('-')[1]) - 1,
-                            Number(copyDate.split('-')[2])
-                          )
-                        : new Date()
-                      await createTask({
-                        title: copyTitle,
-                        description: copyDescription,
-                        date: d,
-                        priority: copyPriority,
-                        labels: copyLabels ? selectedTask.labels || [] : [],
-                        checklist: copyChecklist ? selectedTask.checklist || [] : [],
-                      })
-                      setShowCopyModal(false)
-                    } catch (e) {
-                      console.error('Copy task failed', e)
-                    } finally {
-                      setIsSubmittingCopy(false)
-                    }
-                  }}
-                >
-                  {isSubmittingCopy ? 'Creating...' : 'Create task'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TaskCopyModal
+          open={showCopyModal}
+          onClose={(newId) => {
+            setShowCopyModal(false)
+            if (newId) {
+              setSelectedId(newId)
+            }
+          }}
+          task={selectedTask}
+          defaultDate={date}
+        />
       )}
 
       {/* Attachment Preview Modal */}
