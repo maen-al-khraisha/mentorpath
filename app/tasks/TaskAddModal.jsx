@@ -11,7 +11,7 @@ import { Paperclip, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 // Dynamically import React-Quill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), {
+const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default), {
   ssr: false,
   loading: () => (
     <div className="h-32 bg-gray-100 animate-pulse rounded flex items-center justify-center">
@@ -260,7 +260,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3 font-body">
+                <label className="block text-base font-semibold text-slate-900 mb-1 ">
                   Task Name
                 </label>
                 <input
@@ -272,7 +272,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3 font-body">
+                <label className="block text-base font-semibold text-slate-900 mb-1 ">
                   Task Date
                 </label>
                 <CustomDatePicker
@@ -284,7 +284,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3 font-body">
+                <label className="block text-base font-semibold text-slate-900 mb-1">
                   Priority Level
                 </label>
                 <div className="flex items-center gap-3">
@@ -319,7 +319,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
           {/* Task Description */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-3 font-body">
+            <label className="block text-base font-semibold text-slate-900 mb-1">
               Task Description
             </label>
             <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
@@ -336,9 +336,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
           {/* Labels */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-3 font-body">
-              Labels
-            </label>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Labels</label>
             <div className="flex items-center gap-3">
               <input
                 className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
@@ -387,9 +385,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
           {/* Checklist */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-3 font-body">
-              Checklist
-            </label>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Checklist</label>
             <div className="flex items-center gap-3 mb-4">
               <input
                 className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
