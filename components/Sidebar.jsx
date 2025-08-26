@@ -10,6 +10,7 @@ import DonationDialog from './DonationDialog'
 import ShareDialog from './ShareDialog'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/Button'
+import Logo from './Logo'
 
 export default function Sidebar({
   collapsed = false,
@@ -70,19 +71,15 @@ export default function Sidebar({
       {/* Header */}
       <div className="flex items-center justify-center px-4 py-6 border-b border-slate-200">
         <Link href="/" aria-label="Go to dashboard" className="flex items-center gap-3">
-          <div
-            className={`flex items-center justify-center rounded-xl ${
-              collapsed ? 'w-10 h-10' : 'w-12 h-12'
-            } `}
-            aria-hidden
-          >
-            <img src="/icons/logo3.png" alt="MentorPath" className="w-10 h-10" />
+          {/* Logo - Adapts to collapsed state */}
+          <div className="flex items-center justify-center">
+            <Logo
+              size={collapsed ? 'sm' : 'default'}
+              showText={!collapsed}
+              animated={true}
+              sidebarMode={true}
+            />
           </div>
-          {!collapsed && (
-            <div>
-              <span className="font-bold text-lg text-slate-900">MentorPath</span>
-            </div>
-          )}
         </Link>
       </div>
 
@@ -199,6 +196,7 @@ export default function Sidebar({
           aria-expanded={!collapsed}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           className="w-full"
+          size="icon"
         >
           {collapsed ? (
             <ChevronsRight size={18} />
@@ -249,12 +247,7 @@ export default function Sidebar({
           {/* Mobile Header */}
           <div className="flex items-center justify-between px-4 py-6 border-b border-slate-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 flex items-center justify-center">
-                <img src="/icons/logo3.png" alt="MentorPath" className="w-8 h-8" />
-              </div>
-              <div>
-                <span className="font-bold text-lg text-slate-900">MentorPath</span>
-              </div>
+              <Logo size="default" showText={true} animated={true} sidebarMode={true} />
             </div>
             <Button variant="ghost" size="icon" onClick={onCloseMobile} aria-label="Close sidebar">
               <X size={20} className="text-slate-600" />
@@ -366,7 +359,7 @@ export default function Sidebar({
           >
             <Menu size={20} className="text-white" />
           </Button>
-          <div className="font-bold text-white">MentorPath</div>
+          <Logo size="sm" showText={true} animated={false} textColor="white" />
         </div>
       </div>
 

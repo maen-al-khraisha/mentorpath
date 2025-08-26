@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebaseClient'
 import Button from '@/components/Button'
+import Logo from '@/components/Logo'
 
 export default function Header({
   title,
@@ -47,10 +48,13 @@ export default function Header({
             </svg>
           </Button>
 
-          {/* Left: tab name + slogan */}
-          <div className="flex flex-col">
-            <div className="text-lg font-bold tracking-wide text-slate-900">{title}</div>
-            <div className="text-sm text-slate-600">{subtitle}</div>
+          {/* Logo and Brand */}
+          <div className="flex items-center gap-4">
+            {/* Page Title and Subtitle */}
+            <div className="flex flex-col">
+              <div className="text-lg font-bold tracking-wide text-slate-900">{title}</div>
+              <div className="text-sm text-slate-600">{subtitle}</div>
+            </div>
           </div>
         </div>
 
