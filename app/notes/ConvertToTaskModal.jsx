@@ -6,7 +6,7 @@ import { deleteNote } from '@/lib/notesApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
-import { X, Calendar, Clock } from 'lucide-react'
+import { X, Calendar, Clock, Target, Tag, CheckSquare, FileText } from 'lucide-react'
 
 export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert }) {
   const { user, loading } = useAuth()
@@ -91,137 +91,226 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
     }
   }
 
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'High':
+        return 'bg-red-100 text-red-700 border-red-200'
+      case 'Medium':
+        return 'bg-amber-100 text-amber-700 border-amber-200'
+      case 'Low':
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200'
+      default:
+        return 'bg-slate-100 text-slate-700 border-slate-200'
+    }
+  }
+
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'High':
+        return '🔥'
+      case 'Medium':
+        return '⚡'
+      case 'Low':
+        return '🌱'
+      default:
+        return '📋'
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
-      <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => onClose?.()} />
+      <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold">Convert Note to Task</h3>
-          <Button variant="ghost" size="icon" onClick={() => onClose?.()} aria-label="Close modal">
-            <X size={20} />
-          </Button>
+        <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-green-50 border-b border-slate-200">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
+              <Target size={24} className="text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-slate-900 font-display">
+                Convert Note to Task
+              </h3>
+              <p className="text-slate-600 font-body">
+                Transform your note into an actionable task
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-6">
+        {/* Content */}
+        <div className="p-8 space-y-6">
+          {/* Original Note Preview */}
+          <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <FileText size={18} className="text-blue-600" />
+              </div>
+              <span className="text-sm font-semibold text-slate-700">Original Note</span>
+            </div>
+            <h4 className="text-lg font-semibold text-slate-900 mb-2">{note.title}</h4>
+            <p className="text-sm text-slate-600 font-body">
+              {note.description || 'No description'}
+            </p>
+            {note.labels && note.labels.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {note.labels.map((label, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Task Details Form */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-gray-900">Task Details</h4>
+          <div className="space-y-6">
+            <h4 className="text-xl font-semibold text-slate-900 font-display flex items-center gap-3">
+              <Target size={20} className="text-green-600" />
+              Task Details
+            </h4>
 
-            {/* Title */}
-            <div>
-              <label className="block text-xs text-[var(--neutral-700)] mb-1">Task name</label>
-              <input
-                className="w-full h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm focus:border-[var(--primary)] transition-colors"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Task name"
-              />
-            </div>
+            {/* Title and Description */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-base font-semibold text-slate-900 mb-1">
+                    Task Title
+                  </label>
+                  <input
+                    className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200 placeholder-slate-400"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter task title..."
+                  />
+                </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-xs text-[var(--neutral-700)] mb-1">Description</label>
-              <textarea
-                className="w-full h-24 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm focus:border-[var(--primary)] transition-colors resize-none"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Task description"
-              />
-            </div>
-
-            {/* Date and Priority Row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">Task date</label>
-                <CustomDatePicker
-                  value={date}
-                  onChange={(selectedDate) => setDate(selectedDate)}
-                  name="taskDate"
-                  required
-                />
+                <div>
+                  <label className="block text-base font-semibold text-slate-900 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    className="w-full h-32 rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200 placeholder-slate-400 resize-none"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Enter task description..."
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs text-[var(--neutral-700)] mb-1">Priority</label>
-                <div className="flex items-center gap-2">
-                  {['High', 'Medium', 'Low'].map((p) => (
-                    <label
-                      key={p}
-                      className={`px-3 h-10 inline-flex items-center rounded-lg border-2 border-[var(--border)] cursor-pointer transition-colors ${priority === p ? 'bg-[var(--primary)] text-[var(--neutral-900)] border-[var(--primary)]' : 'hover:border-[var(--primary)]'}`}
-                    >
-                      <input
-                        type="radio"
-                        name="priority"
-                        value={p}
-                        className="sr-only"
-                        onChange={() => setPriority(p)}
-                        checked={priority === p}
-                      />
-                      {p}
-                    </label>
-                  ))}
+              <div className="space-y-4">
+                {/* Date and Priority */}
+                <div>
+                  <label className="block text-base font-semibold text-slate-900 mb-1">
+                    Task Date
+                  </label>
+                  <CustomDatePicker
+                    value={date}
+                    onChange={(selectedDate) => setDate(selectedDate)}
+                    name="taskDate"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-base font-semibold text-slate-900 mb-1">
+                    Priority Level
+                  </label>
+                  <div className="flex items-center gap-3">
+                    {['High', 'Medium', 'Low'].map((p) => (
+                      <label
+                        key={p}
+                        className={`px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium ${
+                          priority === p
+                            ? 'border-green-500 bg-green-50 text-green-700 shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="priority"
+                          value={p}
+                          className="sr-only"
+                          onChange={() => setPriority(p)}
+                          checked={priority === p}
+                        />
+                        {getPriorityIcon(p)} {p}
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Labels */}
             <div>
-              <label className="block text-xs text-[var(--neutral-700)] mb-2">Labels</label>
+              <label className="block text-base font-semibold text-slate-900 mb-1 flex items-center gap-2">
+                <Tag size={18} className="text-slate-600" />
+                Labels
+              </label>
 
               {/* Existing Labels */}
               {labels.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-2">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {labels.map((label) => (
                     <span
                       key={label}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium bg-green-100 text-green-700 border border-green-200"
                     >
+                      <Tag size={14} className="text-green-600" />
                       {label}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="ml-1 text-green-600 hover:text-green-800 transition-colors p-0 h-auto"
+                      <button
                         onClick={() => removeLabel(label)}
+                        className="w-5 h-5 rounded-full bg-green-200 hover:bg-green-300 flex items-center justify-center transition-colors duration-200"
                         aria-label={`Remove label ${label}`}
                       >
-                        <X size={14} />
-                      </Button>
+                        <X size={12} className="text-green-600" />
+                      </button>
                     </span>
                   ))}
                 </div>
               )}
 
               {/* Add New Label */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <input
-                  className="flex-1 h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm focus:border-[var(--primary)] transition-colors"
-                  placeholder="Add label"
+                  className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200 placeholder-slate-400"
+                  placeholder="Enter label name..."
                   value={labelInput}
                   onChange={(e) => setLabelInput(e.target.value)}
                   onKeyPress={(e) => handleKeyPress(e, 'label')}
                 />
                 <Button
                   variant="secondary"
-                  size="sm"
+                  size="md"
                   onClick={addLabel}
                   disabled={!labelInput.trim()}
-                  className="h-10 px-3"
+                  className="px-6 py-3 rounded-xl font-medium"
                 >
-                  Add
+                  <Tag size={18} className="mr-2" />
+                  Add Label
                 </Button>
               </div>
             </div>
 
             {/* Checklist */}
             <div>
-              <label className="block text-xs text-[var(--neutral-700)] mb-2">Checklist</label>
+              <label className="block text-base font-semibold text-slate-900 mb-1 flex items-center gap-2">
+                <CheckSquare size={18} className="text-slate-600" />
+                Checklist
+              </label>
 
               {/* Existing Checklist Items */}
               {checklist.length > 0 && (
-                <div className="space-y-2 mb-2">
+                <div className="space-y-3 mb-4">
                   {checklist.map((item) => (
-                    <div key={item.id} className="flex items-center gap-2">
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200"
+                    >
                       <input
                         type="checkbox"
                         checked={item.done}
@@ -232,63 +321,79 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
                             )
                           )
                         }}
-                        className="rounded border-gray-300"
+                        className="w-5 h-5 rounded border-slate-300 text-green-600 focus:ring-green-500 focus:ring-2"
                       />
                       <span
-                        className={`flex-1 text-sm ${item.done ? 'line-through text-gray-500' : ''}`}
+                        className={`flex-1 text-sm font-medium ${
+                          item.done ? 'line-through text-slate-500' : 'text-slate-700'
+                        }`}
                       >
                         {item.text}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700 transition-colors p-0 h-auto"
+                      <button
                         onClick={() => removeCheck(item.id)}
+                        className="w-6 h-6 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200"
                         aria-label="Remove checklist item"
                       >
-                        <X size={14} />
-                      </Button>
+                        <X size={14} className="text-red-600" />
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
 
               {/* Add New Checklist Item */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <input
-                  className="flex-1 h-10 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] px-3 text-sm focus:border-[var(--primary)] transition-colors"
-                  placeholder="Add checklist item"
+                  className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200 placeholder-slate-400"
+                  placeholder="Enter checklist item..."
                   value={checkInput}
                   onChange={(e) => setCheckInput(e.target.value)}
                   onKeyPress={(e) => handleKeyPress(e, 'check')}
                 />
                 <Button
                   variant="secondary"
-                  size="sm"
+                  size="md"
                   onClick={addCheck}
                   disabled={!checkInput.trim()}
-                  className="h-10 px-3"
+                  className="px-6 py-3 rounded-xl font-medium"
                 >
-                  Add
+                  <CheckSquare size={18} className="mr-2" />
+                  Add Item
                 </Button>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-            <Button variant="ghost" onClick={() => onClose?.()} disabled={busy}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={onSave}
-              disabled={busy || !title.trim()}
-              className="px-6 py-2"
-            >
-              {busy ? 'Converting...' : 'Convert to Task'}
-            </Button>
-          </div>
+        {/* Action Buttons */}
+        <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
+          <Button
+            variant="secondary"
+            onClick={() => onClose?.()}
+            disabled={busy}
+            className="px-6 py-3 rounded-xl font-medium"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={onSave}
+            disabled={busy || !title.trim()}
+            className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            {busy ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Converting...
+              </>
+            ) : (
+              <>
+                <Target size={18} className="mr-2" />
+                Convert to Task
+              </>
+            )}
+          </Button>
         </div>
       </div>
     </div>
