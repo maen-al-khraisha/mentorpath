@@ -6,5 +6,9 @@ import Layout from '@/components/Layout'
 export default function ProtectedLayout({ children }) {
   const { user, loading } = useRequireAuth()
   if (loading || !user) return null
-  return <Layout columns="1">{children}</Layout>
+  return (
+    <Layout columns="1" user={user}>
+      {children}
+    </Layout>
+  )
 }

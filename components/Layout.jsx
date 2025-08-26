@@ -10,7 +10,7 @@ import { useSidebar } from '@/lib/SidebarContext'
 // Props:
 // - columns: string like "2|1" or "1|2|1" to control main area grid on large screens
 // - onPrevDate / onNextDate: optional callbacks passed to Header for date navigation
-export default function Layout({ children, columns = '1', onPrevDate, onNextDate }) {
+export default function Layout({ children, columns = '1', onPrevDate, onNextDate, user }) {
   const {
     sidebarCollapsed,
     mobileSidebarOpen,
@@ -50,6 +50,10 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
 
         <div className="flex-1 min-w-0 flex flex-col">
           <Header
+            user={user}
+            title="Dashboard"
+            subtitle="Your productivity overview"
+            onOpenMobileSidebar={toggleMobileSidebar}
             onPrevDate={onPrevDate}
             onNextDate={onNextDate}
             onToggleSidebarMobile={toggleMobileSidebar}

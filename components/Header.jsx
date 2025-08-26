@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Bell, Sun, User, Settings, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { firebaseSignOut } from '@/lib/useAuth'
+import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebaseClient'
 import Button from '@/components/Button'
 
@@ -119,7 +119,7 @@ export default function Header({
                   variant="ghost"
                   onClick={async () => {
                     try {
-                      await firebaseSignOut(auth)
+                      await signOut(auth)
                     } finally {
                       router.replace('/')
                     }
