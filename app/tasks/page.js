@@ -482,12 +482,12 @@ export default function TasksPage() {
 
                 <Button
                   variant="ghost"
-                  className={`p-3 rounded-xl transition-all ${
-                    viewMode === 'kanban'
-                      ? 'bg-blue-100 text-blue-700 border-blue-200'
-                      : 'hover:bg-slate-100'
+                  className={`p-3 rounded-xl transition-all duration-200 ${
+                    viewMode === 'list'
+                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                      : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
                   }`}
-                  onClick={() => setViewMode(viewMode === 'list' ? 'kanban' : 'list')}
+                  onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
                   aria-label="Toggle view mode"
                 >
                   <ListTodo size={18} />
@@ -541,6 +541,125 @@ export default function TasksPage() {
                       <Plus size={18} className="mr-2" />
                       Create New Task
                     </Button>
+                  </div>
+                ) : viewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {todo.map((t) => (
+                      <div
+                        key={t.id}
+                        className={`group border-2 border-slate-200 rounded-2xl p-5 transition-all duration-300 cursor-pointer ${
+                          selectedId === t.id
+                            ? 'bg-blue-50 border-blue-300 shadow-lg ring-4 ring-blue-100'
+                            : 'bg-white hover:bg-slate-50 hover:border-slate-300 hover:shadow-md'
+                        }`}
+                        onClick={() => setSelectedId(t.id)}
+                      >
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleTaskCompleted(t.id, !t.completed)
+                              }}
+                              className={`mt-1 w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200 hover:scale-110 ${
+                                t.completed
+                                  ? 'border-emerald-500 bg-emerald-500 text-white shadow-md'
+                                  : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'
+                              }`}
+                              aria-label="Complete task"
+                            >
+                              {t.completed ? (
+                                <svg
+                                  className="w-3.5 h-3.5"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                >
+                                  <path d="M5 12l5 5L20 7" />
+                                </svg>
+                              ) : (
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                              )}
+                            </button>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(t.priority)}`}
+                            >
+                              {getPriorityIcon(t.priority)} {t.priority}
+                            </span>
+                          </div>
+
+                          <div>
+                            <h3 className="font-semibold text-slate-900 font-body group-hover:text-blue-600 transition-colors text-base mb-3 line-clamp-2">
+                              {t.title}
+                            </h3>
+                          </div>
+
+                          {t.labels && t.labels.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {t.labels.slice(0, 2).map((label, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200"
+                                >
+                                  {label}
+                                </span>
+                              ))}
+                              {t.labels.length > 2 && (
+                                <span className="px-2 py-1 bg-slate-200 text-slate-600 text-xs font-semibold rounded-full border border-slate-300">
+                                  +{t.labels.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm text-slate-600 font-body">
+                              <span className="flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-lg">
+                                <Clock size={12} className="text-slate-500" />
+                                <span className="text-xs font-medium">
+                                  {formatTotalTime(getTaskTotalTime(t.id))}
+                                </span>
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {activeTimer && activeTimer.taskId === t.id ? (
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  aria-label="Stop timer"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleStopTimer(t.id)
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg font-medium text-xs"
+                                >
+                                  <Pause size={14} className="mr-1" />
+                                  <span className="text-xs font-mono font-body">
+                                    {formatElapsedTime(activeTimer.startTime)}
+                                  </span>
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  aria-label="Start timer"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleStartTimer(t.id)
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg font-medium shadow-sm hover:shadow-md transition-all text-xs"
+                                >
+                                  <Play size={14} className="mr-1" />
+                                  <span className="text-xs font-mono font-body">Start</span>
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <ul className="space-y-4">
@@ -694,56 +813,113 @@ export default function TasksPage() {
                 </div>
 
                 <div className="p-6">
-                  <ul className="space-y-4">
-                    {completed.map((t) => (
-                      <li
-                        key={t.id}
-                        className={`group border-2 border-slate-200 rounded-2xl p-5 transition-all duration-300 cursor-pointer ${
-                          selectedId === t.id
-                            ? 'bg-emerald-50 border-emerald-300 shadow-lg ring-4 ring-emerald-100'
-                            : 'bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 hover:shadow-md'
-                        }`}
-                        onClick={() => setSelectedId(t.id)}
-                      >
-                        <div className="flex items-center gap-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              toggleTaskCompleted(t.id, !t.completed)
-                            }}
-                            className="mt-1 w-6 h-6 rounded border-2 border-emerald-500 bg-emerald-500 text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
-                            aria-label="Completed"
-                          >
-                            <svg
-                              className="w-3.5 h-3.5"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                            >
-                              <path d="M5 12l5 5L20 7" />
-                            </svg>
-                          </button>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-slate-600 font-body line-through group-hover:text-slate-800 transition-colors text-base mb-3">
-                              {t.title}
-                            </h3>
-                            <div className="flex items-center gap-4 text-sm text-slate-500 font-body">
-                              <span className="flex items-center gap-2 px-3 py-1.5 bg-emerald-100 rounded-lg">
-                                <Clock size={14} className="text-emerald-600" />
-                                <span className="font-medium text-emerald-700">
+                  {viewMode === 'grid' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {completed.map((t) => (
+                        <div
+                          key={t.id}
+                          className={`group border-2 border-slate-200 rounded-2xl p-5 transition-all duration-300 cursor-pointer ${
+                            selectedId === t.id
+                              ? 'bg-emerald-50 border-emerald-300 shadow-lg ring-4 ring-emerald-100'
+                              : 'bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 hover:shadow-md'
+                          }`}
+                          onClick={() => setSelectedId(t.id)}
+                        >
+                          <div className="space-y-4">
+                            <div className="flex items-start justify-between">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  toggleTaskCompleted(t.id, !t.completed)
+                                }}
+                                className="mt-1 w-6 h-6 rounded border-2 border-emerald-500 bg-emerald-500 text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
+                                aria-label="Completed"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                >
+                                  <path d="M5 12l5 5L20 7" />
+                                </svg>
+                              </button>
+                              <span className="px-2 py-1 bg-emerald-200 text-emerald-800 text-xs font-semibold rounded-full">
+                                ✓ Completed
+                              </span>
+                            </div>
+
+                            <div>
+                              <h3 className="font-semibold text-slate-600 font-body line-through group-hover:text-slate-800 transition-colors text-base mb-3 line-clamp-2">
+                                {t.title}
+                              </h3>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-sm text-slate-500 font-body">
+                              <span className="flex items-center gap-1 px-2 py-1 bg-emerald-100 rounded-lg">
+                                <Clock size={12} className="text-emerald-600" />
+                                <span className="text-xs font-medium text-emerald-700">
                                   {formatTotalTime(getTaskTotalTime(t.id))}
                                 </span>
-                              </span>
-                              <span className="px-3 py-1.5 bg-emerald-200 text-emerald-800 text-xs font-semibold rounded-full">
-                                ✓ Completed
                               </span>
                             </div>
                           </div>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
+                      ))}
+                    </div>
+                  ) : (
+                    <ul className="space-y-4">
+                      {completed.map((t) => (
+                        <li
+                          key={t.id}
+                          className={`group border-2 border-slate-200 rounded-2xl p-5 transition-all duration-300 cursor-pointer ${
+                            selectedId === t.id
+                              ? 'bg-emerald-50 border-emerald-300 shadow-lg ring-4 ring-emerald-100'
+                              : 'bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 hover:shadow-md'
+                          }`}
+                          onClick={() => setSelectedId(t.id)}
+                        >
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleTaskCompleted(t.id, !t.completed)
+                              }}
+                              className="mt-1 w-6 h-6 rounded border-2 border-emerald-500 bg-emerald-500 text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
+                              aria-label="Completed"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                              >
+                                <path d="M5 12l5 5L20 7" />
+                              </svg>
+                            </button>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-slate-600 font-body line-through group-hover:text-slate-800 transition-colors text-base mb-3">
+                                {t.title}
+                              </h3>
+                              <div className="flex items-center gap-4 text-sm text-slate-500 font-body">
+                                <span className="flex items-center gap-2 px-3 py-1.5 bg-emerald-100 rounded-lg">
+                                  <Clock size={14} className="text-emerald-600" />
+                                  <span className="font-medium text-emerald-700">
+                                    {formatTotalTime(getTaskTotalTime(t.id))}
+                                  </span>
+                                </span>
+                                <span className="px-3 py-1.5 bg-emerald-200 text-emerald-800 text-xs font-semibold rounded-full">
+                                  ✓ Completed
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             )}
