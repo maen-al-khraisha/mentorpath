@@ -59,7 +59,7 @@ export default function Sidebar({
   }
 
   const renderIcon = (icon) => {
-    const size = collapsed ? 24 : 18
+    const size = collapsed ? 24 : 20
     const props = { size, strokeWidth: 1.6 }
     return React.createElement(icon, props)
   }
@@ -73,12 +73,21 @@ export default function Sidebar({
         <Link href="/" aria-label="Go to dashboard" className="flex items-center gap-3">
           {/* Logo - Adapts to collapsed state */}
           <div className="flex items-center justify-center">
-            <Logo
-              size={collapsed ? 'sm' : 'default'}
-              showText={!collapsed}
-              animated={true}
-              sidebarMode={true}
-            />
+            {collapsed ? (
+              <Logo size="sm" showText={false} animated={true} sidebarMode={true} />
+            ) : (
+              <div className="flex items-center gap-4">
+                <Logo size="default" showText={false} animated={true} sidebarMode={false} />
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent font-display">
+                    Mentor Path
+                  </span>
+                  <span className="text-xs font-medium text-slate-500 tracking-wide">
+                    Productivity Platform
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </Link>
       </div>
@@ -86,7 +95,7 @@ export default function Sidebar({
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-4">
         {/* Top Navigation Group */}
-        <div className="px-3 space-y-2">
+        <div className={`${collapsed ? 'flex justify-center' : 'px-3'} space-y-2`}>
           <ul className="space-y-2">
             {navConfig.slice(0, 7).map((item) => {
               const isActive = pathname === item.href
@@ -94,7 +103,7 @@ export default function Sidebar({
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`group flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-300 ${
+                    className={`group flex items-center gap-3 w-full px-3 py-4 rounded-xl transition-all duration-300 ${
                       isActive
                         ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-elevated'
                         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -104,14 +113,14 @@ export default function Sidebar({
                   >
                     <span
                       className={`flex items-center justify-center ${
-                        collapsed ? 'w-8 h-8' : 'min-w-[20px] p-2'
+                        collapsed ? 'w-[22px] h-[22px]' : 'min-w-[20px]'
                       } rounded-lg ${
                         isActive
                           ? '' // No hover background for active items
-                          : 'hover:bg-slate-200'
+                          : 'hover:bg-slate-200 animate-pulse '
                       }`}
                     >
-                      {renderIcon(item.icon)}
+                      {renderIcon(item.icon, collapsed ? 22 : 20)}
                     </span>
                     {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
                   </Link>
@@ -122,7 +131,7 @@ export default function Sidebar({
         </div>
 
         {/* Bottom Navigation Group (Admin) */}
-        <div className="px-3 space-y-2 mt-6">
+        <div className={`${collapsed ? 'flex justify-center' : 'px-3'} space-y-2 mt-6`}>
           <ul className="space-y-2">
             {navConfig.slice(7).map((item) => {
               if (item.showForAdmin && !item.showForAdminPlaceholder) {
@@ -144,14 +153,14 @@ export default function Sidebar({
                   >
                     <span
                       className={`flex items-center justify-center ${
-                        collapsed ? 'w-8 h-8' : 'min-w-[20px] p-2'
+                        collapsed ? 'w-[42px] h-[42px]' : 'min-w-[20px] p-2'
                       } rounded-lg ${
                         isActive
                           ? '' // No hover background for active items
                           : 'hover:bg-slate-200'
                       }`}
                     >
-                      {renderIcon(item.icon)}
+                      {renderIcon(item.icon, collapsed ? 22 : 20)}
                     </span>
                     {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
                   </Link>
@@ -163,27 +172,31 @@ export default function Sidebar({
       </div>
 
       {/* Donate Button */}
-      <div className="px-3 py-2 border-t border-slate-200">
+      <div
+        className={`${collapsed ? 'flex justify-center' : 'px-3'} py-2 border-t border-slate-200`}
+      >
         <Button
           variant="primary"
           onClick={() => setShowDonationDialog(true)}
-          className="w-full"
+          className={`${collapsed ? 'w-[42px] h-[42px]' : 'w-full'}`}
           title={collapsed ? 'Donate' : 'Support Development'}
+          size={collapsed ? 'icon' : 'default'}
         >
-          <Heart size={collapsed ? 18 : 16} className="animate-pulse" />
+          <Heart size={collapsed ? 22 : 20} className="animate-pulse" />
           {!collapsed && <span className="text-sm font-medium ml-2">Donate</span>}
         </Button>
       </div>
 
       {/* Share Button */}
-      <div className="px-3 py-2">
+      <div className={`${collapsed ? 'flex justify-center' : 'px-3'} py-2`}>
         <Button
           variant="primary"
           onClick={handleShare}
-          className="w-full"
+          className={`${collapsed ? 'w-[42px] h-[42px]' : 'w-full'}`}
           title={collapsed ? 'Share' : 'Share this app'}
+          size={collapsed ? 'icon' : 'default'}
         >
-          <Share2 size={collapsed ? 18 : 16} />
+          <Share2 size={collapsed ? 22 : 20} className="animate-pulse" />
           {!collapsed && <span className="text-sm font-medium ml-2">Share</span>}
         </Button>
       </div>

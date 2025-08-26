@@ -14,6 +14,7 @@ import {
 } from 'firebase/auth'
 import { auth } from '@/lib/firebaseClient'
 import Button from '@/components/Button'
+import Logo from '@/components/Logo'
 
 export default function MainHeader() {
   const authClient = auth
@@ -90,8 +91,8 @@ export default function MainHeader() {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
       {/* Logo */}
-      <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white">
-        MentorPath
+      <Link href="/" className="flex items-center">
+        <Logo size="lg" showText={true} animated={true} />
       </Link>
 
       {/* Navigation */}

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { firestore } from '@/lib/firebaseClient'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import Button from '@/components/Button'
+import Logo from '@/components/Logo'
 
 export default function FooterLanding() {
   const [form, setForm] = useState({ name: '', email: '', type: 'suggestion', message: '' })
@@ -50,8 +51,7 @@ export default function FooterLanding() {
       <div className="mx-auto max-w-6xl px-4 py-10 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-[var(--primary)]" aria-hidden />
-            <div className="text-sm font-semibold text-[var(--neutral-900)]">MentorPath</div>
+            <Logo size="sm" showText={true} animated={false} />
           </div>
           <p className="mt-3 text-sm text-[var(--neutral-700)] max-w-md">
             Built for mentors and makers. We care about momentum and clarity.
@@ -168,8 +168,14 @@ export default function FooterLanding() {
           </div>
         </form>
       </div>
-      <div className="text-center text-[11px] text-[var(--neutral-700)] pb-6">
-        © {new Date().getFullYear()} MentorPath
+      <div className="text-center pb-6">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Logo size="sm" showText={false} animated={false} />
+          <span className="text-[11px] text-[var(--neutral-700)]">MentorPath</span>
+        </div>
+        <div className="text-[11px] text-[var(--neutral-700)]">
+          © {new Date().getFullYear()} All rights reserved
+        </div>
       </div>
     </footer>
   )

@@ -6,6 +6,7 @@ import ScreenshotModal from '@/components/ScreenshotModal'
 import { useState } from 'react'
 import { ArrowRight, Play, Zap, Target, TrendingUp } from 'lucide-react'
 import Button from '@/components/Button'
+import Logo from '@/components/Logo'
 
 export default function Hero() {
   const [open, setOpen] = useState(false)
@@ -18,6 +19,11 @@ export default function Hero() {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-4xl mx-auto">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <Logo size="xl" showText={true} animated={true} />
+          </div>
+          
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-full text-sm font-medium text-slate-700 mb-8 shadow-soft">
             <Zap className="w-4 h-4 text-indigo-500" />
@@ -88,7 +94,9 @@ export default function Hero() {
                   <div className="w-3 h-3 bg-yellow-400 rounded-full" />
                   <div className="w-3 h-3 bg-green-400 rounded-full" />
                 </div>
-                <div className="ml-4 text-sm text-slate-600 font-medium">MentorPath Dashboard</div>
+                <div className="ml-4 flex items-center">
+                  <Logo size="sm" showText={true} animated={false} />
+                </div>
               </div>
 
               {/* Mockup content */}
