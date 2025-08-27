@@ -125,6 +125,7 @@ html[data-theme='dark'] {
 
 html {
   font-size: 14px;
+  overflow-y: scroll;
 }
 
 body {

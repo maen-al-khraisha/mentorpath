@@ -600,7 +600,7 @@ export default function TasksPage() {
 
               <div className="p-6">
                 {todo.length === 0 ? (
-                  <div className="text-center py-16">
+                  <div className="text-center py-16 hidden">
                     <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Target size={32} className="text-slate-400" />
                     </div>
