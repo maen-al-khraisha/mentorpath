@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 
-import { Paperclip, X } from 'lucide-react'
+import { Paperclip, X, Target, Plus, List, TargetIcon } from 'lucide-react'
 import LabelBadge from '@/components/LabelBadge'
 import toast from 'react-hot-toast'
 
@@ -258,23 +258,47 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
         {/* Content */}
         <div className="p-8 space-y-6">
-          {/* Basic Task Information */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1 ">
-                  Task Name
-                </label>
-                <input
-                  className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter task name..."
+          {/* Task Details Form */}
+          <div className="space-y-6">
+            <h4 className="text-xl font-semibold text-slate-900 font-display flex items-center gap-3">
+              <TargetIcon size={20} className="text-blue-600" />
+              Task Details
+            </h4>
+
+            {/* Task Title */}
+            <div>
+              <label className="block text-base font-semibold text-slate-900 mb-1">
+                Task Title
+              </label>
+              <input
+                className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter task title..."
+              />
+            </div>
+
+            {/* Task Description - Full Width */}
+            <div>
+              <label className="block text-base font-semibold text-slate-900 mb-1">
+                Task Description
+              </label>
+              <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
+                <ReactQuill
+                  value={description}
+                  onChange={setDescription}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Describe your task..."
+                  className="min-h-[200px]"
                 />
               </div>
+            </div>
 
+            {/* Date and Priority - Side by Side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1 ">
+                <label className="block text-base font-semibold text-slate-900 mb-1">
                   Task Date
                 </label>
                 <CustomDatePicker
@@ -290,61 +314,97 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                   Priority Level
                 </label>
                 <div className="flex items-center gap-3">
-                  {['High', 'Medium', 'Low'].map((p) => (
-                    <label
-                      key={p}
-                      className={`px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium  ${
-                        priority === p
-                          ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="priority"
-                        value={p}
-                        className="sr-only"
-                        onChange={() => setPriority(p)}
-                        checked={priority === p}
-                      />
-                      {p}
-                    </label>
-                  ))}
+                  {['High', 'Medium', 'Low'].map((p) => {
+                    const getPriorityColors = (priority, isSelected) => {
+                      switch (priority) {
+                        case 'High':
+                          return isSelected
+                            ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-sm'
+                            : 'border-rose-200 bg-white text-rose-600 hover:border-rose-300 hover:bg-rose-50'
+                        case 'Medium':
+                          return isSelected
+                            ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
+                            : 'border-amber-200 bg-white text-amber-600 hover:border-amber-300 hover:bg-amber-50'
+                        case 'Low':
+                          return isSelected
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
+                            : 'border-emerald-200 bg-white text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50'
+                        default:
+                          return isSelected
+                            ? 'border-slate-500 bg-slate-50 text-slate-700 shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                      }
+                    }
+
+                    const getPriorityIcon = (priority) => {
+                      switch (priority) {
+                        case 'High':
+                          return '🔥'
+                        case 'Medium':
+                          return '⚡'
+                        case 'Low':
+                          return '🌱'
+                        default:
+                          return '📋'
+                      }
+                    }
+
+                    return (
+                      <label
+                        key={p}
+                        className={`px-4 h-[42px] flex items-center rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium ${getPriorityColors(p, priority === p)}`}
+                      >
+                        <input
+                          type="radio"
+                          n
+                          ame="priority"
+                          value={p}
+                          className="sr-only"
+                          onChange={() => setPriority(p)}
+                          checked={priority === p}
+                        />
+                        {getPriorityIcon(p)} {p}
+                      </label>
+                    )
+                  })}
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              {/* Right column content can be added here in the future if needed */}
+            {/* Labels and Checklist - Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Labels */}
               <div>
                 <label className="block text-base font-semibold text-slate-900 mb-1">Labels</label>
-                <div className="flex items-center gap-3">
+
+                {/* Add New Label */}
+                <div className="flex items-center gap-3 mb-4">
                   <input
-                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
+                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+                    placeholder="Enter label name..."
                     value={labelInput}
                     onChange={(e) => setLabelInput(e.target.value)}
-                    placeholder="Enter label name..."
                     onKeyPress={(e) => e.key === 'Enter' && addLabel()}
                   />
                   <Button
-                    variant="secondary"
-                    size="md"
+                    variant="primary"
+                    size="icon"
                     onClick={addLabel}
-                    className="px-6 py-3 rounded-xl font-medium"
+                    disabled={!labelInput.trim()}
                   >
-                    Add Label
+                    <Plus size={18} />
                   </Button>
                 </div>
+
+                {/* Existing Labels */}
                 {labels.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-3">
+                  <div className="flex flex-wrap gap-2">
                     {labels.map((label, index) => (
                       <LabelBadge
                         key={index}
                         label={label}
                         onRemove={() => setLabels((ls) => ls.filter((_, i) => i !== index))}
                         showRemoveButton={true}
-                        variant="blue"
                       />
                     ))}
                   </div>
@@ -356,25 +416,29 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                 <label className="block text-base font-semibold text-slate-900 mb-1">
                   Checklist
                 </label>
+
+                {/* Add New Checklist Item */}
                 <div className="flex items-center gap-3 mb-4">
                   <input
-                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
+                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+                    placeholder="Enter checklist item..."
                     value={checkInput}
                     onChange={(e) => setCheckInput(e.target.value)}
-                    placeholder="Add checklist item..."
                     onKeyPress={(e) => e.key === 'Enter' && addCheck()}
                   />
                   <Button
-                    variant="secondary"
-                    size="md"
+                    variant="primary"
+                    size="icon"
                     onClick={addCheck}
-                    className="px-6 py-3 rounded-xl font-medium"
+                    disabled={!checkInput.trim()}
                   >
-                    Add Item
+                    <Plus size={18} />
                   </Button>
                 </div>
+
+                {/* Existing Checklist Items */}
                 {checklist.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {checklist.map((c) => (
                       <div
                         key={c.id}
@@ -387,41 +451,16 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                         </span>
                         <button
                           onClick={() => setChecklist((ls) => ls.filter((x) => x.id !== c.id))}
-                          className="w-6 h-6 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors"
+                          aria-label="Remove checklist item"
+                          className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
                         >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M18 6L6 18M6 6l12 12" />
-                          </svg>
+                          <X size={14} className="text-red-600" />
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Task Description */}
-          <div>
-            <label className="block text-base font-semibold text-slate-900 mb-1">
-              Task Description
-            </label>
-            <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
-              <ReactQuill
-                value={description}
-                onChange={setDescription}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder="Describe your task..."
-                className="min-h-[120px]"
-              />
             </div>
           </div>
 
