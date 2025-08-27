@@ -42,6 +42,8 @@ export default function TaskDetailsPanel({
   onEditDescription,
 }) {
   const [description, setDescription] = useState(task?.description || '')
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [editingTitleValue, setEditingTitleValue] = useState(task?.title || '')
   const [editingLabels, setEditingLabels] = useState(false)
   const [newLabel, setNewLabel] = useState('')
   const [newChecklistItem, setNewChecklistItem] = useState('')
@@ -52,6 +54,38 @@ export default function TaskDetailsPanel({
   const reachedAttachmentLimit = (localAttachments?.length || 0) >= 3
   const [showActions, setShowActions] = useState(false)
   const actionsRef = useRef(null)
+
+  // Handle title editing
+  const handleTitleSave = async () => {
+    console.log('handleTitleSave called with task:', task)
+    console.log('task.id:', task?.id)
+
+    if (!task?.id) {
+      console.error('Task ID is undefined or null:', task)
+      toast.error('Cannot update task: Invalid task ID')
+      setEditingTitle(false)
+      return
+    }
+
+    if (editingTitleValue.trim() && editingTitleValue !== task.title) {
+      try {
+        await updateTask(task.id, { title: editingTitleValue.trim() })
+        toast.success('Task title updated successfully!')
+        onUpdate?.()
+      } catch (error) {
+        console.error('Failed to update task title:', error)
+        toast.error('Failed to update task title')
+        setEditingTitleValue(task.title) // Reset to original value
+      }
+    }
+    setEditingTitle(false)
+  }
+
+  // Handle title edit cancel
+  const handleTitleCancel = () => {
+    setEditingTitleValue(task.title)
+    setEditingTitle(false)
+  }
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -98,13 +132,41 @@ export default function TaskDetailsPanel({
 
   useEffect(() => {
     setLocalAttachments(task?.attachments || [])
+  }, [task?.attachments])
+
+  // Update editing title value when task changes
+  useEffect(() => {
+    setEditingTitleValue(task?.title || '')
+  }, [task?.title])
+
+  // Debug task changes
+  useEffect(() => {
+    console.log('TaskDetailsPanel: task prop changed:', task)
+    console.log('TaskDetailsPanel: task.id:', task?.id)
+    console.log('TaskDetailsPanel: task type:', typeof task)
+    console.log('TaskDetailsPanel: task keys:', task ? Object.keys(task) : 'no task')
   }, [task])
 
   if (!task) {
     return <div className="text-sm text-[var(--neutral-700)]">Select a task to see details.</div>
   }
 
+  if (!task.id) {
+    console.error('Task object is missing ID:', task)
+    return (
+      <div className="text-sm text-[var(--neutral-700)]">
+        Invalid task data. Please select a valid task.
+      </div>
+    )
+  }
+
   const handleAddLabel = () => {
+    if (!task?.id) {
+      console.error('Task ID is undefined in handleAddLabel:', task)
+      toast.error('Cannot update task: Invalid task ID')
+      return
+    }
+
     if (newLabel.trim() && !task.labels?.includes(newLabel.trim())) {
       const updatedLabels = [...(task.labels || []), newLabel.trim()]
       updateTask(task.id, { labels: updatedLabels })
@@ -114,12 +176,24 @@ export default function TaskDetailsPanel({
   }
 
   const handleRemoveLabel = (labelToRemove) => {
+    if (!task?.id) {
+      console.error('Task ID is undefined in handleRemoveLabel:', task)
+      toast.error('Cannot update task: Invalid task ID')
+      return
+    }
+
     const updatedLabels = task.labels?.filter((label) => label !== labelToRemove) || []
     updateTask(task.id, { labels: updatedLabels })
     toast.success(`Label "${labelToRemove}" removed successfully!`)
   }
 
   const handleAddChecklistItem = () => {
+    if (!task?.id) {
+      console.error('Task ID is undefined in handleAddChecklistItem:', task)
+      toast.error('Cannot update task: Invalid task ID')
+      return
+    }
+
     if (newChecklistItem.trim()) {
       const updatedChecklist = [
         ...(task.checklist || []),
@@ -132,6 +206,12 @@ export default function TaskDetailsPanel({
   }
 
   const handleToggleChecklistItem = (itemId) => {
+    if (!task?.id) {
+      console.error('Task ID is undefined in handleToggleChecklistItem:', task)
+      toast.error('Cannot update task: Invalid task ID')
+      return
+    }
+
     const updatedChecklist =
       task.checklist?.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)) ||
       []
@@ -144,6 +224,12 @@ export default function TaskDetailsPanel({
   }
 
   const handleRemoveChecklistItem = (itemId) => {
+    if (!task?.id) {
+      console.error('Task ID is undefined in handleRemoveChecklistItem:', task)
+      toast.error('Cannot update task: Invalid task ID')
+      return
+    }
+
     const updatedChecklist = task.checklist?.filter((item) => item.id !== itemId) || []
     updateTask(task.id, { checklist: updatedChecklist })
     toast.success('Checklist item removed successfully!')
@@ -169,7 +255,60 @@ export default function TaskDetailsPanel({
           {/* Title & Actions Row */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-slate-900 leading-tight mb-2">{task.title}</h1>
+              {editingTitle ? (
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={editingTitleValue}
+                    onChange={(e) => setEditingTitleValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleTitleSave()
+                      if (e.key === 'Escape') handleTitleCancel()
+                    }}
+                    className="text-2xl font-bold text-slate-900 leading-tight bg-white border-2 border-blue-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleTitleSave}
+                    className="w-8 h-8 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg flex items-center justify-center transition-colors duration-200"
+                    title="Save title"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
+                      <path d="M5 12l5 5L20 7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={handleTitleCancel}
+                    className="w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center justify-center transition-colors duration-200"
+                    title="Cancel edit"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mb-2">
+                  <h1
+                    className="text-2xl font-bold text-slate-900 leading-tight cursor-pointer hover:text-blue-600 transition-colors duration-200"
+                    onClick={() => setEditingTitle(true)}
+                    title="Click to edit title"
+                  >
+                    {task.title}
+                  </h1>
+                  <button
+                    onClick={() => setEditingTitle(true)}
+                    className="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg flex items-center justify-center transition-colors duration-200 opacity-0 group-hover:opacity-100"
+                    title="Edit title"
+                  >
+                    <Edit size={14} />
+                  </button>
+                </div>
+              )}
 
               {/* Priority & Status Badges */}
               <div className="flex items-center gap-3 flex-wrap">
@@ -182,15 +321,13 @@ export default function TaskDetailsPanel({
                         : 'bg-amber-100 text-amber-700 border border-amber-200'
                   }`}
                 >
-                  <span
-                    className={`w-2.5 h-2.5 rounded-full mr-2 ${
-                      (task.priority || 'Medium') === 'High'
-                        ? 'bg-red-500'
-                        : (task.priority || 'Medium') === 'Low'
-                          ? 'bg-green-500'
-                          : 'bg-amber-500'
-                    }`}
-                  ></span>
+                  <span className="mr-2 text-base">
+                    {(task.priority || 'Medium') === 'High'
+                      ? '🔥'
+                      : (task.priority || 'Medium') === 'Low'
+                        ? '🌱'
+                        : '⚡'}
+                  </span>
                   {task.priority || 'Medium'} Priority
                 </span>
 
@@ -249,6 +386,12 @@ export default function TaskDetailsPanel({
                   variant={task.completed ? 'primary' : 'secondary'}
                   size="lg"
                   onClick={() => {
+                    if (!task?.id) {
+                      console.error('Task ID is undefined in completion button:', task)
+                      toast.error('Cannot update task: Invalid task ID')
+                      return
+                    }
+
                     const newStatus = !task.completed
                     updateTask(task.id, { completed: newStatus })
                     toast.success(
@@ -530,7 +673,14 @@ export default function TaskDetailsPanel({
                   name="priority"
                   value={p}
                   className="sr-only"
-                  onChange={() => updateTask(task.id, { priority: p })}
+                  onChange={() => {
+                    if (!task?.id) {
+                      console.error('Task ID is undefined in priority change:', task)
+                      toast.error('Cannot update task: Invalid task ID')
+                      return
+                    }
+                    updateTask(task.id, { priority: p })
+                  }}
                   checked={(task.priority || 'Medium') === p}
                 />
                 {p}

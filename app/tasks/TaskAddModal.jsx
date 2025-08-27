@@ -114,6 +114,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
       }
 
       // Task created successfully
+      toast.success(`Task "${title}" created successfully!`)
       onClose?.(id)
       setTitle('')
       setDescription('')

@@ -176,6 +176,7 @@ export default function TaskCopyModal({ open, onClose, task, defaultDate }) {
       }
 
       // Task created successfully
+      toast.success(`Task "${title}" copied successfully!`)
       onClose?.(id)
       setTitle('')
       setDescription('')

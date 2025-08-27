@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 import { X, Calendar, Clock, Target, Tag, CheckSquare, FileText } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert }) {
   const { user, loading } = useAuth()
@@ -52,6 +53,14 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
       // Close modal and notify parent
       onClose?.()
       onConvert?.(note.id, taskId)
+      toast.success('Note converted to task!', {
+        style: {
+          background: '#333',
+          color: '#fff',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        },
+      })
     } catch (e) {
       console.error(e)
       alert('Failed to convert note to task: ' + e.message)

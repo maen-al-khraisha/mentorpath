@@ -112,8 +112,10 @@ export default function CustomDatePicker({
   }, [isOpen])
 
   const handleDateSelect = (date) => {
-    setSelectedDate(date)
-    onChange(date)
+    // Create a new date using local components to avoid timezone issues
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    setSelectedDate(localDate)
+    onChange(localDate)
     setIsOpen(false)
   }
 

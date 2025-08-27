@@ -94,19 +94,65 @@ export default function TasksPage() {
   }
 
   const handleSaveDescription = async (newDescription) => {
-    if (
-      editingTaskId &&
-      newDescription !== tasks.find((t) => t.id === editingTaskId)?.description
-    ) {
-      await updateTask(editingTaskId, { description: newDescription })
-      setShowDescriptionModal(false)
-      setEditingTaskId(null)
+    if (!editingTaskId) {
+      console.error('editingTaskId is undefined or null in handleSaveDescription')
+      return
+    }
+
+    const task = tasks.find((t) => t.id === editingTaskId)
+    if (!task) {
+      console.error('Task not found for editingTaskId:', editingTaskId)
+      return
+    }
+
+    if (newDescription !== task.description) {
+      try {
+        await updateTask(editingTaskId, { description: newDescription })
+        setShowDescriptionModal(false)
+        setEditingTaskId(null)
+      } catch (error) {
+        console.error('Failed to update task description:', error)
+      }
     }
   }
 
   const handleShowCopyModal = () => {
     if (selectedTask) {
       setShowCopyModal(true)
+    }
+  }
+
+  const handleShowChangeDate = () => {
+    if (selectedTask) {
+      // Set default date to current task date
+      const currentTaskDate = selectedTask.date
+      if (currentTaskDate) {
+        // Convert Firestore timestamp or date to yyyy-mm-dd format
+        let dateObj
+        if (currentTaskDate.toDate && typeof currentTaskDate.toDate === 'function') {
+          // Firestore timestamp
+          dateObj = currentTaskDate.toDate()
+        } else {
+          // Regular date
+          dateObj = new Date(currentTaskDate)
+        }
+
+        if (!isNaN(dateObj.getTime())) {
+          const year = dateObj.getFullYear()
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+          const day = String(dateObj.getDate()).padStart(2, '0')
+          setTargetDate(`${year}-${month}-${day}`)
+        } else {
+          setTargetDate('')
+        }
+      } else {
+        setTargetDate('')
+      }
+
+      // Reset other form state
+      setTargetReason('')
+      setIsSubmittingChangeDate(false)
+      setShowChangeDate(true)
     }
   }
 
@@ -123,6 +169,15 @@ export default function TasksPage() {
       unsubSessions && unsubSessions()
     }
   }, [user, loading, date])
+
+  // Debug: Monitor tasks for invalid data
+  useEffect(() => {
+    console.log('Tasks state changed:', tasks)
+    const invalidTasks = tasks.filter((t) => !t.id)
+    if (invalidTasks.length > 0) {
+      console.error('Found tasks without IDs:', invalidTasks)
+    }
+  }, [tasks])
 
   // Helper to sum total work time for a task (in seconds)
   function getTaskTotalTime(taskId) {
@@ -194,7 +249,11 @@ export default function TasksPage() {
 
   const todo = applyFilters(tasks.filter((t) => !t.completed))
   const completed = applyFilters(tasks.filter((t) => t.completed))
-  const selectedTask = useMemo(() => tasks.find((t) => t.id === selectedId), [tasks, selectedId])
+  const selectedTask = useMemo(() => {
+    const found = tasks.find((t) => t.id === selectedId)
+    console.log('selectedTask useMemo:', { selectedId, tasksLength: tasks.length, found })
+    return found
+  }, [tasks, selectedId])
 
   // Auto-select first task when list loads
   useEffect(() => {
@@ -928,16 +987,22 @@ export default function TasksPage() {
           {/* Right column - Task Details */}
           <div className="lg:col-span-3">
             <div className="sticky top-20">
-              {selectedTask ? (
+              {selectedTask && selectedTask.id ? (
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
                   <TaskDetailsPanel
                     task={selectedTask}
-                    onUpdate={updateTask}
+                    onUpdate={() => {
+                      // Refresh tasks after update
+                      if (selectedTask?.id) {
+                        // Force a refresh of the selected task
+                        setSelectedId(selectedTask.id)
+                      }
+                    }}
                     onStartTimer={handleStartTimer}
                     onStopTimer={handleStopTimer}
                     activeTimer={activeTimer}
                     onShowShiftModal={() => setShowShiftModal(true)}
-                    onShowChangeDate={() => setShowChangeDate(true)}
+                    onShowChangeDate={handleShowChangeDate}
                     onShowAddTime={() => setShowAddTime(true)}
                     onShowCopyModal={handleShowCopyModal}
                     onPreviewAttachment={handlePreviewAttachment}
@@ -966,7 +1031,7 @@ export default function TasksPage() {
         </div>
 
         {/* Mobile Task Details Modal */}
-        {selectedTask && (
+        {selectedTask && selectedTask.id && (
           <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true">
             <div
               className="absolute inset-0 bg-black/60 backdrop-blur-md"
@@ -995,12 +1060,18 @@ export default function TasksPage() {
               <div className="p-6 overflow-y-auto max-h-[calc(92vh-120px)]">
                 <TaskDetailsPanel
                   task={selectedTask}
-                  onUpdate={updateTask}
+                  onUpdate={() => {
+                    // Refresh tasks after update
+                    if (selectedTask?.id) {
+                      // Force a refresh of the selected task
+                      setSelectedId(selectedTask.id)
+                    }
+                  }}
                   onStartTimer={handleStartTimer}
                   onStopTimer={handleStopTimer}
                   activeTimer={activeTimer}
                   onShowShiftModal={() => setShowShiftModal(true)}
-                  onShowChangeDate={() => setShowChangeDate(true)}
+                  onShowChangeDate={handleShowChangeDate}
                   onShowAddTime={() => setShowAddTime(true)}
                   onShowCopyModal={handleShowCopyModal}
                   onPreviewAttachment={handlePreviewAttachment}
@@ -1124,7 +1195,13 @@ export default function TasksPage() {
                   onChange={(date) => {
                     try {
                       if (date && !isNaN(date.getTime())) {
-                        setTargetDate(date.toISOString().split('T')[0])
+                        // Create date string manually to avoid timezone issues
+                        // Use local date components instead of toISOString()
+                        const year = date.getFullYear()
+                        const month = String(date.getMonth() + 1).padStart(2, '0')
+                        const day = String(date.getDate()).padStart(2, '0')
+                        const dateString = `${year}-${month}-${day}`
+                        setTargetDate(dateString)
                       } else {
                         setTargetDate('')
                       }
@@ -1151,51 +1228,51 @@ export default function TasksPage() {
                   className="w-full rounded-xl border-2 border-slate-200 bg-white p-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400 resize-none"
                 />
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 pt-4">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowChangeDate(false)}
-                  className="px-6 py-3 rounded-xl font-medium"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={!targetDate || isSubmittingChangeDate}
-                  onClick={async () => {
-                    if (!targetDate) return
-                    setIsSubmittingChangeDate(true)
-                    try {
-                      // Construct Date from yyyy-mm-dd
-                      const parts = targetDate.split('-')
-                      const dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
-                      await shiftTaskToDate(selectedTask.id, dt, targetReason)
-                      setShowChangeDate(false)
-                      setTargetDate('')
-                      setTargetReason('')
-                    } catch (e) {
-                      console.error('Change date failed', e)
-                    } finally {
-                      setIsSubmittingChangeDate(false)
-                    }
-                  }}
-                  className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  {isSubmittingChangeDate ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Calendar size={18} className="mr-2" />
-                      Update Date
-                    </>
-                  )}
-                </Button>
-              </div>
+            {/* Action Buttons */}
+            <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
+              <Button
+                variant="secondary"
+                onClick={() => setShowChangeDate(false)}
+                className="px-6 rounded-xl font-medium"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!targetDate || isSubmittingChangeDate}
+                onClick={async () => {
+                  if (!targetDate) return
+                  setIsSubmittingChangeDate(true)
+                  try {
+                    // Construct Date from yyyy-mm-dd
+                    const parts = targetDate.split('-')
+                    const dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+                    await shiftTaskToDate(selectedTask.id, dt, targetReason)
+                    setShowChangeDate(false)
+                    setTargetDate('')
+                    setTargetReason('')
+                  } catch (e) {
+                    console.error('Change date failed', e)
+                  } finally {
+                    setIsSubmittingChangeDate(false)
+                  }
+                }}
+                className="px-8 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {isSubmittingChangeDate ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Calendar size={18} className="mr-2" />
+                    Update Date
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>
@@ -1333,53 +1410,64 @@ export default function TasksPage() {
                   )}
                 </div>
               </div>
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-4 pt-4">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowAddTime(false)}
-                  className="px-6 py-3 rounded-xl font-medium"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={
-                    !startDate ||
-                    !startTime ||
-                    (parseInt(durationHours || '0', 10) === 0 &&
-                      parseInt(durationMinutes || '0', 10) === 0) ||
-                    isSubmittingTime
+            </div>
+
+            {/* Action Buttons */}
+            <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
+              <Button
+                variant="secondary"
+                onClick={() => setShowAddTime(false)}
+                className="px-6 rounded-xl font-medium"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={
+                  !startDate ||
+                  !startTime ||
+                  (parseInt(durationHours || '0', 10) === 0 &&
+                    parseInt(durationMinutes || '0', 10) === 0) ||
+                  isSubmittingTime
+                }
+                onClick={async () => {
+                  if (!startDate || !startTime) return
+                  setIsSubmittingTime(true)
+                  try {
+                    const [sy, sm, sd] = startDate.split('-').map(Number)
+                    const [sh, smin] = startTime.split(':').map(Number)
+                    const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
+                    const mins = Math.max(
+                      0,
+                      parseInt(durationHours || '0', 10) * 60 + parseInt(durationMinutes || '0', 10)
+                    )
+                    const end = new Date(start.getTime() + mins * 60000)
+                    await addManualWorkSession(selectedTask.id, start, end)
+                    setShowAddTime(false)
+                    setStartDate('')
+                    setStartTime('')
+                    setDurationHours('0')
+                    setDurationMinutes('30')
+                  } catch (e) {
+                    console.error('Add time failed', e)
+                  } finally {
+                    setIsSubmittingTime(false)
                   }
-                  onClick={async () => {
-                    if (!startDate || !startTime) return
-                    setIsSubmittingTime(true)
-                    try {
-                      const [sy, sm, sd] = startDate.split('-').map(Number)
-                      const [sh, smin] = startTime.split(':').map(Number)
-                      const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
-                      const mins = Math.max(
-                        0,
-                        parseInt(durationHours || '0', 10) * 60 +
-                          parseInt(durationMinutes || '0', 10)
-                      )
-                      const end = new Date(start.getTime() + mins * 60000)
-                      await addManualWorkSession(selectedTask.id, start, end)
-                      setShowAddTime(false)
-                      setStartDate('')
-                      setStartTime('')
-                      setDurationHours('0')
-                      setDurationMinutes('30')
-                    } catch (e) {
-                      console.error('Add time failed', e)
-                    } finally {
-                      setIsSubmittingTime(false)
-                    }
-                  }}
-                >
-                  {isSubmittingTime ? 'Saving...' : 'Save'}
-                </Button>
-              </div>
+                }}
+                className="px-8 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {isSubmittingTime ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <ClockIcon size={18} className="mr-2" />
+                    Save Time
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>
