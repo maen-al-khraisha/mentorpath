@@ -89,10 +89,14 @@ export default function NotesPage() {
 
     // Apply date filter
     if (dateFilter) {
+      // Create timezone-safe date comparison
       const filterDate = new Date(dateFilter)
       filtered = filtered.filter((note) => {
         const noteDate = new Date(note.createdAt)
-        return noteDate.toDateString() === filterDate.toDateString()
+        // Compare dates using YYYY-MM-DD format to avoid timezone issues
+        const noteDateString = noteDate.toISOString().split('T')[0]
+        const filterDateString = filterDate.toISOString().split('T')[0]
+        return noteDateString === filterDateString
       })
     }
 
@@ -119,15 +123,20 @@ export default function NotesPage() {
     }
   }
 
-  const handleNoteDeleted = (deletedNoteId) => {
+  const handleNoteDeleted = (deletedNoteId, error = null) => {
+    if (error) {
+      showToast('Failed to delete note', 'error')
+      return
+    }
+
     setNotes((prev) => prev.filter((note) => note.id !== deletedNoteId))
+    // Show success toast for deletion
+    showToast('Note deleted successfully!', 'success')
   }
 
   const handleNoteConverted = (convertedNoteId, newTaskId) => {
     console.log('Note converted to task:', { noteId: convertedNoteId, taskId: newTaskId })
     setNotes((prev) => prev.filter((note) => note.id !== convertedNoteId))
-    // Show success toast
-    showToast('Note successfully converted to task!', 'success')
   }
 
   const handleNoteUpdated = async () => {
@@ -299,7 +308,12 @@ export default function NotesPage() {
                 onClick={() => {
                   const currentDate = dateFilter ? new Date(dateFilter) : new Date()
                   const prevDate = new Date(currentDate.getTime() - 86400000)
-                  setDateFilter(prevDate.toISOString().split('T')[0])
+                  // Create timezone-safe date string
+                  const year = prevDate.getFullYear()
+                  const month = String(prevDate.getMonth() + 1).padStart(2, '0')
+                  const day = String(prevDate.getDate()).padStart(2, '0')
+                  const dateString = `${year}-${month}-${day}`
+                  setDateFilter(dateString)
                 }}
                 aria-label="Previous day"
               >
@@ -307,7 +321,14 @@ export default function NotesPage() {
               </Button>
               <CustomDatePicker
                 value={dateFilter ? new Date(dateFilter) : null}
-                onChange={(selectedDate) => setDateFilter(selectedDate.toISOString().split('T')[0])}
+                onChange={(selectedDate) => {
+                  // Create a timezone-safe date string (YYYY-MM-DD)
+                  const year = selectedDate.getFullYear()
+                  const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+                  const day = String(selectedDate.getDate()).padStart(2, '0')
+                  const dateString = `${year}-${month}-${day}`
+                  setDateFilter(dateString)
+                }}
                 name="mainDate"
                 placeholder="Select date"
               />
@@ -318,7 +339,12 @@ export default function NotesPage() {
                 onClick={() => {
                   const currentDate = dateFilter ? new Date(dateFilter) : new Date()
                   const nextDate = new Date(currentDate.getTime() + 86400000)
-                  setDateFilter(nextDate.toISOString().split('T')[0])
+                  // Create timezone-safe date string
+                  const year = nextDate.getFullYear()
+                  const month = String(nextDate.getMonth() + 1).padStart(2, '0')
+                  const day = String(nextDate.getDate()).padStart(2, '0')
+                  const dateString = `${year}-${month}-${day}`
+                  setDateFilter(dateString)
                 }}
                 aria-label="Next day"
               >

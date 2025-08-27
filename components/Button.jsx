@@ -21,7 +21,7 @@ const Button = React.forwardRef(
       sm: 'px-4 h-[32px] text-sm rounded-xl',
       lg: 'px-8 h-[52px] text-lg rounded-2xl',
       xl: 'px-10 h-[62px] text-xl rounded-2xl',
-      icon: 'p-0',
+      icon: 'p-0 w-[42px] h-[42px]',
     }
 
     const sizeClasses = sizes[size] || sizes.default

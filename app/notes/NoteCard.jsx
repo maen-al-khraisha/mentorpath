@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import { Trash2, Edit, FileText, Tag, Clock, Calendar } from 'lucide-react'
+import LabelBadge from '@/components/LabelBadge'
 import NoteDetailsModal from './NoteDetailsModal'
 import ConvertToTaskModal from './ConvertToTaskModal'
 
@@ -24,10 +25,9 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
         const { deleteNote } = await import('@/lib/notesApi')
         await deleteNote(note.id)
         onDelete?.(note.id)
-        showToast('Note deleted successfully!', 'success')
       } catch (error) {
         console.error('Failed to delete note:', error)
-        showToast('Failed to delete note', 'error')
+        onDelete?.(note.id, error) // Pass error to parent for toast handling
       } finally {
         setIsDeleting(false)
       }
@@ -66,18 +66,15 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
     return text.substring(0, maxLength) + '...'
   }
 
-  // Get label color based on label name
-  const getLabelColor = (label) => {
-    const colors = [
-      'bg-blue-100 text-blue-700 border-blue-200',
-      'bg-emerald-100 text-emerald-700 border-emerald-200',
-      'bg-purple-100 text-purple-700 border-purple-200',
-      'bg-amber-100 text-amber-700 border-amber-200',
-      'bg-rose-100 text-rose-700 border-rose-200',
-      'bg-indigo-100 text-indigo-700 border-indigo-200',
-    ]
-    const index = label.charCodeAt(0) % colors.length
-    return colors[index]
+  // Safely render HTML content or fallback to plain text
+  const renderDescription = (description, fallback = 'No description provided') => {
+    if (!description) return fallback
+    // Check if the description contains HTML tags
+    if (/<[^>]*>/.test(description)) {
+      return { __html: description }
+    }
+    // If it's plain text, return the text directly
+    return description
   }
 
   if (viewMode === 'list') {
@@ -102,20 +99,22 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
                 </div>
               </div>
 
-              <p className="text-slate-600 font-body leading-relaxed mb-4 line-clamp-2">
-                {note.description || 'No description provided'}
-              </p>
+              {note.description && /<[^>]*>/.test(note.description) ? (
+                <div
+                  className="text-slate-600 font-body leading-relaxed mb-4 line-clamp-2 rich-text-content"
+                  dangerouslySetInnerHTML={{ __html: note.description }}
+                />
+              ) : (
+                <p className="text-slate-600 font-body leading-relaxed mb-4 line-clamp-2">
+                  {note.description || 'No description provided'}
+                </p>
+              )}
 
               {/* Labels */}
               {note.labels && note.labels.length > 0 && (
                 <div className="flex items-center gap-2 mb-4">
                   {note.labels.slice(0, 4).map((label, idx) => (
-                    <span
-                      key={idx}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-full border-2 ${getLabelColor(label)}`}
-                    >
-                      {label}
-                    </span>
+                    <LabelBadge key={idx} label={label} size="sm" />
                   ))}
                   {note.labels.length > 4 && (
                     <span className="px-3 py-1.5 bg-slate-200 text-slate-600 text-xs font-semibold rounded-full border border-slate-300">
@@ -239,21 +238,23 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
 
         {/* Description */}
         <div className="mb-4 flex-1">
-          <p className="text-slate-600 font-body text-sm leading-relaxed line-clamp-3 group-hover:text-slate-700 transition-colors">
-            {truncateText(note.description || 'No description provided', 120)}
-          </p>
+          {note.description && /<[^>]*>/.test(note.description) ? (
+            <div
+              className="text-slate-600 font-body text-sm leading-relaxed line-clamp-3 group-hover:text-slate-700 transition-colors rich-text-content"
+              dangerouslySetInnerHTML={{ __html: note.description }}
+            />
+          ) : (
+            <p className="text-slate-600 font-body text-sm leading-relaxed line-clamp-3 group-hover:text-slate-700 transition-colors">
+              {truncateText(note.description || 'No description provided', 120)}
+            </p>
+          )}
         </div>
 
         {/* Labels */}
         {note.labels && note.labels.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {note.labels.slice(0, 3).map((label, idx) => (
-              <span
-                key={idx}
-                className={`px-2 py-1 text-xs font-semibold rounded-full border ${getLabelColor(label)}`}
-              >
-                {label}
-              </span>
+              <LabelBadge key={idx} label={label} size="sm" />
             ))}
             {note.labels.length > 3 && (
               <span className="px-2 py-1 text-xs font-semibold rounded-full bg-slate-200 text-slate-600 border border-slate-300">

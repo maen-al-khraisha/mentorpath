@@ -44,6 +44,7 @@ import Image from 'next/image'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
+import LabelBadge from '@/components/LabelBadge'
 
 export default function TasksPage() {
   const { user, loading } = useAuth()
@@ -675,19 +676,9 @@ export default function TasksPage() {
 
                           {t.labels && t.labels.length > 0 && (
                             <div className="flex flex-wrap gap-2">
-                              {t.labels.slice(0, 2).map((label, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200"
-                                >
-                                  {label}
-                                </span>
+                              {t.labels.map((label, idx) => (
+                                <LabelBadge key={idx} label={label} size="sm" />
                               ))}
-                              {t.labels.length > 2 && (
-                                <span className="px-2 py-1 bg-slate-200 text-slate-600 text-xs font-semibold rounded-full border border-slate-300">
-                                  +{t.labels.length - 2}
-                                </span>
-                              )}
                             </div>
                           )}
 
@@ -790,24 +781,6 @@ export default function TasksPage() {
                                 {getPriorityIcon(t.priority)} {t.priority}
                               </span>
                             </div>
-
-                            {t.labels && t.labels.length > 0 && (
-                              <div className="flex items-center gap-2 mb-4">
-                                {t.labels.slice(0, 3).map((label, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full border border-slate-200 hover:bg-slate-200 transition-colors duration-200"
-                                  >
-                                    {label}
-                                  </span>
-                                ))}
-                                {t.labels.length > 3 && (
-                                  <span className="px-3 py-1.5 bg-slate-200 text-slate-600 text-xs font-semibold rounded-full border border-slate-300">
-                                    +{t.labels.length - 3} more
-                                  </span>
-                                )}
-                              </div>
-                            )}
 
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4 text-sm text-slate-600 font-body">

@@ -5,6 +5,7 @@ import { updateTask, addAttachment, deleteTask, removeAttachment } from '@/lib/t
 import Button from '@/components/Button'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
 import toast from 'react-hot-toast'
+import LabelBadge from '@/components/LabelBadge'
 
 import {
   Play,
@@ -703,18 +704,13 @@ export default function TaskDetailsPanel({
             {task.labels && task.labels.length > 0 ? (
               <div className="flex flex-wrap items-center gap-2">
                 {task.labels.map((label) => (
-                  <span
+                  <LabelBadge
                     key={label}
-                    className="inline-flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-800 rounded-xl font-medium text-sm border border-blue-200"
-                  >
-                    <span>{label}</span>
-                    <button
-                      onClick={() => handleRemoveLabel(label)}
-                      className="w-5 h-5 rounded-full bg-blue-200 hover:bg-blue-300 flex items-center justify-center transition-colors duration-200"
-                    >
-                      <X size={12} className="text-blue-700" />
-                    </button>
-                  </span>
+                    label={label}
+                    onRemove={handleRemoveLabel}
+                    showRemoveButton={true}
+                    size="default"
+                  />
                 ))}
               </div>
             ) : (
@@ -736,12 +732,11 @@ export default function TaskDetailsPanel({
               />
               <Button
                 variant="primary"
-                className="px-6 py-3 rounded-xl font-medium"
+                size="icon"
                 onClick={handleAddLabel}
                 disabled={!newLabel.trim()}
               >
-                <Plus size={18} className="mr-2" />
-                Add Label
+                <Plus size={18} />
               </Button>
             </div>
           </div>
@@ -844,12 +839,11 @@ export default function TaskDetailsPanel({
               />
               <Button
                 variant="primary"
-                className="px-6 py-3 rounded-xl font-medium bg-green-600 hover:bg-green-700"
+                size="icon"
                 onClick={handleAddChecklistItem}
                 disabled={!newChecklistItem.trim()}
               >
-                <Plus size={18} className="mr-2" />
-                Add Item
+                <Plus size={18} />
               </Button>
             </div>
           </div>

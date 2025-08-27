@@ -8,6 +8,7 @@ import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 
 import { Paperclip, X } from 'lucide-react'
+import LabelBadge from '@/components/LabelBadge'
 import toast from 'react-hot-toast'
 
 // Dynamically import React-Quill to avoid SSR issues
@@ -338,27 +339,13 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                 {labels.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {labels.map((label, index) => (
-                      <span
+                      <LabelBadge
                         key={index}
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-100 text-blue-700 font-medium text-sm border border-blue-200"
-                      >
-                        {label}
-                        <button
-                          onClick={() => setLabels((ls) => ls.filter((_, i) => i !== index))}
-                          className="w-4 h-4 rounded-full bg-blue-200 hover:bg-blue-300 flex items-center justify-center transition-colors"
-                        >
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M18 6L6 18M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </span>
+                        label={label}
+                        onRemove={() => setLabels((ls) => ls.filter((_, i) => i !== index))}
+                        showRemoveButton={true}
+                        variant="blue"
+                      />
                     ))}
                   </div>
                 )}

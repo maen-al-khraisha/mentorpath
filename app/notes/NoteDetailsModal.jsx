@@ -5,7 +5,19 @@ import { updateNote } from '@/lib/notesApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import { X, Edit2, Save, FileText, Tag, Calendar, Clock } from 'lucide-react'
+import LabelBadge from '@/components/LabelBadge'
 import { useToast } from '@/components/Toast'
+import dynamic from 'next/dynamic'
+
+// Dynamically import React-Quill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default), {
+  ssr: false,
+  loading: () => (
+    <div className="h-32 bg-slate-100 animate-pulse rounded-xl flex items-center justify-center">
+      <span className="text-slate-500 font-body">Loading editor...</span>
+    </div>
+  ),
+})
 
 export default function NoteDetailsModal({
   isOpen,
@@ -25,6 +37,13 @@ export default function NoteDetailsModal({
 
   if (!isOpen || !note) return null
 
+  // Dynamically import Quill CSS when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      import('react-quill/dist/quill.snow.css')
+    }
+  }, [isOpen])
+
   // Reset form when note changes or editing state changes
   useEffect(() => {
     setEditedTitle(note.title || '')
@@ -32,6 +51,33 @@ export default function NoteDetailsModal({
     setEditedLabels(note.labels || [])
     setIsEditing(initialEditingState)
   }, [note, initialEditingState])
+
+  // Quill editor configuration
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ color: [] }, { background: [] }],
+      ['link', 'blockquote', 'code-block'],
+      ['clean'],
+    ],
+  }
+
+  const quillFormats = [
+    'header',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'list',
+    'bullet',
+    'color',
+    'background',
+    'link',
+    'blockquote',
+    'code-block',
+  ]
 
   const handleSave = async () => {
     if (!user) {
@@ -102,20 +148,6 @@ export default function NoteDetailsModal({
     })
   }
 
-  // Get label color based on label name
-  const getLabelColor = (label) => {
-    const colors = [
-      'bg-blue-100 text-blue-700 border-blue-200',
-      'bg-emerald-100 text-emerald-700 border-emerald-200',
-      'bg-purple-100 text-purple-700 border-purple-200',
-      'bg-amber-100 text-amber-700 border-amber-200',
-      'bg-rose-100 text-rose-700 border-rose-200',
-      'bg-indigo-100 text-indigo-700 border-indigo-200',
-    ]
-    const index = label.charCodeAt(0) % colors.length
-    return colors[index]
-  }
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
@@ -140,61 +172,18 @@ export default function NoteDetailsModal({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {isEditing ? (
-                <>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleCancel}
-                    className="px-4 py-2 rounded-xl font-medium"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleSave}
-                    disabled={busy}
-                    className="px-4 py-2 rounded-xl font-medium"
-                  >
-                    {busy ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save size={16} className="mr-2" />
-                        Save
-                      </>
-                    )}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 rounded-xl font-medium"
-                >
-                  <Edit2 size={16} className="mr-2" />
-                  Edit
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setIsEditing(false)
-                  onClose?.()
-                }}
-                aria-label="Close modal"
-                className="w-10 h-10 rounded-xl hover:bg-slate-200 transition-all duration-200"
-              >
-                <X size={20} className="text-slate-600" />
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setIsEditing(false)
+                onClose?.()
+              }}
+              aria-label="Close modal"
+              className="w-10 h-10 rounded-xl hover:bg-slate-200 transition-all duration-200"
+            >
+              <X size={20} className="text-slate-600" />
+            </Button>
           </div>
         </div>
 
@@ -221,15 +210,22 @@ export default function NoteDetailsModal({
           <div>
             <label className="block text-base font-semibold text-slate-900 mb-2">Description</label>
             {isEditing ? (
-              <textarea
-                className="w-full h-32 rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 resize-none"
-                value={editedDescription}
-                onChange={(e) => setEditedDescription(e.target.value)}
-                placeholder="Enter note description..."
-              />
+              <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
+                <ReactQuill
+                  value={editedDescription}
+                  onChange={setEditedDescription}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  placeholder="Enter note description..."
+                  className="min-h-[200px]"
+                />
+              </div>
             ) : (
               <div className="w-full min-h-[8rem] rounded-xl border-2 border-transparent bg-slate-50 px-4 py-3 text-base font-body">
-                {note.description || 'No description'}
+                <div
+                  className="rich-text-content"
+                  dangerouslySetInnerHTML={{ __html: note.description || 'No description' }}
+                />
               </div>
             )}
           </div>
@@ -242,45 +238,48 @@ export default function NoteDetailsModal({
             {editedLabels.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {editedLabels.map((label) => (
-                  <span
+                  <LabelBadge
                     key={label}
-                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border-2 ${getLabelColor(label)}`}
-                  >
-                    <Tag size={14} />
-                    {label}
-                    {isEditing && (
-                      <button
-                        onClick={() => removeLabel(label)}
-                        className="w-5 h-5 rounded-full bg-current bg-opacity-20 hover:bg-opacity-30 flex items-center justify-center transition-all duration-200"
-                        aria-label={`Remove label ${label}`}
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
-                  </span>
+                    label={label}
+                    onRemove={isEditing ? removeLabel : undefined}
+                    showRemoveButton={isEditing}
+                    size="default"
+                  />
                 ))}
               </div>
             )}
 
             {/* Add New Label (only when editing) */}
             {isEditing && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mb-4">
                 <input
-                  className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
+                  className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200 placeholder-slate-400"
                   placeholder="Enter label name..."
                   value={labelInput}
                   onChange={(e) => setLabelInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                 />
                 <Button
-                  variant="secondary"
-                  size="md"
+                  variant="primary"
+                  size="icon"
                   onClick={addLabel}
                   disabled={!labelInput.trim()}
-                  className="px-6 py-3 rounded-xl font-medium"
                 >
-                  <Tag size={18} className="mr-2" />
-                  Add Label
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    className="lucide lucide-plus"
+                  >
+                    <path d="M5 12h14"></path>
+                    <path d="M12 5v14"></path>
+                  </svg>
                 </Button>
               </div>
             )}
@@ -316,6 +315,53 @@ export default function NoteDetailsModal({
               )}
             </div>
           </div>
+        </div>
+
+        {/* Action Buttons Footer */}
+        <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
+          {isEditing ? (
+            <>
+              <Button
+                variant="secondary"
+                onClick={handleCancel}
+                className="px-6 py-3 rounded-xl font-medium"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSave}
+                disabled={!user || loading || busy || !editedTitle.trim()}
+                className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Loading...
+                  </>
+                ) : busy ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} className="mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={() => setIsEditing(true)}
+              className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Edit2 size={18} className="mr-2" />
+              Edit Note
+            </Button>
+          )}
         </div>
       </div>
     </div>
