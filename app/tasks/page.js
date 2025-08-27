@@ -156,6 +156,25 @@ export default function TasksPage() {
     }
   }
 
+  const handleShowAddTime = () => {
+    if (selectedTask) {
+      // Set default date to today's date so users can just enter time and duration
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = String(today.getMonth() + 1).padStart(2, '0')
+      const day = String(today.getDate()).padStart(2, '0')
+      const todayString = `${year}-${month}-${day}`
+
+      // Reset form state when opening the modal
+      setStartDate(todayString) // Set to today instead of empty string
+      setStartTime('')
+      setDurationHours('0')
+      setDurationMinutes('30')
+      setIsSubmittingTime(false)
+      setShowAddTime(true)
+    }
+  }
+
   useEffect(() => {
     if (!user || loading) {
       setTasks([])
@@ -1003,7 +1022,7 @@ export default function TasksPage() {
                     activeTimer={activeTimer}
                     onShowShiftModal={() => setShowShiftModal(true)}
                     onShowChangeDate={handleShowChangeDate}
-                    onShowAddTime={() => setShowAddTime(true)}
+                    onShowAddTime={handleShowAddTime}
                     onShowCopyModal={handleShowCopyModal}
                     onPreviewAttachment={handlePreviewAttachment}
                     onEditDescription={(taskId) => {
@@ -1072,7 +1091,7 @@ export default function TasksPage() {
                   activeTimer={activeTimer}
                   onShowShiftModal={() => setShowShiftModal(true)}
                   onShowChangeDate={handleShowChangeDate}
-                  onShowAddTime={() => setShowAddTime(true)}
+                  onShowAddTime={handleShowAddTime}
                   onShowCopyModal={handleShowCopyModal}
                   onPreviewAttachment={handlePreviewAttachment}
                   onEditDescription={(taskId) => {
@@ -1431,26 +1450,65 @@ export default function TasksPage() {
                   isSubmittingTime
                 }
                 onClick={async () => {
-                  if (!startDate || !startTime) return
+                  console.log('=== SAVE TIME BUTTON CLICKED ===')
+                  console.log('Current values:', {
+                    startDate,
+                    startTime,
+                    durationHours,
+                    durationMinutes,
+                    selectedTaskId: selectedTask?.id,
+                  })
+
+                  if (!startDate || !startTime) {
+                    console.log('❌ Missing start date or time')
+                    return
+                  }
+
+                  const hours = parseInt(durationHours || '0', 10)
+                  const minutes = parseInt(durationMinutes || '0', 10)
+
+                  if (hours === 0 && minutes === 0) {
+                    console.log('❌ Duration is 0')
+                    return
+                  }
+
+                  console.log('✅ All validation passed, proceeding with submission...')
                   setIsSubmittingTime(true)
+
                   try {
+                    console.log('🔄 Creating date objects...')
                     const [sy, sm, sd] = startDate.split('-').map(Number)
                     const [sh, smin] = startTime.split(':').map(Number)
                     const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
-                    const mins = Math.max(
-                      0,
-                      parseInt(durationHours || '0', 10) * 60 + parseInt(durationMinutes || '0', 10)
-                    )
+                    const mins = Math.max(0, hours * 60 + minutes)
                     const end = new Date(start.getTime() + mins * 60000)
+
+                    console.log('📅 Date objects created:', {
+                      start,
+                      end,
+                      mins,
+                      selectedTaskId: selectedTask?.id,
+                    })
+
+                    console.log('🚀 Calling addManualWorkSession...')
                     await addManualWorkSession(selectedTask.id, start, end)
+                    console.log('✅ Work session created successfully')
+
+                    console.log('🔒 Closing modal and resetting form...')
                     setShowAddTime(false)
                     setStartDate('')
                     setStartTime('')
                     setDurationHours('0')
                     setDurationMinutes('30')
                   } catch (e) {
-                    console.error('Add time failed', e)
+                    console.error('❌ Add time failed:', e)
+                    console.error('Error details:', {
+                      message: e.message,
+                      stack: e.stack,
+                      name: e.name,
+                    })
                   } finally {
+                    console.log('🔄 Setting isSubmittingTime to false...')
                     setIsSubmittingTime(false)
                   }
                 }}
