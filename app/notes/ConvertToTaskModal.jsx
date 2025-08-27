@@ -25,12 +25,12 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
 
   async function onSave() {
     if (!user) {
-      alert('Please wait for authentication to complete')
+      toast.error('Please wait for authentication to complete')
       return
     }
 
     if (!title.trim()) {
-      alert('Please enter a task title')
+      toast.error('Please enter a task title')
       return
     }
 
@@ -63,7 +63,7 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
       })
     } catch (e) {
       console.error(e)
-      alert('Failed to convert note to task: ' + e.message)
+      toast.error('Failed to convert note to task: ' + e.message)
     } finally {
       setBusy(false)
     }

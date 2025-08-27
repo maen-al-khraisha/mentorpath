@@ -44,9 +44,9 @@ export const metadata = {
     imageAlt: 'MentorPath Dashboard - Productivity app for mentors and makers',
   },
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
   },
   metadataBase: new URL('https://www.mentorpath.tech'),
 }

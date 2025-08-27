@@ -5,6 +5,7 @@ import { updateNote } from '@/lib/notesApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import { X, Edit2, Save, FileText, Tag, Calendar, Clock } from 'lucide-react'
+import { useToast } from '@/components/Toast'
 
 export default function NoteDetailsModal({
   isOpen,
@@ -14,6 +15,7 @@ export default function NoteDetailsModal({
   isEditing: initialEditingState = false,
 }) {
   const { user, loading } = useAuth()
+  const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(initialEditingState)
   const [editedTitle, setEditedTitle] = useState(note?.title || '')
   const [editedDescription, setEditedDescription] = useState(note?.description || '')
@@ -33,12 +35,12 @@ export default function NoteDetailsModal({
 
   const handleSave = async () => {
     if (!user) {
-      alert('Please wait for authentication to complete')
+      showToast('Please wait for authentication to complete', 'warning')
       return
     }
 
     if (!editedTitle.trim()) {
-      alert('Please enter a note title')
+      showToast('Please enter a note title', 'warning')
       return
     }
 
@@ -51,11 +53,12 @@ export default function NoteDetailsModal({
       })
 
       setIsEditing(false)
+      showToast('Note updated successfully!', 'success')
       onUpdate?.()
       onClose?.()
     } catch (e) {
       console.error(e)
-      alert('Failed to update note: ' + e.message)
+      showToast('Failed to update note: ' + e.message, 'error')
     } finally {
       setBusy(false)
     }

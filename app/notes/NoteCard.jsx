@@ -24,9 +24,10 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
         const { deleteNote } = await import('@/lib/notesApi')
         await deleteNote(note.id)
         onDelete?.(note.id)
+        showToast('Note deleted successfully!', 'success')
       } catch (error) {
         console.error('Failed to delete note:', error)
-        alert('Failed to delete note')
+        showToast('Failed to delete note', 'error')
       } finally {
         setIsDeleting(false)
       }

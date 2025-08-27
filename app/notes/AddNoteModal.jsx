@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import { X, Plus, FileText, Tag } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { useToast } from '@/components/Toast'
 
 // Dynamically import React-Quill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default), {
@@ -19,6 +20,7 @@ const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default
 
 export default function AddNoteModal({ open, onClose }) {
   const { user, loading } = useAuth()
+  const { showToast } = useToast()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [labels, setLabels] = useState([])
@@ -63,12 +65,12 @@ export default function AddNoteModal({ open, onClose }) {
 
   async function onSave() {
     if (!user) {
-      alert('Please wait for authentication to complete')
+      showToast('Please wait for authentication to complete', 'warning')
       return
     }
 
     if (!title.trim()) {
-      alert('Please enter a note title')
+      showToast('Please enter a note title', 'warning')
       return
     }
 
@@ -82,13 +84,17 @@ export default function AddNoteModal({ open, onClose }) {
         userId: user.uid,
       })
       console.log('Note created with ID:', id)
+
+      // Show success toast
+      showToast(`Note "${title}" created successfully!`, 'success')
+
       onClose?.(id)
       setTitle('')
       setDescription('')
       setLabels([])
     } catch (e) {
       console.error(e)
-      alert('Failed to save note: ' + e.message)
+      showToast('Failed to save note: ' + e.message, 'error')
     } finally {
       setBusy(false)
     }

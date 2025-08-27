@@ -13,6 +13,7 @@ import AddNoteModal from './AddNoteModal'
 import NoteCard from './NoteCard'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
+import { useToast } from '@/components/Toast'
 import {
   Plus,
   Search,
@@ -30,6 +31,7 @@ import {
 
 export default function NotesPage() {
   const { user, loading } = useAuth()
+  const { showToast, ToastContainer } = useToast()
   const [notes, setNotes] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -98,6 +100,9 @@ export default function NotesPage() {
   }, [notes, searchQuery, labelFilter, dateFilter])
 
   const handleNoteCreated = async (newNoteId) => {
+    // Show success toast
+    showToast('Note created successfully!', 'success')
+
     // Refresh notes after creation
     if (user) {
       try {
@@ -109,6 +114,7 @@ export default function NotesPage() {
         setAllLabels(labelsData)
       } catch (error) {
         console.error('Failed to refresh notes:', error)
+        showToast('Failed to refresh notes', 'error')
       }
     }
   }
@@ -120,8 +126,8 @@ export default function NotesPage() {
   const handleNoteConverted = (convertedNoteId, newTaskId) => {
     console.log('Note converted to task:', { noteId: convertedNoteId, taskId: newTaskId })
     setNotes((prev) => prev.filter((note) => note.id !== convertedNoteId))
-    // Optionally redirect to tasks page or show success message
-    alert(`Note successfully converted to task! Task ID: ${newTaskId}`)
+    // Show success toast
+    showToast('Note successfully converted to task!', 'success')
   }
 
   const handleNoteUpdated = async () => {
@@ -451,6 +457,9 @@ export default function NotesPage() {
           }}
         />
       )}
+
+      {/* Toast Container */}
+      <ToastContainer />
     </>
   )
 }
