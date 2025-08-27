@@ -15,6 +15,7 @@ export default function CustomDatePicker({
   required = false,
   minDate,
   maxDate,
+  allowClear = false,
   ...props
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -117,6 +118,12 @@ export default function CustomDatePicker({
     setSelectedDate(localDate)
     onChange(localDate)
     setIsOpen(false)
+  }
+
+  const handleClearDate = (e) => {
+    e.stopPropagation()
+    setSelectedDate(null)
+    onChange(null)
   }
 
   const calculatePopupPosition = () => {
@@ -305,16 +312,28 @@ export default function CustomDatePicker({
           }}
           disabled={disabled}
           className={`
-              w-full h-[42px] px-6 bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200 cursor-pointer hover:from-slate-200 hover:to-blue-200 transition-all duration-200 shadow-sm text-left
+              w-full h-[42px] px-6 ${allowClear && selectedDate ? 'pr-12' : 'pr-6'} bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200 cursor-pointer hover:from-slate-200 hover:to-blue-200 transition-all duration-200 shadow-sm text-left flex items-center
               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
           aria-label={label || 'Select date'}
           aria-haspopup="true"
           aria-expanded={isOpen}
         >
-          <Calendar size={20} className="inline mr-3 text-blue-600" />
-          {formatDisplayDate(selectedDate)}
+          <Calendar size={20} className="mr-3 text-blue-600 flex-shrink-0" />
+          <span className="flex-1">{formatDisplayDate(selectedDate)}</span>
         </button>
+        
+        {/* Clear Button */}
+        {allowClear && selectedDate && !disabled && (
+          <button
+            type="button"
+            onClick={handleClearDate}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors duration-200"
+            aria-label="Clear date"
+          >
+            <X size={18} className="text-slate-500 hover:text-slate-700" />
+          </button>
+        )}
 
         {/* Calendar Dropdown */}
         {isOpen && (
