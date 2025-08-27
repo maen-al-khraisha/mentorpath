@@ -15,8 +15,10 @@ export default function CustomDatePicker({
   required = false,
   minDate,
   maxDate,
+  allowClear = false,
   ...props
 }) {
+  console.log('CustomDatePicker rendered with allowClear:', allowClear, 'value:', value)
   const [isOpen, setIsOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(() => {
     try {
@@ -76,16 +78,14 @@ export default function CustomDatePicker({
         setCurrentMonth(date)
         setSelectedDate(date)
       } else {
-        // If invalid date, use current date
-        const now = new Date()
-        setCurrentMonth(now)
-        setSelectedDate(now)
+        // If invalid date, clear the selected date
+        setSelectedDate(null)
       }
     } else {
-      // No value provided, use current date
+      // No value provided, clear selected date but keep current month for calendar navigation
       const now = new Date()
       setCurrentMonth(now)
-      setSelectedDate(now)
+      setSelectedDate(null)
     }
   }, [value])
 
@@ -117,6 +117,15 @@ export default function CustomDatePicker({
     setSelectedDate(localDate)
     onChange(localDate)
     setIsOpen(false)
+  }
+
+  const handleClearDate = (e) => {
+    console.log('Clear button clicked!')
+    e.preventDefault()
+    e.stopPropagation()
+    setSelectedDate(null)
+    onChange(null)
+    setIsOpen(false) // Close the calendar if it's open
   }
 
   const calculatePopupPosition = () => {
@@ -291,7 +300,7 @@ export default function CustomDatePicker({
       )}
 
       {/* Date Display Button */}
-      <div className="relative">
+      <div className="relative flex items-center">
         <button
           ref={buttonRef}
           type="button"
@@ -305,16 +314,29 @@ export default function CustomDatePicker({
           }}
           disabled={disabled}
           className={`
-              w-full h-[42px] px-6 bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200 cursor-pointer hover:from-slate-200 hover:to-blue-200 transition-all duration-200 shadow-sm text-left
+              flex-1 h-[42px] pl-6 ${allowClear && selectedDate ? 'pr-14' : 'pr-6'} bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200 cursor-pointer hover:from-slate-200 hover:to-blue-200 transition-all duration-200 shadow-sm text-left flex items-center
               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
           aria-label={label || 'Select date'}
           aria-haspopup="true"
           aria-expanded={isOpen}
         >
-          <Calendar size={20} className="inline mr-3 text-blue-600" />
-          {formatDisplayDate(selectedDate)}
+          <Calendar size={20} className="mr-3 text-blue-600 flex-shrink-0" />
+          <span className="flex-1">{formatDisplayDate(selectedDate)}</span>
         </button>
+        
+        {/* Clear Button */}
+        {allowClear && selectedDate && !disabled && (
+          <button
+            type="button"
+            onClick={handleClearDate}
+            onMouseDown={(e) => e.preventDefault()} // Prevent focus from moving
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 rounded-lg bg-white hover:bg-red-50 transition-colors duration-200 z-20 border border-slate-200"
+            aria-label="Clear date"
+          >
+            <X size={18} className="text-slate-600 hover:text-red-600" />
+          </button>
+        )}
 
         {/* Calendar Dropdown */}
         {isOpen && (

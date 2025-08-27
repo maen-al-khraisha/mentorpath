@@ -307,9 +307,16 @@ export default function NotesPage() {
               </Button>
               <CustomDatePicker
                 value={dateFilter ? new Date(dateFilter) : null}
-                onChange={(selectedDate) => setDateFilter(selectedDate.toISOString().split('T')[0])}
+                onChange={(selectedDate) => {
+                  if (selectedDate) {
+                    setDateFilter(selectedDate.toISOString().split('T')[0])
+                  } else {
+                    setDateFilter('')  // Clear the date filter when null is passed
+                  }
+                }}
                 name="mainDate"
                 placeholder="Select date"
+                allowClear={true}
               />
               <Button
                 variant="ghost"
