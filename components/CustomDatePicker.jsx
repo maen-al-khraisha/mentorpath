@@ -207,10 +207,9 @@ export default function CustomDatePicker({
 
     try {
       return dateObj.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric',
+        year: 'numeric',
       })
     } catch (error) {
       console.error('Error formatting display date:', error)
@@ -304,7 +303,7 @@ export default function CustomDatePicker({
           }}
           disabled={disabled}
           className={`
-              w-full px-6 py-3 bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200 cursor-pointer hover:from-slate-200 hover:to-blue-200 transition-all duration-200 shadow-sm text-left
+              w-full h-[42px] px-6 bg-gradient-to-r from-slate-100 to-blue-100 rounded-xl text-lg font-semibold text-slate-900 font-display border border-slate-200 cursor-pointer hover:from-slate-200 hover:to-blue-200 transition-all duration-200 shadow-sm text-left
               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
           aria-label={label || 'Select date'}
