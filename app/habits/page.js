@@ -15,6 +15,7 @@ export default function HabitsPage() {
   const [habits, setHabits] = useState([])
   const [filteredHabits, setFilteredHabits] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
+  const [isModalClosing, setIsModalClosing] = useState(false)
   const [editingHabit, setEditingHabit] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -103,8 +104,15 @@ export default function HabitsPage() {
   }
 
   function handleCloseModal() {
-    setShowAddModal(false)
-    setEditingHabit(null)
+    console.log('handleCloseModal called - setting isModalClosing to true')
+    setIsModalClosing(true)
+    // Wait for animation to complete before hiding modal
+    setTimeout(() => {
+      console.log('Animation timeout - hiding modal')
+      setShowAddModal(false)
+      setIsModalClosing(false)
+      setEditingHabit(null)
+    }, 600) // Match the animation duration
   }
 
   function handleHabitSaved() {
@@ -347,7 +355,7 @@ export default function HabitsPage() {
         </div>
       </div>
       {/* Add/Edit Habit Modal */}
-      {showAddModal && (
+      {(showAddModal || isModalClosing) && (
         <AddHabitModal
           open={showAddModal}
           habit={editingHabit}
@@ -355,6 +363,11 @@ export default function HabitsPage() {
           onSave={handleHabitSaved}
         />
       )}
+      {console.log('Modal render state:', {
+        showAddModal,
+        isModalClosing,
+        modalOpen: showAddModal && !isModalClosing,
+      })}
       <ToastContainer />
     </>
   )

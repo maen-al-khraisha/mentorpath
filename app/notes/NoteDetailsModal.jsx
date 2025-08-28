@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import { updateNote } from '@/lib/notesApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
-import { X, Edit2, Save, FileText, Tag, Calendar, Clock } from 'lucide-react'
-import LabelBadge from '@/components/LabelBadge'
-import { useToast } from '@/components/Toast'
+import Modal from '@/components/ui/Modal'
+import { X, FileText, Tag, Edit3, Save, RotateCcw } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { useToast } from '@/components/Toast'
 
 // Dynamically import React-Quill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default), {
@@ -98,23 +98,22 @@ export default function NoteDetailsModal({
         labels: editedLabels,
       })
 
-      setIsEditing(false)
       showToast('Note updated successfully!', 'success')
+      setIsEditing(false)
       onUpdate?.()
-      onClose?.()
-    } catch (e) {
-      console.error(e)
-      showToast('Failed to update note: ' + e.message, 'error')
+    } catch (error) {
+      console.error('Failed to update note:', error)
+      showToast('Failed to update note: ' + error.message, 'error')
     } finally {
       setBusy(false)
     }
   }
 
   const handleCancel = () => {
+    setIsEditing(false)
     setEditedTitle(note.title || '')
     setEditedDescription(note.description || '')
     setEditedLabels(note.labels || [])
-    setIsEditing(false)
   }
 
   const addLabel = () => {
@@ -136,7 +135,6 @@ export default function NoteDetailsModal({
     }
   }
 
-  // Format date for display
   const formatDate = (date) => {
     const d = new Date(date)
     return d.toLocaleDateString('en-US', {
@@ -148,222 +146,180 @@ export default function NoteDetailsModal({
     })
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={() => {
-          setIsEditing(false)
-          onClose?.()
-        }}
-      />
-      <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-                <FileText size={24} className="text-blue-600" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900 font-display">Note Details</h3>
-                <p className="text-slate-600 font-body">
-                  {isEditing ? 'Edit your note' : 'View note information'}
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setIsEditing(false)
-                onClose?.()
-              }}
-              aria-label="Close modal"
-              className="w-10 h-10 rounded-xl hover:bg-slate-200 transition-all duration-200"
-            >
-              <X size={20} className="text-slate-600" />
-            </Button>
+  const header = {
+    icon: <FileText size={24} className="text-blue-600" />,
+    title: 'Note Details',
+    subtitle: isEditing ? 'Edit your note' : 'View note information',
+    iconBgColor: 'bg-blue-100',
+  }
+
+  const content = (
+    <div className="space-y-6">
+      {/* Title */}
+      <div>
+        <label className="block text-base font-semibold text-slate-900 mb-2">Title</label>
+        {isEditing ? (
+          <input
+            className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-lg font-semibold font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
+            value={editedTitle}
+            onChange={(e) => setEditedTitle(e.target.value)}
+            placeholder="Enter note title..."
+          />
+        ) : (
+          <div className="w-full h-12 rounded-xl border-2 border-transparent bg-slate-50 px-4 text-lg font-semibold font-body flex items-center">
+            {note.title || 'No title'}
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* Content */}
-        <div className="p-8 space-y-6 overflow-y-auto">
-          {/* Title */}
-          <div>
-            <label className="block text-base font-semibold text-slate-900 mb-2">Title</label>
-            {isEditing ? (
-              <input
-                className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-lg font-semibold font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-                placeholder="Enter note title..."
-              />
-            ) : (
-              <div className="w-full h-12 rounded-xl border-2 border-transparent bg-slate-50 px-4 text-lg font-semibold font-body flex items-center">
-                {note.title || 'No title'}
-              </div>
-            )}
+      {/* Description */}
+      <div>
+        <label className="block text-base font-semibold text-slate-900 mb-2">Description</label>
+        {isEditing ? (
+          <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
+            <ReactQuill
+              value={editedDescription}
+              onChange={setEditedDescription}
+              modules={quillModules}
+              formats={quillFormats}
+              placeholder="Enter note description..."
+              className="min-h-[200px]"
+            />
           </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-base font-semibold text-slate-900 mb-2">Description</label>
-            {isEditing ? (
-              <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
-                <ReactQuill
-                  value={editedDescription}
-                  onChange={setEditedDescription}
-                  modules={quillModules}
-                  formats={quillFormats}
-                  placeholder="Enter note description..."
-                  className="min-h-[200px]"
-                />
-              </div>
-            ) : (
-              <div className="w-full min-h-[8rem] rounded-xl border-2 border-transparent bg-slate-50 px-4 py-3 text-base font-body">
-                <div
-                  className="rich-text-content"
-                  dangerouslySetInnerHTML={{ __html: note.description || 'No description' }}
-                />
-              </div>
-            )}
+        ) : (
+          <div className="w-full min-h-[8rem] rounded-xl border-2 border-transparent bg-slate-50 px-4 py-3 text-base font-body">
+            <div
+              className="rich-text-content"
+              dangerouslySetInnerHTML={{ __html: note.description || 'No description' }}
+            />
           </div>
+        )}
+      </div>
 
-          {/* Labels */}
-          <div>
-            <label className="block text-base font-semibold text-slate-900 mb-2">Labels</label>
+      {/* Labels */}
+      <div>
+        <label className="block text-base font-semibold text-slate-900 mb-2">Labels</label>
 
-            {/* Existing Labels */}
-            {editedLabels.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {editedLabels.map((label) => (
-                  <LabelBadge
-                    key={label}
-                    label={label}
-                    onRemove={isEditing ? removeLabel : undefined}
-                    showRemoveButton={isEditing}
-                    size="default"
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Add New Label (only when editing) */}
-            {isEditing && (
-              <div className="flex items-center gap-3 mb-4">
-                <input
-                  className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200 placeholder-slate-400"
-                  placeholder="Enter label name..."
-                  value={labelInput}
-                  onChange={(e) => setLabelInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                />
-                <Button
-                  variant="primary"
-                  size="icon"
-                  onClick={addLabel}
-                  disabled={!labelInput.trim()}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    className="lucide lucide-plus"
+        {/* Existing Labels */}
+        {editedLabels.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {editedLabels.map((label, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-100 text-blue-700 font-medium text-sm border border-blue-200"
+              >
+                <Tag size={14} className="text-blue-600" />
+                {label}
+                {isEditing && (
+                  <button
+                    onClick={() => removeLabel(label)}
+                    className="w-4 h-4 rounded-full bg-blue-200 hover:bg-blue-300 flex items-center justify-center transition-colors"
                   >
-                    <path d="M5 12h14"></path>
-                    <path d="M12 5v14"></path>
-                  </svg>
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Metadata */}
-          <div className="pt-6 border-t border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <Calendar size={18} className="text-emerald-600" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-slate-700">Created</div>
-                  <div className="text-sm text-slate-600 font-body">
-                    {formatDate(note.createdAt)}
-                  </div>
-                </div>
-              </div>
-
-              {note.updatedAt && note.updatedAt !== note.createdAt && (
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Clock size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-slate-700">Last Updated</div>
-                    <div className="text-sm text-slate-600 font-body">
-                      {formatDate(note.updatedAt)}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons Footer */}
-        <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
-          {isEditing ? (
-            <>
-              <Button
-                variant="secondary"
-                onClick={handleCancel}
-                className="px-6 py-3 rounded-xl font-medium"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSave}
-                disabled={!user || loading || busy || !editedTitle.trim()}
-                className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Loading...
-                  </>
-                ) : busy ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save size={18} className="mr-2" />
-                    Save Changes
-                  </>
+                    <X size={12} className="text-blue-600" />
+                  </button>
                 )}
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="primary"
-              onClick={() => setIsEditing(true)}
-              className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Edit2 size={18} className="mr-2" />
-              Edit Note
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Add New Label - Only show when editing */}
+        {isEditing && (
+          <div className="flex items-center gap-3">
+            <input
+              className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+              value={labelInput}
+              onChange={(e) => setLabelInput(e.target.value)}
+              placeholder="Enter label name..."
+              onKeyPress={handleKeyPress}
+            />
+            <Button variant="primary" size="icon" onClick={addLabel} disabled={!labelInput.trim()}>
+              <Tag size={18} />
             </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Metadata */}
+      <div className="pt-4 border-t border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
+          <div>
+            <span className="font-medium">Created:</span> {formatDate(note.createdAt)}
+          </div>
+          {note.updatedAt && note.updatedAt !== note.createdAt && (
+            <div>
+              <span className="font-medium">Last Updated:</span> {formatDate(note.updatedAt)}
+            </div>
           )}
         </div>
       </div>
     </div>
+  )
+
+  const footer = (
+    <>
+      {isEditing ? (
+        <>
+          <Button
+            variant="secondary"
+            onClick={handleCancel}
+            className="px-6 py-3 rounded-xl font-medium"
+            disabled={busy}
+          >
+            <RotateCcw size={18} className="mr-2" />
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={busy || !editedTitle.trim()}
+            className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            {busy ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save size={18} className="mr-2" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            variant="secondary"
+            onClick={() => setIsEditing(true)}
+            className="px-6 py-3 rounded-xl font-medium"
+          >
+            <Edit3 size={18} className="mr-2" />
+            Edit Note
+          </Button>
+          <Button
+            variant="primary"
+            onClick={onClose}
+            className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            Close
+          </Button>
+        </>
+      )}
+    </>
+  )
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      header={header}
+      content={content}
+      footer={footer}
+      size="large"
+      showCloseButton={true}
+      closeOnBackdropClick={true}
+    />
   )
 }
