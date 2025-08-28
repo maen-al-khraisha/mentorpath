@@ -10,13 +10,21 @@ import dynamic from 'next/dynamic'
 import { useToast } from '@/components/Toast'
 
 // Dynamically import React-Quill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default), {
+const ReactQuill = dynamic(() => import('react-quill'), {
   ssr: false,
   loading: () => (
-    <div className="h-32 bg-slate-100 animate-pulse rounded-xl flex items-center justify-center">
-      <span className="text-slate-500 font-body">Loading editor...</span>
+    <div className="h-32 bg-gray-100 animate-pulse rounded flex items-center justify-center">
+      <span className="text-gray-500">Loading editor...</span>
     </div>
   ),
+  onError: (error) => {
+    console.error('Failed to load React-Quill:', error)
+    return (
+      <div className="h-32 bg-red-50 border border-red-200 rounded flex items-center justify-center">
+        <span className="text-red-600">Editor failed to load. Please refresh the page.</span>
+      </div>
+    )
+  },
 })
 
 export default function NoteDetailsModal({

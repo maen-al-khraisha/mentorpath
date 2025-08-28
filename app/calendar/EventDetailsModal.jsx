@@ -7,7 +7,18 @@ import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
 import CustomDatePicker from '@/components/CustomDatePicker'
-import { X, Edit, Save, RotateCcw, Trash2, ExternalLink, Calendar, Clock, FileText, Link } from 'lucide-react'
+import {
+  X,
+  Edit,
+  Save,
+  RotateCcw,
+  Trash2,
+  ExternalLink,
+  Calendar,
+  Clock,
+  FileText,
+  Link,
+} from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 // Dynamically import ReactQuill to prevent SSR issues
@@ -18,6 +29,14 @@ const ReactQuill = dynamic(() => import('react-quill'), {
       <div className="text-slate-500">Loading editor...</div>
     </div>
   ),
+  onError: (error) => {
+    console.error('Failed to load React-Quill:', error)
+    return (
+      <div className="w-full h-32 bg-red-50 border-2 border-red-200 rounded-xl flex items-center justify-center">
+        <div className="text-red-600">Editor failed to load. Please refresh the page.</div>
+      </div>
+    )
+  },
 })
 
 export default function EventDetailsModal({

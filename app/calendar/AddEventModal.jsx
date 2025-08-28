@@ -18,6 +18,14 @@ const ReactQuill = dynamic(() => import('react-quill'), {
       <div className="text-slate-500">Loading editor...</div>
     </div>
   ),
+  onError: (error) => {
+    console.error('Failed to load React-Quill:', error)
+    return (
+      <div className="w-full h-32 bg-red-50 border-2 border-red-200 rounded-xl flex items-center justify-center">
+        <div className="text-red-600">Editor failed to load. Please refresh the page.</div>
+      </div>
+    )
+  },
 })
 
 // Import ReactQuill CSS

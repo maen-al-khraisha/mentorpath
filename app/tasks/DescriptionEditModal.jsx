@@ -14,6 +14,14 @@ const ReactQuill = dynamic(() => import('react-quill'), {
       <span className="text-gray-500">Loading editor...</span>
     </div>
   ),
+  onError: (error) => {
+    console.error('Failed to load React-Quill:', error)
+    return (
+      <div className="h-32 bg-red-50 border border-red-200 rounded flex items-center justify-center">
+        <span className="text-red-600">Editor failed to load. Please refresh the page.</span>
+      </div>
+    )
+  },
 })
 
 // CSS will be imported dynamically in useEffect
