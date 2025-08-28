@@ -171,14 +171,12 @@ export default function AddNoteModal({ open, onClose }) {
                       onKeyPress={handleKeyPress}
                     />
                     <Button
-                      variant="secondary"
-                      size="md"
+                      variant="primary"
+                      size="icon"
                       onClick={addLabel}
                       disabled={!labelInput.trim()}
-                      className="px-6 py-3 rounded-xl font-medium"
                     >
-                      <Plus size={18} className="mr-2" />
-                      Add Label
+                      <Plus size={18} />
                     </Button>
                   </div>
                   {labels.length > 0 && (
