@@ -5,7 +5,8 @@ import { createHabit, updateHabit, habitCategories, habitIcons } from '@/lib/hab
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
-import { X, Plus, Calendar, Target, Hash } from 'lucide-react'
+import Modal from '@/components/ui/Modal'
+import { Plus, Calendar, Target, Hash, TrendingUp } from 'lucide-react'
 
 export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
   const { user, loading } = useAuth()
@@ -94,123 +95,142 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
   if (!open) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
-      <div className="relative bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold">{isEditing ? 'Edit Habit' : 'Add New Habit'}</h3>
-          <Button variant="ghost" size="icon" onClick={() => onClose?.()} aria-label="Close modal">
-            <X size={20} />
-          </Button>
+  const modalHeader = {
+    icon: <TrendingUp size={24} className="text-emerald-600" />,
+    iconBgColor: 'bg-emerald-100',
+    title: isEditing ? 'Edit Habit' : 'Add New Habit',
+    subtitle: isEditing ? 'Update your habit details' : 'Create a new habit to track',
+  }
+
+  const modalContent = (
+    <div className="space-y-6">
+      {/* Habit Name */}
+      <div>
+        <label className="block text-base font-semibold text-slate-900 mb-1">Habit Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter habit name..."
+          className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition-all duration-200 placeholder-slate-400"
+        />
+        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+      </div>
+
+      {/* Category and Start Date - Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">Category</label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition-all duration-200 text-slate-700"
+          >
+            <option value="">Select a category</option>
+            {habitCategories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+          {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
         </div>
 
-        <div className="space-y-6">
-          {/* Habit Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Habit Name *</label>
-            <input
-              className={`w-full h-12 rounded-lg border-2 ${
-                errors.name ? 'border-red-500' : 'border-[var(--border)]'
-              } bg-[var(--bg-card)] px-4 text-base placeholder-gray-500 focus:border-[var(--primary)] transition-colors`}
-              placeholder="e.g., Morning meditation, Daily reading"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-          </div>
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">Start Date</label>
+          <CustomDatePicker
+            value={startDate}
+            onChange={(date) => {
+              const year = date.getFullYear()
+              const month = String(date.getMonth() + 1).padStart(2, '0')
+              const day = String(date.getDate()).padStart(2, '0')
+              const dateString = `${year}-${month}-${day}`
+              setStartDate(dateString)
+            }}
+            name="startDate"
+            required
+          />
+          {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
+        </div>
+      </div>
 
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-            <select
-              className={`w-full h-12 rounded-lg border-2 ${
-                errors.category ? 'border-red-500' : 'border-[var(--border)]'
-              } bg-[var(--bg-card)] px-4 text-base focus:border-[var(--primary)] transition-colors`}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option value="">Select a category</option>
-              {habitCategories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
-          </div>
+      {/* Streak Period and Icon - Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">
+            Streak Period (days)
+          </label>
+          <input
+            type="number"
+            value={streakPeriod}
+            onChange={(e) => setStreakPeriod(e.target.value)}
+            min="1"
+            max="365"
+            placeholder="30"
+            className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition-all duration-200 placeholder-slate-400"
+          />
+          {errors.streakPeriod && (
+            <p className="text-red-500 text-sm mt-1">{errors.streakPeriod}</p>
+          )}
+        </div>
 
-          {/* Start Date and Streak Period */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
-              <CustomDatePicker
-                value={startDate}
-                onChange={(date) => setStartDate(date.toISOString().split('T')[0])}
-                name="startDate"
-                required
-              />
-              {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Streak Period (days) *
-              </label>
-              <div className="relative">
-                <Target
-                  size={16}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                />
-                <input
-                  type="number"
-                  min="1"
-                  max="365"
-                  className={`w-full h-12 rounded-lg border-2 ${
-                    errors.streakPeriod ? 'border-red-500' : 'border-[var(--border)]'
-                  } bg-[var(--bg-card)] pl-10 pr-4 text-base focus:border-[var(--primary)] transition-colors`}
-                  placeholder="30"
-                  value={streakPeriod}
-                  onChange={(e) => setStreakPeriod(e.target.value)}
-                />
-              </div>
-              {errors.streakPeriod && (
-                <p className="text-red-500 text-sm mt-1">{errors.streakPeriod}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Icon Selector */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Choose an Icon</label>
-            <div className="grid grid-cols-8 gap-2">
-              {habitIcons.map((icon) => (
-                <Button
-                  key={icon}
-                  variant={selectedIcon === icon ? 'primary' : 'ghost'}
-                  size="icon"
-                  onClick={() => setSelectedIcon(icon)}
-                  className={`w-12 h-12 text-2xl ${
-                    selectedIcon === icon
-                      ? 'border-[var(--primary)] bg-[var(--primary)]/10'
-                      : 'border-[var(--border)] hover:border-[var(--primary)]/50'
-                  }`}
-                >
-                  {icon}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end pt-4">
-            <Button variant="primary" onClick={handleSave} disabled={busy} className="px-6 py-2">
-              {busy ? 'Saving...' : isEditing ? 'Update Habit' : 'Add Habit'}
-            </Button>
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">Habit Icon</label>
+          <div className="grid grid-cols-6 gap-2">
+            {habitIcons.map((icon) => (
+              <button
+                key={icon}
+                type="button"
+                onClick={() => setSelectedIcon(icon)}
+                className={`w-12 h-12 rounded-xl border-2 text-2xl flex items-center justify-center transition-all duration-200 ${
+                  selectedIcon === icon
+                    ? 'border-emerald-500 bg-emerald-50 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {icon}
+              </button>
+            ))}
           </div>
         </div>
       </div>
     </div>
+  )
+
+  const modalFooter = (
+    <>
+      <Button variant="secondary" onClick={onClose} className="px-6 py-3 rounded-xl font-medium">
+        Cancel
+      </Button>
+      <Button
+        variant="primary"
+        onClick={handleSave}
+        disabled={busy}
+        className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+      >
+        {busy ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            {isEditing ? 'Updating...' : 'Creating...'}
+          </>
+        ) : (
+          <>
+            <Plus size={18} className="mr-2" />
+            {isEditing ? 'Update Habit' : 'Create Habit'}
+          </>
+        )}
+      </Button>
+    </>
+  )
+
+  return (
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      header={modalHeader}
+      content={modalContent}
+      footer={modalFooter}
+      size="default"
+    />
   )
 }

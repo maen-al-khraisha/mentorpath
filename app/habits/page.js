@@ -7,7 +7,7 @@ import Button from '@/components/Button'
 import { useToast } from '@/components/Toast'
 import AddHabitModal from './AddHabitModal'
 import HabitCard from './HabitCard'
-import { Plus, Filter, Search, TrendingUp, Calendar } from 'lucide-react'
+import { Plus, Filter, Search, TrendingUp, Calendar, Target, CheckCircle2 } from 'lucide-react'
 
 export default function HabitsPage() {
   const { user, loading } = useAuth()
@@ -155,141 +155,208 @@ export default function HabitsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Stats */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-6 shadow-soft">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Habits</h1>
-          <Button variant="primary" onClick={handleAddHabit} className="flex items-center gap-2">
-            <Plus size={16} />
-            <span>Add Habit</span>
-          </Button>
+    <>
+      <div className="space-y-8">
+        {/* Hero Section - Page Header & KPIs */}
+        <div className="space-y-8">
+          {/* Main Header */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-soft">
+            <div className="flex items-start justify-between mb-8">
+              <div className="flex-1">
+                <h1 className="text-4xl font-bold text-slate-900 font-display bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-3">
+                  Build Lasting Habits
+                </h1>
+                <p className="text-xl text-slate-600 font-body leading-relaxed">
+                  Track your daily routines and build positive habits that stick for life
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={handleAddHabit}
+                className="px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-2xl"
+              >
+                <Plus size={24} className="mr-3" />
+                Create Habit
+              </Button>
+            </div>
+
+            {/* KPI Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Total Habits */}
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <TrendingUp size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-slate-900 font-display">
+                      {totalHabits}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mb-1">Total Habits</div>
+                    <div className="text-xs text-emerald-700 font-medium">
+                      Building your routine
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Habits */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Target size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-slate-900 font-display">
+                      {activeHabits}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mb-1">Active Habits</div>
+                    <div className="text-xs text-blue-700 font-medium">Currently tracking</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Streaks */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Calendar size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-slate-900 font-display">
+                      {totalStreaks}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mb-1">Total Streaks</div>
+                    <div className="text-xs text-purple-700 font-medium">Consistency wins</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Completed Today */}
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 border border-amber-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <CheckCircle2 size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-slate-900 font-display">
+                      {completedToday}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mb-1">Completed Today</div>
+                    <div className="text-xs text-amber-700 font-medium">Daily progress</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-            <div className="text-2xl font-bold text-green-600">{totalHabits}</div>
-            <div className="text-sm text-green-700">Total Habits</div>
-          </div>
-          <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-2xl font-bold text-blue-600">{activeHabits}</div>
-            <div className="text-sm text-blue-700">Active Habits</div>
-          </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
-            <div className="text-2xl font-bold text-purple-600">{totalStreaks}</div>
-            <div className="text-sm text-purple-700">Total Streaks</div>
-          </div>
-          <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
-            <div className="text-2xl font-bold text-orange-600">{completedToday}</div>
-            <div className="text-sm text-orange-700">Completed Today</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters and Search */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg px-5 py-10 shadow-soft">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Category Filter */}
-          <div className="flex-1">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-            >
-              <option value="">All Categories</option>
-              {habitCategories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Search */}
-          <div className="flex-1">
-            <div className="relative ">
+        {/* Enhanced Toolbar - Full Width */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+            {/* Search */}
+            <div className="relative flex-1">
               <Search
-                size={16}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
               />
               <input
                 type="text"
-                placeholder="Search habits..."
+                placeholder="Search habits by name or category..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 rounded-lg border-2 border-[var(--border)] bg-[var(--bg-card)] pl-10 pr-3 text-sm focus:border-[var(--primary)] transition-colors"
+                className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
               />
             </div>
-          </div>
 
-          {/* Sort */}
-          <div className="flex-1">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-            >
-              <option value="recent">Most Recent</option>
-              <option value="streak">Highest Streak</option>
-              <option value="name">Name A-Z</option>
-            </select>
+            {/* Filters */}
+            <div className="flex items-center gap-3">
+              <select
+                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-slate-700"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                aria-label="Filter by category"
+              >
+                <option value="">All Categories</option>
+                {habitCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-slate-700"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                aria-label="Sort habits"
+              >
+                <option value="recent">Most Recent</option>
+                <option value="streak">Highest Streak</option>
+                <option value="name">Name A-Z</option>
+              </select>
+            </div>
           </div>
         </div>
+
+        {/* Main Content */}
+        <div className="space-y-6">
+          {/* Habits List */}
+          {isLoading ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-soft text-center">
+              <div className="text-slate-500">Loading habits...</div>
+            </div>
+          ) : filteredHabits.length === 0 ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-soft text-center">
+              <div className="text-slate-500 mb-4">
+                {habits.length === 0 ? (
+                  <>
+                    <div className="text-4xl mb-4">🎯</div>
+                    <div className="text-xl font-medium text-slate-700 mb-2">No habits yet!</div>
+                    <div className="text-slate-500 mb-4">
+                      Start building positive habits to track your progress.
+                    </div>
+                    <Button variant="primary" onClick={handleAddHabit}>
+                      <Plus size={16} className="mr-2" />
+                      Add Your First Habit
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-4xl mb-4">🔍</div>
+                    <div className="text-xl font-medium text-slate-700 mb-2">No habits found</div>
+                    <div className="text-slate-500">
+                      Try adjusting your filters or search terms.
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredHabits.map((habit) => (
+                <HabitCard
+                  key={habit.id}
+                  habit={habit}
+                  onEdit={handleEditHabit}
+                  onDelete={handleDeleteHabit}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Add/Edit Habit Modal */}
+        {showAddModal && (
+          <AddHabitModal
+            open={showAddModal}
+            habit={editingHabit}
+            onClose={handleCloseModal}
+            onSave={handleHabitSaved}
+          />
+        )}
+        <ToastContainer />
       </div>
-
-      {/* Habits List */}
-      {isLoading ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-center">
-          <div className="text-gray-500">Loading habits...</div>
-        </div>
-      ) : filteredHabits.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm text-center">
-          <div className="text-gray-500 mb-4">
-            {habits.length === 0 ? (
-              <>
-                <div className="text-4xl mb-4">🎯</div>
-                <div className="text-xl font-medium text-gray-700 mb-2">No habits yet!</div>
-                <div className="text-gray-500 mb-4">
-                  Start building positive habits to track your progress.
-                </div>
-                <Button variant="primary" onClick={handleAddHabit}>
-                  <Plus size={16} className="mr-2" />
-                  Add Your First Habit
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="text-4xl mb-4">🔍</div>
-                <div className="text-xl font-medium text-gray-700 mb-2">No habits found</div>
-                <div className="text-gray-500">Try adjusting your filters or search terms.</div>
-              </>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredHabits.map((habit) => (
-            <HabitCard
-              key={habit.id}
-              habit={habit}
-              onEdit={handleEditHabit}
-              onDelete={handleDeleteHabit}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Add/Edit Habit Modal */}
-      {showAddModal && (
-        <AddHabitModal
-          open={showAddModal}
-          habit={editingHabit}
-          onClose={handleCloseModal}
-          onSave={handleHabitSaved}
-        />
-      )}
-      <ToastContainer />
-    </div>
+    </>
   )
 }
