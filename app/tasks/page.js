@@ -43,6 +43,7 @@ import {
   ListTodo,
   FileText,
   Clock as ClockIcon,
+  Paperclip,
 } from 'lucide-react'
 import Image from 'next/image'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
@@ -1137,183 +1138,170 @@ export default function TasksPage() {
       )}
 
       {/* Shift to Tomorrow Modal */}
-      {showShiftModal && selectedTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowShiftModal(false)}
-          />
-          <div className="relative bg-white border border-slate-200 rounded-lg p-6 shadow-soft w-full max-w-md">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 font-display">
-              Shift Task to Tomorrow
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">
-                  Reason (optional)
-                </label>
-                <textarea
-                  value={shiftReason}
-                  onChange={(e) => setShiftReason(e.target.value)}
-                  placeholder="Why are you shifting this task?"
-                  className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm font-body focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                  rows={3}
-                />
-              </div>
-              <div className="flex justify-end gap-3">
-                <Button variant="secondary" onClick={() => setShowShiftModal(false)}>
-                  Cancel
-                </Button>
-                <Button variant="primary" onClick={handleShiftToTomorrow}>
-                  Shift Task
-                </Button>
-              </div>
+      <Modal
+        isOpen={showShiftModal && !!selectedTask}
+        onClose={() => setShowShiftModal(false)}
+        size="small"
+        header={{
+          icon: <Calendar size={24} className="text-indigo-600" />,
+          iconBgColor: 'bg-indigo-100',
+          title: 'Shift Task to Tomorrow',
+          subtitle: "Move this task to tomorrow's date",
+        }}
+        content={
+          <div className="space-y-4">
+            <div>
+              <label className="block text-base font-semibold text-slate-900 mb-1">
+                Reason (optional)
+              </label>
+              <textarea
+                value={shiftReason}
+                onChange={(e) => setShiftReason(e.target.value)}
+                placeholder="Why are you shifting this task?"
+                className="w-full rounded-xl border-2 border-slate-200 bg-white p-4 text-base font-body focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 placeholder-slate-400 resize-none"
+                rows={3}
+              />
             </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex justify-end gap-4">
+            <Button variant="secondary" onClick={() => setShowShiftModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleShiftToTomorrow}>
+              Shift Task
+            </Button>
+          </div>
+        }
+      />
 
       {/* Change Date Modal */}
-      {showChangeDate && selectedTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowChangeDate(false)}
-          />
-          <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
-            {/* Header */}
-            <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-                  <Calendar size={24} className="text-blue-600" />
+      <Modal
+        isOpen={showChangeDate && !!selectedTask}
+        onClose={() => setShowChangeDate(false)}
+        size="small"
+        header={{
+          icon: <Calendar size={24} className="text-blue-600" />,
+          iconBgColor: 'bg-blue-100',
+          title: 'Change Task Date',
+          subtitle: 'Reschedule this task to a new date',
+        }}
+        content={
+          <div className="space-y-6">
+            {/* Current Task Info */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center">
+                  <Target size={16} className="text-slate-600" />
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-900 font-display">
-                    Change Task Date
-                  </h3>
-                  <p className="text-slate-600 font-body">Reschedule this task to a new date</p>
-                </div>
+                <span className="text-sm font-semibold text-slate-700">Current Task</span>
               </div>
+              <h4 className="text-lg font-semibold text-slate-900">{selectedTask?.title}</h4>
+              <p className="text-sm text-slate-600">
+                Currently scheduled for:{' '}
+                <span className="font-medium">
+                  {selectedTask?.date
+                    ? new Date(selectedTask.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'No date set'}
+                </span>
+              </p>
             </div>
 
-            {/* Content */}
-            <div className="p-8 space-y-6 overflow-y-auto">
-              {/* Current Task Info */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center">
-                    <Target size={16} className="text-slate-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-slate-700">Current Task</span>
-                </div>
-                <h4 className="text-lg font-semibold text-slate-900">{selectedTask.title}</h4>
-                <p className="text-sm text-slate-600">
-                  Currently scheduled for:{' '}
-                  <span className="font-medium">
-                    {selectedTask.date
-                      ? new Date(selectedTask.date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })
-                      : 'No date set'}
-                  </span>
-                </p>
-              </div>
-
-              {/* New Date Input */}
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">
-                  New Date
-                </label>
-                <CustomDatePicker
-                  value={targetDate}
-                  onChange={(date) => {
-                    try {
-                      if (date && !isNaN(date.getTime())) {
-                        // Create date string manually to avoid timezone issues
-                        // Use local date components instead of toISOString()
-                        const year = date.getFullYear()
-                        const month = String(date.getMonth() + 1).padStart(2, '0')
-                        const day = String(date.getDate()).padStart(2, '0')
-                        const dateString = `${year}-${month}-${day}`
-                        setTargetDate(dateString)
-                      } else {
-                        setTargetDate('')
-                      }
-                    } catch (error) {
-                      console.error('Error setting target date:', error)
+            {/* New Date Input */}
+            <div>
+              <label className="block text-base font-semibold text-slate-900 mb-1">New Date</label>
+              <CustomDatePicker
+                value={targetDate}
+                onChange={(date) => {
+                  try {
+                    if (date && !isNaN(date.getTime())) {
+                      // Create date string manually to avoid timezone issues
+                      // Use local date components instead of toISOString()
+                      const year = date.getFullYear()
+                      const month = String(date.getMonth() + 1).padStart(2, '0')
+                      const day = String(date.getDate()).padStart(2, '0')
+                      const dateString = `${year}-${month}-${day}`
+                      setTargetDate(dateString)
+                    } else {
                       setTargetDate('')
                     }
-                  }}
-                  name="targetDate"
-                  required
-                />
-              </div>
-
-              {/* Reason Input */}
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">
-                  Reason (optional)
-                </label>
-                <textarea
-                  rows={3}
-                  value={targetReason}
-                  onChange={(e) => setTargetReason(e.target.value)}
-                  placeholder="Why are you changing the date? (e.g., deadline extension, priority shift, etc.)"
-                  className="w-full rounded-xl border-2 border-slate-200 bg-white p-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400 resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
-              <Button
-                variant="secondary"
-                onClick={() => setShowChangeDate(false)}
-                className="px-6 rounded-xl font-medium"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                disabled={!targetDate || isSubmittingChangeDate}
-                onClick={async () => {
-                  if (!targetDate) return
-                  setIsSubmittingChangeDate(true)
-                  try {
-                    // Construct Date from yyyy-mm-dd
-                    const parts = targetDate.split('-')
-                    const dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
-                    await shiftTaskToDate(selectedTask.id, dt, targetReason)
-                    setShowChangeDate(false)
+                  } catch (error) {
+                    console.error('Error setting target date:', error)
                     setTargetDate('')
-                    setTargetReason('')
-                  } catch (e) {
-                    console.error('Change date failed', e)
-                  } finally {
-                    setIsSubmittingChangeDate(false)
                   }
                 }}
-                className="px-8 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                {isSubmittingChangeDate ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Calendar size={18} className="mr-2" />
-                    Update Date
-                  </>
-                )}
-              </Button>
+                name="targetDate"
+                required
+              />
+            </div>
+
+            {/* Reason Input */}
+            <div>
+              <label className="block text-base font-semibold text-slate-900 mb-1">
+                Reason (optional)
+              </label>
+              <textarea
+                rows={3}
+                value={targetReason}
+                onChange={(e) => setTargetReason(e.target.value)}
+                placeholder="Why are you changing the date? (e.g., deadline extension, priority shift, etc.)"
+                className="w-full rounded-xl border-2 border-slate-200 bg-white p-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400 resize-none"
+              />
             </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex justify-end gap-4">
+            <Button
+              variant="secondary"
+              onClick={() => setShowChangeDate(false)}
+              className="px-6 rounded-xl font-medium"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              disabled={!targetDate || isSubmittingChangeDate}
+              onClick={async () => {
+                if (!targetDate) return
+                setIsSubmittingChangeDate(true)
+                try {
+                  // Construct Date from yyyy-mm-dd
+                  const parts = targetDate.split('-')
+                  const dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+                  await shiftTaskToDate(selectedTask.id, dt, targetReason)
+                  setShowChangeDate(false)
+                  setTargetDate('')
+                  setTargetReason('')
+                } catch (e) {
+                  console.error('Change date failed', e)
+                } finally {
+                  setIsSubmittingChangeDate(false)
+                }
+              }}
+              className="px-8 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {isSubmittingChangeDate ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Calendar size={18} className="mr-2" />
+                  Update Date
+                </>
+              )}
+            </Button>
+          </div>
+        }
+      />
 
       {/* Add Time Modal */}
       <Modal
@@ -1608,82 +1596,77 @@ export default function TasksPage() {
       )}
 
       {/* Attachment Preview Modal */}
-      {previewItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setPreviewItem(null)}
-          />
-          <div className="relative bg-white border border-slate-200 rounded-lg shadow-soft w-[90vw] max-w-3xl max-h-[90vh] overflow-hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10"
-              aria-label="Close"
-              onClick={() => setPreviewItem(null)}
-            >
-              <X size={16} />
-            </Button>
-            <div className="p-4 pt-16 flex flex-col items-center justify-center w-full h-full">
-              {(() => {
-                const name = previewItem?.name || ''
-                const url = previewItem?.url || ''
-                const ext = name.split('.').pop()?.toLowerCase() || ''
-                const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg']
-                if (imageExts.includes(ext)) {
-                  return (
-                    <>
-                      <img
-                        src={url}
-                        alt="Attachment preview"
-                        className="max-h-[70vh] w-auto object-contain mb-4"
-                      />
-                      <Button
-                        variant="secondary"
-                        onClick={() => window.open(url, '_blank', 'noopener')}
-                        className="mt-2"
-                      >
-                        Open in new tab
-                      </Button>
-                    </>
-                  )
-                }
-                if (ext === 'pdf' || ext === 'txt') {
-                  return (
-                    <>
-                      <iframe
-                        src={url}
-                        title="Attachment preview"
-                        className="w-[88vw] max-w-3xl h-[70vh] mb-4"
-                      />
-                      <Button
-                        variant="secondary"
-                        onClick={() => window.open(url, '_blank', 'noopener')}
-                        className="mt-2"
-                      >
-                        Open in new tab
-                      </Button>
-                    </>
-                  )
-                }
+      <Modal
+        isOpen={!!previewItem}
+        onClose={() => setPreviewItem(null)}
+        size="xl"
+        showCloseButton={true}
+        header={{
+          icon: <Paperclip size={24} className="text-slate-600" />,
+          iconBgColor: 'bg-slate-100',
+          title: 'Attachment Preview',
+          subtitle: previewItem?.name || 'File preview',
+        }}
+        content={
+          <div className="flex flex-col items-center justify-center w-full h-full min-h-[60vh]">
+            {(() => {
+              const name = previewItem?.name || ''
+              const url = previewItem?.url || ''
+              const ext = name.split('.').pop()?.toLowerCase() || ''
+              const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg']
+              if (imageExts.includes(ext)) {
                 return (
-                  <div className="p-6 text-center">
-                    <div className="mb-3 text-sm text-slate-600 font-body">
-                      Preview not available for this file type.
-                    </div>
+                  <>
+                    <img
+                      src={url}
+                      alt="Attachment preview"
+                      className="max-h-[60vh] w-auto object-contain mb-4"
+                    />
                     <Button
                       variant="secondary"
                       onClick={() => window.open(url, '_blank', 'noopener')}
+                      className="mt-2"
                     >
                       Open in new tab
                     </Button>
-                  </div>
+                  </>
                 )
-              })()}
-            </div>
+              }
+              if (ext === 'pdf' || ext === 'txt') {
+                return (
+                  <>
+                    <iframe
+                      src={url}
+                      title="Attachment preview"
+                      className="w-full h-[60vh] mb-4 border border-slate-200 rounded-xl"
+                    />
+                    <Button
+                      variant="secondary"
+                      onClick={() => window.open(url, '_blank', 'noopener')}
+                      className="mt-2"
+                    >
+                      Open in new tab
+                    </Button>
+                  </>
+                )
+              }
+              return (
+                <div className="p-6 text-center">
+                  <div className="mb-3 text-sm text-slate-600 font-body">
+                    Preview not available for this file type.
+                  </div>
+                  <Button
+                    variant="secondary"
+                    onClick={() => window.open(url, '_blank', 'noopener')}
+                  >
+                    Open in new tab
+                  </Button>
+                </div>
+              )
+            })()}
           </div>
-        </div>
-      )}
+        }
+      />
 
       {/* Description Edit Modal */}
       <DescriptionEditModal
