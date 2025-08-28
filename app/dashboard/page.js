@@ -204,81 +204,103 @@ export default function DashboardPage() {
     }
   }
 
+  // Helper to render note descriptions without HTML tags (Quill content)
+  const getPlainText = (html) => {
+    if (!html) return ''
+    try {
+      const div = document.createElement('div')
+      div.innerHTML = html
+      return (div.textContent || div.innerText || '').trim()
+    } catch {
+      return String(html)
+        .replace(/<[^>]*>/g, '')
+        .trim()
+    }
+  }
+
   return (
     <>
       <div className="space-y-8">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-semibold text-slate-900 mb-2 font-display">Dashboard</h1>
-          <p className="text-slate-600 font-body">
-            Welcome back! Here's your productivity overview.
-          </p>
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-soft">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold text-slate-900 font-display bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-3">
+                Dashboard
+              </h1>
+              <p className="text-xl text-slate-600 font-body leading-relaxed">
+                Welcome back! Here's your productivity overview.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Tasks Stats */}
-          <div className="bg-white rounded-lg p-4 border border-slate-200">
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <SquareCheck className="w-4 h-4 text-indigo-600" />
+              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <SquareCheck className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-lg font-semibold text-slate-900 font-display">
+                <div className="text-3xl font-bold text-slate-900 font-display">
                   {stats.todayTasks}
                 </div>
-                <div className="text-sm text-slate-500 font-body">Today's Tasks</div>
+                <div className="text-sm font-semibold text-slate-700">Today's Tasks</div>
               </div>
             </div>
-            <div className="text-sm text-slate-600 font-body">{stats.completedTasks} completed</div>
+            <div className="text-xs text-emerald-700 font-medium">
+              {stats.completedTasks} completed
+            </div>
           </div>
 
           {/* Focus Time */}
-          <div className="bg-white rounded-lg p-4 border border-slate-200">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-4 h-4 text-emerald-600" />
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Clock className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-lg font-semibold text-slate-900 font-display">
+                <div className="text-3xl font-bold text-slate-900 font-display">
                   {formatFocusTime(stats.focusTime)}
                 </div>
-                <div className="text-sm text-slate-500 font-body">Focus Time</div>
+                <div className="text-sm font-semibold text-slate-700">Focus Time Today</div>
               </div>
             </div>
-            <div className="text-sm text-slate-600 font-body">Today</div>
+            <div className="text-xs text-blue-700 font-medium">Productivity tracking</div>
           </div>
 
           {/* Habits */}
-          <div className="bg-white rounded-lg p-4 border border-slate-200">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Target className="w-4 h-4 text-purple-600" />
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Target className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-lg font-semibold text-slate-900 font-display">
+                <div className="text-3xl font-bold text-slate-900 font-display">
                   {stats.totalHabits}
                 </div>
-                <div className="text-sm text-slate-500 font-body">Active Habits</div>
+                <div className="text-sm font-semibold text-slate-700">Active Habits</div>
               </div>
             </div>
-            <div className="text-sm text-slate-600 font-body">Total</div>
+            <div className="text-xs text-purple-700 font-medium">Total</div>
           </div>
 
           {/* Notes */}
-          <div className="bg-white rounded-lg p-4 border border-slate-200">
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 border border-amber-200 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-4 h-4 text-amber-600" />
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <FileText className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-lg font-semibold text-slate-900 font-display">
+                <div className="text-3xl font-bold text-slate-900 font-display">
                   {stats.totalNotes}
                 </div>
-                <div className="text-sm text-slate-500 font-body">Total Notes</div>
+                <div className="text-sm font-semibold text-slate-700">Total Notes</div>
               </div>
             </div>
-            <div className="text-sm text-slate-600 font-body">Ideas captured</div>
+            <div className="text-xs text-amber-700 font-medium">Ideas captured</div>
           </div>
         </div>
 
@@ -286,7 +308,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Tasks Box */}
           <div
-            className="bg-white rounded-lg p-5 border border-slate-200 cursor-pointer hover:border-slate-300 transition-colors"
+            className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft cursor-pointer hover:shadow-lg transition-all"
             onClick={() => router.push('/tasks')}
           >
             <div className="flex items-center justify-between mb-4">
@@ -329,7 +351,7 @@ export default function DashboardPage() {
 
           {/* Notes Box */}
           <div
-            className="bg-white rounded-lg p-5 border border-slate-200 cursor-pointer hover:border-slate-300 transition-colors"
+            className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft cursor-pointer hover:shadow-lg transition-all"
             onClick={() => router.push('/notes')}
           >
             <div className="flex items-center justify-between mb-4">
@@ -351,7 +373,7 @@ export default function DashboardPage() {
                     {note.title}
                   </div>
                   <div className="text-xs text-slate-600 truncate font-body">
-                    {note.description || 'No description'}
+                    {getPlainText(note.description) || 'No description'}
                   </div>
                 </div>
               ))}
@@ -365,7 +387,7 @@ export default function DashboardPage() {
 
           {/* Calendar Box */}
           <div
-            className="bg-white rounded-lg p-5 border border-slate-200 cursor-pointer hover:border-slate-300 transition-colors"
+            className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft cursor-pointer hover:shadow-lg transition-all"
             onClick={() => router.push('/calendar')}
           >
             <div className="flex items-center justify-between mb-4">
@@ -401,7 +423,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg p-6 border border-slate-200">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
           <h3 className="text-lg font-semibold text-slate-900 mb-4 font-display">Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Button
