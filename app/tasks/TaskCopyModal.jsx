@@ -22,11 +22,16 @@ const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default
   ),
 })
 
-export default function TaskCopyModal({ open, onClose, task, onCopy }) {
+export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate }) {
   const { user, loading } = useAuth()
   const { showToast } = useToast()
   const [title, setTitle] = useState('')
-  const [date, setDate] = useState(defaultDate || new Date())
+  const [date, setDate] = useState(() => {
+    if (defaultDate && !isNaN(new Date(defaultDate).getTime())) {
+      return new Date(defaultDate)
+    }
+    return new Date()
+  })
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState('Medium')
   const [labels, setLabels] = useState([])
@@ -96,7 +101,26 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
       setPriority(task.priority || 'Medium')
       setLabels([...(task.labels || [])])
       setChecklist([...(task.checklist || [])])
-      setSelectedFiles([])
+      // Load original task attachments
+      if (task.attachments && Array.isArray(task.attachments) && task.attachments.length > 0) {
+        console.log('Loading original task attachments:', task.attachments)
+        // Convert original attachments to the format expected by the component
+        const originalAttachments = task.attachments.map((attachment, index) => ({
+          id: `original-${index}`,
+          file: {
+            name: attachment.name || attachment.filename || 'Unknown file',
+            size: attachment.size || 0,
+            type: attachment.type || attachment.mimeType || 'application/octet-stream',
+            url: attachment.url || attachment.downloadURL || '',
+          },
+          isOriginal: true, // Flag to identify original attachments
+          originalData: attachment, // Keep original data for reference
+        }))
+        setSelectedFiles(originalAttachments)
+        console.log('Converted attachments:', originalAttachments)
+      } else {
+        setSelectedFiles([])
+      }
     }
   }, [open, task, defaultDate])
 
@@ -136,7 +160,7 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
 
   async function onSave() {
     if (!user) {
-      alert('Please wait for authentication to complete')
+      showToast('Please wait for authentication to complete', 'error')
       return
     }
 
@@ -151,7 +175,7 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
         priority,
         labels,
         checklist,
-        attachments: [], // Start with empty attachments
+        attachments: [], // Start with empty attachments, we'll copy them separately
       })
 
       // If we have files to upload, handle them separately with proper error handling
@@ -160,13 +184,74 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
           // Import the addAttachment function dynamically to avoid circular imports
           const { addAttachment } = await import('@/lib/tasksApi')
 
-          // Upload each file individually with proper error handling
+          // Handle each file based on whether it's original or new
           for (const fileItem of selectedFiles) {
             try {
-              await addAttachment(id, fileItem.file)
+              if (fileItem.isOriginal) {
+                // For original attachments, we need to copy them properly
+                console.log('Copying original attachment:', fileItem.file.name)
+
+                try {
+                  // Since there's no copyAttachment function, we need to download and re-upload
+                  // This is the most reliable way to copy attachments
+                  if (fileItem.originalData && fileItem.originalData.url) {
+                    console.log(
+                      'Downloading original attachment for copying:',
+                      fileItem.originalData.url
+                    )
+
+                    // Download the file from the original URL
+                    const response = await fetch(fileItem.originalData.url)
+                    if (!response.ok) {
+                      throw new Error(`Failed to download file: ${response.statusText}`)
+                    }
+
+                    // Convert the response to a blob
+                    const blob = await response.blob()
+
+                    // Create a new File object from the blob
+                    const file = new File(
+                      [blob],
+                      fileItem.originalData.name || fileItem.originalData.filename || 'copied-file',
+                      {
+                        type:
+                          fileItem.originalData.type ||
+                          fileItem.originalData.mimeType ||
+                          'application/octet-stream',
+                      }
+                    )
+
+                    // Upload the copied file to the new task
+                    console.log('Uploading copied attachment:', file.name)
+                    await addAttachment(id, file)
+
+                    showToast(`Successfully copied attachment "${file.name}"`, 'success')
+                  } else {
+                    console.warn(
+                      'Original attachment missing URL, skipping:',
+                      fileItem.originalData
+                    )
+                    showToast(
+                      `Warning: Could not copy attachment "${fileItem.file.name}" - missing file data`,
+                      'warning'
+                    )
+                  }
+                } catch (copyError) {
+                  console.error('Failed to copy original attachment:', copyError)
+                  showToast(
+                    `Warning: Could not copy original attachment "${fileItem.file.name}"`,
+                    'warning'
+                  )
+                }
+              } else {
+                // For new files, upload them
+                console.log('Uploading new attachment:', fileItem.file.name)
+                await addAttachment(id, fileItem.file)
+              }
             } catch (uploadError) {
               // Use our professional error handling function
-              showUserFriendlyError(uploadError, fileItem.file.name)
+              showToast(`Failed to process attachment "${fileItem.file.name}"`, 'error')
+              console.error('Attachment processing failed:', uploadError)
               continue // Continue with other files
             }
           }
@@ -177,8 +262,9 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
       }
 
       // Task created successfully
-      toast.success(`Task "${title}" copied successfully!`)
-      onClose?.(id)
+      showToast(`Task "${title}" copied successfully!`, 'success')
+      onCopy?.(id) // Call onCopy with the new task ID
+      onClose?.() // Close the modal
       setTitle('')
       setDescription('')
       setLabels([])
@@ -210,14 +296,14 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
 
   function addFile(file) {
     if (selectedFiles.length >= 3) {
-      alert('You can only upload up to 3 files')
+      showToast('You can only upload up to 3 files', 'error')
       return
     }
 
     // Check file size (20MB limit) - 20971520 bytes exactly as specified
     const maxSize = 20971520 // 20 MB in bytes
     if (file.size > maxSize) {
-      alert('The file is too large. Please upload a file smaller than 20 MB.')
+      showToast('The file is too large. Please upload a file smaller than 20 MB.', 'error')
       return
     }
 
@@ -262,29 +348,29 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
         error.message.includes('invalid file parameter'))
     ) {
       if (fileName) {
-        alert(`File "${fileName}" is too large. Please select a smaller file.`)
+        showToast(`File "${fileName}" is too large. Please select a smaller file.`, 'error')
       } else {
-        alert('One or more files are too large. Please select smaller files.')
+        showToast('One or more files are too large. Please select smaller files.', 'error')
       }
       return
     }
 
     // Handle other common errors
     if (error.message && error.message.includes('User must be authenticated')) {
-      alert('Please wait for authentication to complete')
+      showToast('Please wait for authentication to complete', 'error')
       return
     }
 
     if ((error.message && error.message.includes('network')) || error.message.includes('fetch')) {
-      alert('Network error. Please check your connection and try again.')
+      showToast('Network error. Please check your connection and try again.', 'error')
       return
     }
 
     // Generic error message
     if (fileName) {
-      alert(`Failed to upload "${fileName}". Please try again.`)
+      showToast(`Failed to upload "${fileName}". Please try again.`, 'error')
     } else {
-      alert('An error occurred. Please try again.')
+      showToast('An error occurred. Please try again.', 'error')
     }
   }
 
@@ -302,34 +388,58 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-purple-600"
+        className="text-blue-600"
       >
         <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
         <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
       </svg>
     ),
-    iconBgColor: 'bg-purple-100',
+    iconBgColor: 'bg-blue-100',
     title: 'Copy Task',
     subtitle: `Create a copy of "${task?.title}" with your modifications`,
   }
 
   const modalContent = (
     <div className="space-y-6">
-      {/* Basic Task Information */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-base font-semibold text-slate-900 mb-1 ">Task Name</label>
-            <input
-              className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter task name..."
+      {/* Task Details Form */}
+      <div className="space-y-6">
+        <h4 className="text-xl font-semibold text-slate-900 font-display flex items-center gap-3">
+          <TargetIcon size={20} className="text-blue-600" />
+          Task Details
+        </h4>
+
+        {/* Task Title */}
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">Task Title</label>
+          <input
+            className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter task title..."
+          />
+        </div>
+
+        {/* Task Description - Full Width */}
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">
+            Task Description
+          </label>
+          <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
+            <ReactQuill
+              value={description}
+              onChange={setDescription}
+              modules={quillModules}
+              formats={quillFormats}
+              placeholder="Describe your task..."
+              className="min-h-[200px]"
             />
           </div>
+        </div>
 
+        {/* Date and Priority - Side by Side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-base font-semibold text-slate-900 mb-1 ">Task Date</label>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Task Date</label>
             <CustomDatePicker
               value={date}
               onChange={(selectedDate) => setDate(selectedDate)}
@@ -399,102 +509,94 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
           </div>
         </div>
 
-        <div className="space-y-4">
+        {/* Labels and Checklist - Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Labels */}
           <div>
-            <label className="block text-base font-semibold text-slate-900 mb-1">
-              Task Description
-            </label>
-            <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
-              <ReactQuill
-                value={description}
-                onChange={setDescription}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder="Describe your task..."
-                className="min-h-[200px]"
+            <label className="block text-base font-semibold text-slate-900 mb-1">Labels</label>
+
+            {/* Add New Label */}
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+                placeholder="Enter label name..."
+                value={labelInput}
+                onChange={(e) => setLabelInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && addLabel()}
               />
+              <Button
+                variant="primary"
+                size="icon"
+                onClick={addLabel}
+                disabled={!labelInput.trim()}
+              >
+                <Plus size={18} />
+              </Button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Labels and Checklist - Side by Side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Labels */}
-        <div>
-          <label className="block text-base font-semibold text-slate-900 mb-1">Labels</label>
-
-          {/* Add New Label */}
-          <div className="flex items-center gap-3 mb-4">
-            <input
-              className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200 placeholder-slate-400"
-              placeholder="Enter label name..."
-              value={labelInput}
-              onChange={(e) => setLabelInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addLabel()}
-            />
-            <Button variant="primary" size="icon" onClick={addLabel} disabled={!labelInput.trim()}>
-              <Plus size={18} />
-            </Button>
+            {/* Existing Labels */}
+            {labels.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {labels.map((label, index) => (
+                  <LabelBadge
+                    key={index}
+                    label={label}
+                    onRemove={() => setLabels((ls) => ls.filter((_, i) => i !== index))}
+                    showRemoveButton={true}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Existing Labels */}
-          {labels.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {labels.map((label, index) => (
-                <LabelBadge
-                  key={index}
-                  label={label}
-                  onRemove={() => setLabels((ls) => ls.filter((_, i) => i !== index))}
-                  showRemoveButton={true}
-                />
-              ))}
+          {/* Checklist */}
+          <div>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Checklist</label>
+
+            {/* Add New Checklist Item */}
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+                placeholder="Enter checklist item..."
+                value={checkInput}
+                onChange={(e) => setCheckInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && addCheck()}
+              />
+              <Button
+                variant="primary"
+                size="icon"
+                onClick={addCheck}
+                disabled={!checkInput.trim()}
+              >
+                <Plus size={18} />
+              </Button>
             </div>
-          )}
-        </div>
 
-        {/* Checklist */}
-        <div>
-          <label className="block text-base font-semibold text-slate-900 mb-1">Checklist</label>
-
-          {/* Add New Checklist Item */}
-          <div className="flex items-center gap-3 mb-4">
-            <input
-              className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200 placeholder-slate-400"
-              placeholder="Enter checklist item..."
-              value={checkInput}
-              onChange={(e) => setCheckInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addCheck()}
-            />
-            <Button variant="primary" size="icon" onClick={addCheck} disabled={!checkInput.trim()}>
-              <Plus size={18} />
-            </Button>
-          </div>
-
-          {/* Existing Checklist Items */}
-          {checklist.length > 0 && (
-            <div className="space-y-3">
-              {checklist.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200"
-                >
-                  <span
-                    className={`flex-1 text-sm font-medium ${c.done ? 'line-through text-slate-500' : 'text-slate-700'}`}
+            {/* Existing Checklist Items */}
+            {checklist.length > 0 && (
+              <div className="space-y-3">
+                {checklist.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200"
                   >
-                    {c.text}
-                  </span>
-                  <button
-                    onClick={() => setChecklist((ls) => ls.filter((x) => x.id !== c.id))}
-                    aria-label="Remove checklist item"
-                    className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
-                  >
-                    <X size={14} className="text-red-600" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                    <span
+                      className={`flex-1 text-sm font-medium ${c.done ? 'line-through text-slate-500' : 'text-slate-700'}`}
+                    >
+                      {c.text}
+                    </span>
+                    <button
+                      onClick={() => setChecklist((ls) => ls.filter((x) => x.id !== c.id))}
+                      aria-label="Remove checklist item"
+                      className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                    >
+                      <X size={14} className="text-red-600" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -509,6 +611,12 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
               <h3 className="text-lg font-semibold text-slate-900">Attachments</h3>
               <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
                 {selectedFiles?.length || 0}/3
+                {selectedFiles?.some((f) => f.isOriginal) && (
+                  <span className="ml-1 text-blue-600">
+                    ({selectedFiles?.filter((f) => f.isOriginal).length} original,{' '}
+                    {selectedFiles?.filter((f) => !f.isOriginal).length} new)
+                  </span>
+                )}
               </span>
             </div>
 
@@ -525,7 +633,7 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
                     const file = e.target.files?.[0]
                     if (file) {
                       addFile(file)
-                      toast.success(`File "${file.name}" attached successfully!`)
+                      showToast(`File "${file.name}" attached successfully!`, 'success')
                       // Reset the input so the same file can be selected again if needed
                       e.target.value = ''
                     }
@@ -547,6 +655,16 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
 
                 <div className="mt-3 text-sm text-slate-500">
                   Support for documents, images, and more - Max 20MB per file
+                  {selectedFiles?.some((f) => f.isOriginal) && (
+                    <div className="mt-2 text-blue-600">
+                      Original task attachments are included and cannot be removed
+                    </div>
+                  )}
+                  {selectedFiles?.some((f) => f.isOriginal) && (
+                    <div className="mt-1 text-blue-600 text-xs">
+                      Note: Original attachments will be copied to the new task
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -556,45 +674,83 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
                   {selectedFiles.map((fileItem) => (
                     <div
                       key={fileItem.id}
-                      className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors duration-200"
+                      className={`flex items-center gap-3 p-4 rounded-xl border transition-colors duration-200 ${
+                        fileItem.isOriginal
+                          ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                      }`}
                     >
                       {/* File Preview Rectangle */}
-                      <div className="w-12 h-12 rounded-md bg-slate-200 flex items-center justify-center flex-shrink-0">
+                      <div
+                        className={`w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0 ${
+                          fileItem.isOriginal ? 'bg-blue-200' : 'bg-slate-200'
+                        }`}
+                      >
                         {fileItem.file.type.startsWith('image/') ? (
-                          <img
-                            src={URL.createObjectURL(fileItem.file)}
-                            alt={fileItem.file.name}
-                            className="w-full h-full object-cover rounded-md"
-                          />
+                          fileItem.isOriginal && fileItem.file.url ? (
+                            // For original attachments, use the URL if available
+                            <img
+                              src={fileItem.file.url}
+                              alt={fileItem.file.name}
+                              className="w-full h-full object-cover rounded-md"
+                            />
+                          ) : (
+                            // For new files, use URL.createObjectURL
+                            <img
+                              src={URL.createObjectURL(fileItem.file)}
+                              alt={fileItem.file.name}
+                              className="w-full h-full object-cover rounded-md"
+                            />
+                          )
                         ) : (
-                          <Paperclip size={20} className="text-slate-600" />
+                          <Paperclip
+                            size={20}
+                            className={fileItem.isOriginal ? 'text-blue-600' : 'text-slate-600'}
+                          />
                         )}
                       </div>
 
                       {/* File Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">
-                          {fileItem.file.name}
-                        </p>
-                        <p className="text-xs text-slate-500">
+                        <div className="flex items-center gap-2">
+                          <p
+                            className={`text-sm font-medium truncate ${
+                              fileItem.isOriginal ? 'text-blue-900' : 'text-slate-900'
+                            }`}
+                          >
+                            {fileItem.file.name}
+                          </p>
+                          {fileItem.isOriginal && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                              Original
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          className={`text-xs ${
+                            fileItem.isOriginal ? 'text-blue-600' : 'text-slate-500'
+                          }`}
+                        >
                           {fileItem.file.size > 1024 * 1024
                             ? `${(fileItem.file.size / (1024 * 1024)).toFixed(1)} MB`
                             : `${(fileItem.file.size / 1024).toFixed(1)} KB`}
                         </p>
                       </div>
 
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => {
-                          removeFile(fileItem.id)
-                          toast.success(`File "${fileItem.file.name}" removed`)
-                        }}
-                        className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
-                        title="Remove attachment"
-                        aria-label={`Remove ${fileItem.file.name}`}
-                      >
-                        <X size={14} className="text-red-600" />
-                      </button>
+                      {/* Remove Button - Only show for new attachments */}
+                      {!fileItem.isOriginal && (
+                        <button
+                          onClick={() => {
+                            removeFile(fileItem.id)
+                            showToast(`File "${fileItem.file.name}" removed`, 'success')
+                          }}
+                          className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                          title="Remove attachment"
+                          aria-label={`Remove ${fileItem.file.name}`}
+                        >
+                          <X size={14} className="text-red-600" />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -627,12 +783,12 @@ export default function TaskCopyModal({ open, onClose, task, onCopy }) {
         {busy ? (
           <>
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-            Creating Task...
+            Copying Task...
           </>
         ) : (
           <>
             <Target size={18} className="mr-2" />
-            Create Task
+            Copy Task
           </>
         )}
       </Button>

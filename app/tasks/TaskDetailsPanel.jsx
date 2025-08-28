@@ -383,55 +383,6 @@ export default function TaskDetailsPanel({
                   </div>
                 </div>
               )}
-
-              {/* Bottom Row: Completion Button - Centered and Prominent */}
-              <div className="flex justify-center mt-6">
-                <Button
-                  variant={task.completed ? 'primary' : 'secondary'}
-                  size="lg"
-                  onClick={() => {
-                    if (!task?.id) {
-                      console.error('Task ID is undefined in completion button:', task)
-                      showToast('Cannot update task: Invalid task ID', 'error')
-                      return
-                    }
-
-                    const newStatus = !task.completed
-                    updateTask(task.id, { completed: newStatus })
-                    showToast(
-                      newStatus ? 'Task marked as completed! 🎉' : 'Task marked as incomplete',
-                      'success'
-                    )
-                  }}
-                  className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
-                    task.completed
-                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl'
-                      : 'bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 border-2 border-slate-300 hover:border-slate-400 shadow-md hover:shadow-lg'
-                  }`}
-                >
-                  {task.completed ? (
-                    <>
-                      <svg
-                        className="w-6 h-6 mr-3"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                      >
-                        <path d="M5 12l5 5L20 7" />
-                      </svg>
-                      <span className="text-lg">Completed</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-6 h-6 rounded border-2 border-current flex items-center justify-center mr-3">
-                        <div className="w-3 h-3 rounded-full bg-current"></div>
-                      </div>
-                      <span className="text-lg">Mark Done</span>
-                    </>
-                  )}
-                </Button>
-              </div>
             </div>
 
             {/* Actions Menu */}

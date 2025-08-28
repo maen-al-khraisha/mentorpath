@@ -23,6 +23,7 @@ import TaskDetailsPanel from './TaskDetailsPanel'
 import DescriptionEditModal from './DescriptionEditModal'
 import TaskCopyModal from './TaskCopyModal'
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
+import Modal from '@/components/ui/Modal'
 
 import {
   ChevronLeft,
@@ -74,6 +75,7 @@ export default function TasksPage() {
   const [showAddTime, setShowAddTime] = useState(false)
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
+  const [startTimePeriod, setStartTimePeriod] = useState('AM')
   const [durationHours, setDurationHours] = useState('0')
   const [durationMinutes, setDurationMinutes] = useState('30')
   const [isSubmittingTime, setIsSubmittingTime] = useState(false)
@@ -293,6 +295,15 @@ export default function TasksPage() {
     return `${s}s`
   }
 
+  // KPI version: no seconds, reserved space for max values
+  function formatTotalTimeKPI(sec) {
+    const h = Math.floor(sec / 3600)
+    const m = Math.floor((sec % 3600) / 60)
+    if (h > 0) return `${h}h ${m}m`
+    if (m > 0) return `${m}m`
+    return `0m`
+  }
+
   const allLabels = useMemo(() => {
     const set = new Set()
     tasks.forEach((t) => (t.labels || []).forEach((l) => set.add(l)))
@@ -367,7 +378,7 @@ export default function TasksPage() {
     if (!startTime) return '00:00:00'
     const start = new Date(startTime)
     const now = new Date()
-    const diff = Math.floor((now - start) / 1000) + timerTick
+    const diff = Math.floor((now - start) / 1000)
     const h = Math.floor(diff / 3600)
     const m = Math.floor((diff % 3600) / 60)
     const s = diff % 60
@@ -480,8 +491,8 @@ export default function TasksPage() {
                     <Clock3 size={28} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-3xl font-bold text-slate-900 font-display">
-                      {formatTotalTime(getTotalFocusTime())}
+                    <div className="text-3xl font-bold text-slate-900 font-display w-32 text-center">
+                      {formatTotalTimeKPI(getTotalFocusTime())}
                     </div>
                     <div className="text-sm font-semibold text-slate-700 mb-1">
                       Focus Time Today
@@ -498,7 +509,7 @@ export default function TasksPage() {
                     <Target size={28} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-3xl font-bold text-slate-900 font-display">
+                    <div className="text-3xl font-bold text-slate-900 font-display w-20 text-center">
                       {todo.length}
                     </div>
                     <div className="text-sm font-semibold text-slate-700 mb-1">Active Tasks</div>
@@ -514,7 +525,7 @@ export default function TasksPage() {
                     <TrendingUp size={28} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-3xl font-bold text-slate-900 font-display">
+                    <div className="text-3xl font-bold text-slate-900 font-display w-20 text-center">
                       {Math.round((completed.length / Math.max(tasks.length, 1)) * 100)}%
                     </div>
                     <div className="text-sm font-semibold text-slate-700 mb-1">Progress</div>
@@ -669,7 +680,7 @@ export default function TasksPage() {
                         key={t.id}
                         className={`group border-2 border-slate-200 rounded-2xl p-5 transition-all duration-300 cursor-pointer ${
                           selectedId === t.id
-                            ? 'bg-blue-50 border-blue-300 shadow-lg ring-4 ring-blue-100'
+                            ? 'bg-blue-50 border-blue-300 shadow-lg ring-2 ring-blue-400'
                             : 'bg-white hover:bg-slate-50 hover:border-slate-300 hover:shadow-md'
                         }`}
                         onClick={() => setSelectedId(t.id)}
@@ -703,7 +714,7 @@ export default function TasksPage() {
                               )}
                             </button>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(t.priority)}`}
+                              className={`px-2 py-1 rounded-full text-xs font-semibold border whitespace-nowrap flex-shrink-0 ${getPriorityColor(t.priority)}`}
                             >
                               {getPriorityIcon(t.priority)} {t.priority}
                             </span>
@@ -746,7 +757,7 @@ export default function TasksPage() {
                                   className="px-3 py-1.5 rounded-lg font-medium text-xs"
                                 >
                                   <Pause size={14} className="mr-1" />
-                                  <span className="text-xs font-mono font-body">
+                                  <span className="text-xs font-mono ">
                                     {formatElapsedTime(activeTimer.startTime)}
                                   </span>
                                 </Button>
@@ -762,7 +773,7 @@ export default function TasksPage() {
                                   className="px-3 py-1.5 rounded-lg font-medium shadow-sm hover:shadow-md transition-all text-xs"
                                 >
                                   <Play size={14} className="mr-1" />
-                                  <span className="text-xs font-mono font-body">Start</span>
+                                  <span className="text-xs font-mono ">Start</span>
                                 </Button>
                               )}
                             </div>
@@ -776,9 +787,9 @@ export default function TasksPage() {
                     {todo.map((t) => (
                       <li
                         key={t.id}
-                        className={`group border-2 border-slate-200 rounded-2xl p-5 transition-all duration-300 cursor-pointer ${
+                        className={`group border-2 border-slate-200 rounded-2xl p-3 transition-all duration-300 cursor-pointer ${
                           selectedId === t.id
-                            ? 'bg-blue-50 border-blue-300 shadow-lg ring-4 ring-blue-100'
+                            ? 'bg-blue-50 border-blue-300 shadow-lg ring-2 ring-blue-400'
                             : 'bg-white hover:bg-slate-50 hover:border-slate-300 hover:shadow-md'
                         }`}
                         onClick={() => setSelectedId(t.id)}
@@ -812,12 +823,12 @@ export default function TasksPage() {
                           </button>
 
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-3">
-                              <h3 className="font-semibold text-slate-900 font-body group-hover:text-blue-600 transition-colors text-base">
+                            <div className="flex items-center justify-between gap-3 mb-3">
+                              <h3 className="font-semibold text-slate-900 font-body group-hover:text-blue-600 transition-colors text-base flex-1 min-w-0">
                                 {t.title}
                               </h3>
                               <span
-                                className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 ${getPriorityColor(t.priority)}`}
+                                className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 whitespace-nowrap flex-shrink-0 ${getPriorityColor(t.priority)}`}
                               >
                                 {getPriorityIcon(t.priority)} {t.priority}
                               </span>
@@ -831,14 +842,6 @@ export default function TasksPage() {
                                     {formatTotalTime(getTaskTotalTime(t.id))}
                                   </span>
                                 </span>
-                                {t.description && (
-                                  <span className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 rounded-lg">
-                                    <FileText size={14} className="text-blue-500" />
-                                    <span className="font-medium text-blue-700">
-                                      Has description
-                                    </span>
-                                  </span>
-                                )}
                               </div>
 
                               <div className="flex items-center gap-3">
@@ -854,7 +857,7 @@ export default function TasksPage() {
                                     className="px-4 py-2 rounded-xl font-medium"
                                   >
                                     <Pause size={16} className="mr-2" />
-                                    <span className="text-sm font-mono font-body">
+                                    <span className="text-sm font-mono ">
                                       {formatElapsedTime(activeTimer.startTime)}
                                     </span>
                                   </Button>
@@ -919,33 +922,32 @@ export default function TasksPage() {
                         >
                           <div className="space-y-4">
                             <div className="flex items-start justify-between">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  toggleTaskCompleted(t.id, !t.completed)
-                                }}
-                                className="mt-1 w-6 h-6 rounded border-2 border-emerald-500 bg-emerald-500 text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
-                                aria-label="Completed"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="3"
+                              <div className="flex items-center gap-3 min-w-0">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    toggleTaskCompleted(t.id, !t.completed)
+                                  }}
+                                  className="mt-1 w-6 h-6 rounded border-2 border-emerald-500 bg-emerald-500 text-white flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-md"
+                                  aria-label="Completed"
                                 >
-                                  <path d="M5 12l5 5L20 7" />
-                                </svg>
-                              </button>
+                                  <svg
+                                    className="w-3.5 h-3.5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="3"
+                                  >
+                                    <path d="M5 12l5 5L20 7" />
+                                  </svg>
+                                </button>
+                                <h3 className="font-semibold text-slate-600 font-body group-hover:text-slate-800 transition-colors text-base mb-0 line-clamp-2">
+                                  {t.title}
+                                </h3>
+                              </div>
                               <span className="px-2 py-1 bg-emerald-200 text-emerald-800 text-xs font-semibold rounded-full">
                                 ✓ Completed
                               </span>
-                            </div>
-
-                            <div>
-                              <h3 className="font-semibold text-slate-600 font-body line-through group-hover:text-slate-800 transition-colors text-base mb-3 line-clamp-2">
-                                {t.title}
-                              </h3>
                             </div>
 
                             <div className="flex items-center gap-2 text-sm text-slate-500 font-body">
@@ -965,14 +967,14 @@ export default function TasksPage() {
                       {completed.map((t) => (
                         <li
                           key={t.id}
-                          className={`group border-2 border-slate-200 rounded-2xl p-5 transition-all duration-300 cursor-pointer ${
+                          className={`group border-2 border-slate-200 rounded-2xl p-3 transition-all duration-300 cursor-pointer ${
                             selectedId === t.id
                               ? 'bg-emerald-50 border-emerald-300 shadow-lg ring-4 ring-emerald-100'
                               : 'bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 hover:shadow-md'
                           }`}
                           onClick={() => setSelectedId(t.id)}
                         >
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-start  gap-4">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -992,7 +994,7 @@ export default function TasksPage() {
                               </svg>
                             </button>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-slate-600 font-body line-through group-hover:text-slate-800 transition-colors text-base mb-3">
+                              <h3 className="font-semibold text-slate-600 font-body group-hover:text-slate-800 transition-colors text-base mb-3">
                                 {t.title}
                               </h3>
                               <div className="flex items-center gap-4 text-sm text-slate-500 font-body">
@@ -1314,244 +1316,287 @@ export default function TasksPage() {
       )}
 
       {/* Add Time Modal */}
-      {showAddTime && selectedTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowAddTime(false)}
-          />
-          <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
-            {/* Header */}
-            <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-green-50 border-b border-slate-200">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
-                  <ClockIcon size={24} className="text-green-600" />
+      <Modal
+        isOpen={showAddTime && !!selectedTask}
+        onClose={() => setShowAddTime(false)}
+        size="small"
+        header={{
+          icon: <ClockIcon size={24} className="text-green-600" />,
+          iconBgColor: 'bg-green-100',
+          title: 'Add Manual Time',
+          subtitle: 'Log manual work time for this task',
+        }}
+        content={
+          <div className="space-y-6">
+            {/* Current Task Info */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center">
+                  <Target size={16} className="text-slate-600" />
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-900 font-display">
-                    Add Manual Time
-                  </h3>
-                  <p className="text-slate-600 font-body">Log manual work time for this task</p>
-                </div>
+                <span className="text-sm font-semibold text-slate-700">Current Task</span>
               </div>
+              <h4 className="text-lg font-semibold text-slate-900">{selectedTask?.title}</h4>
+              <p className="text-sm text-slate-600">
+                Task scheduled for:{' '}
+                <span className="font-medium">
+                  {selectedTask?.date
+                    ? new Date(selectedTask.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'No date set'}
+                </span>
+              </p>
             </div>
 
-            {/* Content */}
-            <div className="p-8 space-y-6 overflow-y-auto">
-              {/* Current Task Info */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 bg-slate-200 rounded-xl flex items-center justify-center">
-                    <Target size={16} className="text-slate-600" />
-                  </div>
-                  <span className="text-sm font-semibold text-slate-700">Current Task</span>
-                </div>
-                <h4 className="text-lg font-semibold text-slate-900">{selectedTask.title}</h4>
-                <p className="text-sm text-slate-600">
-                  Task scheduled for:{' '}
-                  <span className="font-medium">
-                    {selectedTask.date
-                      ? new Date(selectedTask.date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })
-                      : 'No date set'}
-                  </span>
-                </p>
-              </div>
-
-              {/* Time Inputs */}
-              <div className="grid grid-cols-1 gap-6">
-                <div>
-                  <label className="block text-base font-semibold text-slate-900 mb-1">Start</label>
-                  <div className="flex items-center gap-3">
-                    <CustomDatePicker
-                      value={startDate}
-                      onChange={(date) => {
-                        try {
-                          if (date && !isNaN(date.getTime())) {
-                            setStartDate(date.toISOString().split('T')[0])
-                          } else {
-                            setStartDate('')
-                          }
-                        } catch (error) {
-                          console.error('Error setting start date:', error)
+            {/* Time Inputs */}
+            <div className="grid grid-cols-1 gap-6">
+              <div>
+                <label className="block text-base font-semibold text-slate-900 mb-1">Start</label>
+                <div className="space-y-3">
+                  {/* Date picker on its own row */}
+                  <CustomDatePicker
+                    value={startDate}
+                    onChange={(date) => {
+                      try {
+                        if (date && !isNaN(date.getTime())) {
+                          // Create date string manually to avoid timezone issues
+                          // Use local date components instead of toISOString()
+                          const year = date.getFullYear()
+                          const month = String(date.getMonth() + 1).padStart(2, '0')
+                          const day = String(date.getDate()).padStart(2, '0')
+                          const dateString = `${year}-${month}-${day}`
+                          setStartDate(dateString)
+                        } else {
                           setStartDate('')
                         }
-                      }}
-                      name="startDate"
-                      required
-                    />
-                    <input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200"
-                    />
-                    <span className="text-sm text-slate-600 w-12 text-center font-body">
-                      {Number((startTime || '0:0').split(':')[0]) >= 12 ? 'PM' : 'AM'}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-base font-semibold text-slate-900 mb-1">
-                    Duration
-                  </label>
+                      } catch (error) {
+                        console.error('Error setting start date:', error)
+                        setStartDate('')
+                      }
+                    }}
+                    name="startDate"
+                    required
+                  />
+                  {/* Time inputs on a separate row */}
                   <div className="flex items-center gap-3">
                     <input
                       type="number"
-                      min="0"
+                      min="1"
+                      max="12"
                       step="1"
-                      value={durationHours}
-                      onChange={(e) => setDurationHours(e.target.value)}
-                      className="h-12 w-24 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200"
+                      value={startTime ? Number(startTime.split(':')[0]) : ''}
+                      onChange={(e) => {
+                        const hour = e.target.value
+                        const minute = startTime ? startTime.split(':')[1] || '00' : '00'
+                        setStartTime(`${hour.padStart(2, '0')}:${minute}`)
+                      }}
+                      placeholder="Hour"
+                      className="h-12 w-20 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200"
                     />
-                    <span className="text-sm text-slate-600 font-body">hours</span>
+                    <span className="text-sm text-slate-600 font-body">:</span>
                     <input
                       type="number"
                       min="0"
+                      max="59"
                       step="1"
-                      value={durationMinutes}
-                      onChange={(e) => setDurationMinutes(e.target.value)}
-                      className="h-12 w-24 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200"
+                      value={startTime ? startTime.split(':')[1] || '00' : ''}
+                      onChange={(e) => {
+                        const hour = startTime ? startTime.split(':')[0] || '12' : '12'
+                        const minute = e.target.value.padStart(2, '0')
+                        setStartTime(`${hour}:${minute}`)
+                      }}
+                      placeholder="Min"
+                      className="h-12 w-20 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200"
                     />
-                    <span className="text-sm text-slate-600 font-body">minutes</span>
+                    <select
+                      value={startTimePeriod}
+                      onChange={(e) => setStartTimePeriod(e.target.value)}
+                      className="h-12 w-24 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200"
+                    >
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
                   </div>
-                  {startDate && startTime && (
-                    <div className="mt-3 px-4 py-3 bg-green-50 text-green-700 rounded-xl border border-green-200 text-sm">
-                      {(() => {
-                        const [sy, sm, sd] = startDate.split('-').map(Number)
-                        const [sh, smin] = startTime.split(':').map(Number)
-                        const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
-                        const mins = Math.max(
-                          0,
-                          parseInt(durationHours || '0', 10) * 60 +
-                            parseInt(durationMinutes || '0', 10)
-                        )
-                        const end = new Date(start.getTime() + mins * 60000)
-                        const durText = `${Math.floor(mins / 60)}h ${mins % 60}m`
-                        const endText = end.toLocaleString([], {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true,
-                          month: 'short',
-                          day: '2-digit',
-                        })
-                        return `Duration: ${durText} — Ends at: ${endText}`
-                      })()}
-                    </div>
-                  )}
                 </div>
               </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
-              <Button
-                variant="secondary"
-                onClick={() => setShowAddTime(false)}
-                className="px-6 rounded-xl font-medium"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                disabled={
-                  !startDate ||
-                  !startTime ||
-                  (parseInt(durationHours || '0', 10) === 0 &&
-                    parseInt(durationMinutes || '0', 10) === 0) ||
-                  isSubmittingTime
-                }
-                onClick={async () => {
-                  console.log('=== SAVE TIME BUTTON CLICKED ===')
-                  console.log('Current values:', {
-                    startDate,
-                    startTime,
-                    durationHours,
-                    durationMinutes,
-                    selectedTaskId: selectedTask?.id,
-                  })
-
-                  if (!startDate || !startTime) {
-                    console.log('❌ Missing start date or time')
-                    return
-                  }
-
-                  const hours = parseInt(durationHours || '0', 10)
-                  const minutes = parseInt(durationMinutes || '0', 10)
-
-                  if (hours === 0 && minutes === 0) {
-                    console.log('❌ Duration is 0')
-                    return
-                  }
-
-                  console.log('✅ All validation passed, proceeding with submission...')
-                  setIsSubmittingTime(true)
-
-                  try {
-                    console.log('🔄 Creating date objects...')
-                    const [sy, sm, sd] = startDate.split('-').map(Number)
-                    const [sh, smin] = startTime.split(':').map(Number)
-                    const start = new Date(sy, (sm || 1) - 1, sd || 1, sh || 0, smin || 0)
-                    const mins = Math.max(0, hours * 60 + minutes)
-                    const end = new Date(start.getTime() + mins * 60000)
-
-                    console.log('📅 Date objects created:', {
-                      start,
-                      end,
-                      mins,
-                      selectedTaskId: selectedTask?.id,
-                    })
-
-                    console.log('🚀 Calling addManualWorkSession...')
-                    await addManualWorkSession(selectedTask.id, start, end)
-                    console.log('✅ Work session created successfully')
-
-                    console.log('🔒 Closing modal and resetting form...')
-                    setShowAddTime(false)
-                    setStartDate('')
-                    setStartTime('')
-                    setDurationHours('0')
-                    setDurationMinutes('30')
-                  } catch (e) {
-                    console.error('❌ Add time failed:', e)
-                    console.error('Error details:', {
-                      message: e.message,
-                      stack: e.stack,
-                      name: e.name,
-                    })
-                  } finally {
-                    console.log('🔄 Setting isSubmittingTime to false...')
-                    setIsSubmittingTime(false)
-                  }
-                }}
-                className="px-8 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                {isSubmittingTime ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <ClockIcon size={18} className="mr-2" />
-                    Save Time
-                  </>
+              <div>
+                <label className="block text-base font-semibold text-slate-900 mb-1">
+                  Duration
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={durationHours}
+                    onChange={(e) => setDurationHours(e.target.value)}
+                    className="h-12 w-24 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200"
+                  />
+                  <span className="text-sm text-slate-600 font-body">hours</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={durationMinutes}
+                    onChange={(e) => setDurationMinutes(e.target.value)}
+                    className="h-12 w-24 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/20 transition-all duration-200"
+                  />
+                  <span className="text-sm text-slate-600 font-body">minutes</span>
+                </div>
+                {startDate && startTime && (
+                  <div className="mt-3 px-4 py-3 bg-green-50 text-green-700 rounded-xl border border-green-200 text-sm">
+                    {(() => {
+                      const [sy, sm, sd] = startDate.split('-').map(Number)
+                      const [sh, smin] = startTime.split(':').map(Number)
+                      // Convert 12-hour format to 24-hour format
+                      let hour24 = sh || 12
+                      if (startTimePeriod === 'PM' && hour24 !== 12) {
+                        hour24 += 12
+                      } else if (startTimePeriod === 'AM' && hour24 === 12) {
+                        hour24 = 0
+                      }
+                      const start = new Date(sy, (sm || 1) - 1, sd || 1, hour24, smin || 0)
+                      const mins = Math.max(
+                        0,
+                        parseInt(durationHours || '0', 10) * 60 +
+                          parseInt(durationMinutes || '0', 10)
+                      )
+                      const end = new Date(start.getTime() + mins * 60000)
+                      const durText = `${Math.floor(mins / 60)}h ${mins % 60}m`
+                      const endText = end.toLocaleString([], {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                        month: 'short',
+                        day: '2-digit',
+                      })
+                      return `Duration: ${durText} — Ends at: ${endText}`
+                    })()}
+                  </div>
                 )}
-              </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex justify-end gap-4">
+            <Button
+              variant="secondary"
+              onClick={() => setShowAddTime(false)}
+              className="px-6 rounded-xl font-medium"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              disabled={
+                !startDate ||
+                !startTime ||
+                (parseInt(durationHours || '0', 10) === 0 &&
+                  parseInt(durationMinutes || '0', 10) === 0) ||
+                isSubmittingTime
+              }
+              onClick={async () => {
+                console.log('=== SAVE TIME BUTTON CLICKED ===')
+                console.log('Current values:', {
+                  startDate,
+                  startTime,
+                  durationHours,
+                  durationMinutes,
+                  selectedTaskId: selectedTask?.id,
+                })
+
+                if (!startDate || !startTime) {
+                  console.log('❌ Missing start date or time')
+                  return
+                }
+
+                const hours = parseInt(durationHours || '0', 10)
+                const minutes = parseInt(durationMinutes || '0', 10)
+
+                if (hours === 0 && minutes === 0) {
+                  console.log('❌ Duration is 0')
+                  return
+                }
+
+                console.log('✅ All validation passed, proceeding with submission...')
+                setIsSubmittingTime(true)
+
+                try {
+                  console.log('🔄 Creating date objects...')
+                  const [sy, sm, sd] = startDate.split('-').map(Number)
+                  const [sh, smin] = startTime.split(':').map(Number)
+                  // Convert 12-hour format to 24-hour format
+                  let hour24 = sh || 12
+                  if (startTimePeriod === 'PM' && hour24 !== 12) {
+                    hour24 += 12
+                  } else if (startTimePeriod === 'AM' && hour24 === 12) {
+                    hour24 = 0
+                  }
+                  const start = new Date(sy, (sm || 1) - 1, sd || 1, hour24, smin || 0)
+                  const mins = Math.max(0, hours * 60 + minutes)
+                  const end = new Date(start.getTime() + mins * 60000)
+
+                  console.log('📅 Date objects created:', {
+                    start,
+                    end,
+                    mins,
+                    selectedTaskId: selectedTask?.id,
+                    hour24,
+                    startTimePeriod,
+                  })
+
+                  console.log('🚀 Calling addManualWorkSession...')
+                  await addManualWorkSession(selectedTask.id, start, end)
+                  console.log('✅ Work session created successfully')
+
+                  console.log('🔒 Closing modal and resetting form...')
+                  setShowAddTime(false)
+                  setStartDate('')
+                  setStartTime('')
+                  setStartTimePeriod('AM')
+                  setDurationHours('0')
+                  setDurationMinutes('30')
+                } catch (e) {
+                  console.error('❌ Add time failed:', e)
+                  console.error('Error details:', {
+                    message: e.message,
+                    stack: e.stack,
+                    name: e.name,
+                  })
+                } finally {
+                  console.log('🔄 Setting isSubmittingTime to false...')
+                  setIsSubmittingTime(false)
+                }
+              }}
+              className="px-8 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {isSubmittingTime ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <ClockIcon size={18} className="mr-2" />
+                  Save Time
+                </>
+              )}
+            </Button>
+          </div>
+        }
+      />
 
       {/* Copy Task Modal */}
       {showCopyModal && selectedTask && (
         <TaskCopyModal
           open={showCopyModal}
-          onClose={(newId) => {
+          onClose={() => setShowCopyModal(false)}
+          onCopy={(newId) => {
             setShowCopyModal(false)
             if (newId) {
               setSelectedId(newId)
