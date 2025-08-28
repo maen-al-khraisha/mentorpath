@@ -1026,7 +1026,7 @@ export default function TasksPage() {
         {selectedTask && selectedTask.id && (
           <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true">
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setSelectedId(null)}
             />
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[94vw] max-w-lg max-h-[92vh] bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden">
@@ -1132,7 +1132,7 @@ export default function TasksPage() {
       {showChangeDate && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowChangeDate(false)}
           />
           <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
@@ -1152,7 +1152,7 @@ export default function TasksPage() {
             </div>
 
             {/* Content */}
-            <div className="p-8 space-y-6">
+            <div className="p-8 space-y-6 overflow-y-auto">
               {/* Current Task Info */}
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
                 <div className="flex items-center gap-3 mb-2">
@@ -1274,7 +1274,7 @@ export default function TasksPage() {
       {showAddTime && selectedTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowAddTime(false)}
           />
           <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
@@ -1294,7 +1294,7 @@ export default function TasksPage() {
             </div>
 
             {/* Content */}
-            <div className="p-8 space-y-6">
+            <div className="p-8 space-y-6 overflow-y-auto">
               {/* Current Task Info */}
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
                 <div className="flex items-center gap-3 mb-2">

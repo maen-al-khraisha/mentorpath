@@ -80,7 +80,7 @@ export default function DescriptionEditModal({ isOpen, onClose, description, onS
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={handleClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
       <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">

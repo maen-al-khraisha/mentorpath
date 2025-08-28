@@ -71,12 +71,21 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
   const { user } = useAuth()
   const { showToast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    link: '',
-    date: new Date().toISOString().split('T')[0],
-    time: '12:00',
+  const [formData, setFormData] = useState(() => {
+    // Create a timezone-safe date string for today
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const todayString = `${year}-${month}-${day}`
+
+    return {
+      name: '',
+      description: '',
+      link: '',
+      date: todayString,
+      time: '12:00',
+    }
   })
 
   // Quill editor configuration
@@ -142,11 +151,18 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
   }
 
   const resetForm = () => {
+    // Create a timezone-safe date string for today
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const todayString = `${year}-${month}-${day}`
+
     setFormData({
       name: '',
       description: '',
       link: '',
-      date: new Date().toISOString().split('T')[0],
+      date: todayString,
       time: '12:00',
     })
   }
@@ -163,12 +179,16 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
       <style jsx global>
         {quillStyles}
       </style>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-3xl shadow-elevated w-full max-w-2xl max-h-[90vh] overflow-hidden">
-          {/* Backdrop click handler */}
-          <div className="absolute inset-0 -z-10" onClick={handleClose}></div>
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        onClick={handleClose}
+      >
+        <div
+          className="bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-2xl h-[90vh] flex flex-col overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header */}
-          <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">
+          <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200 flex-shrink-0 ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
@@ -193,8 +213,8 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
             </div>
           </div>
 
-          {/* Content */}
-          <div className="p-8 space-y-6">
+          {/* Content - Scrollable */}
+          <div className="flex-1 overflow-y-auto p-8 space-y-6">
             {/* Event Name - Full Width */}
             <div>
               <label className="block text-base font-semibold text-slate-900 mb-1">
@@ -218,9 +238,14 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
                 </label>
                 <CustomDatePicker
                   value={formData.date}
-                  onChange={(date) =>
-                    setFormData({ ...formData, date: date.toISOString().split('T')[0] })
-                  }
+                  onChange={(date) => {
+                    // Create a timezone-safe date string (YYYY-MM-DD)
+                    const year = date.getFullYear()
+                    const month = String(date.getMonth() + 1).padStart(2, '0')
+                    const day = String(date.getDate()).padStart(2, '0')
+                    const dateString = `${year}-${month}-${day}`
+                    setFormData({ ...formData, date: dateString })
+                  }}
                   name="eventDate"
                   required
                 />
@@ -272,9 +297,9 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
                   modules={quillModules}
                   formats={quillFormats}
                   placeholder="Describe your event..."
-                  className="min-h-[200px]"
+                  className="min-h-[200px] max-h-[250px]"
                   theme="snow"
-                  style={{ height: '200px' }}
+                  style={{ height: 'auto' }}
                 />
               </div>
             </div>
@@ -294,12 +319,21 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
                     </div>
                     <div className="text-xs text-slate-600">
                       {formData.date
-                        ? new Date(formData.date).toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })
+                        ? (() => {
+                            // Parse the date string safely without timezone conversion
+                            const [year, month, day] = formData.date.split('-')
+                            const date = new Date(
+                              parseInt(year),
+                              parseInt(month) - 1,
+                              parseInt(day)
+                            )
+                            return date.toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })
+                          })()
                         : 'Date will appear here'}{' '}
                       at {formData.time}
                     </div>
@@ -317,8 +351,8 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
+          {/* Action Buttons - Fixed */}
+          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4 flex-shrink-0">
             <Button
               variant="secondary"
               onClick={handleClose}

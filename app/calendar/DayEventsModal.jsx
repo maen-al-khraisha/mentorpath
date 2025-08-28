@@ -5,7 +5,7 @@ import { clearEventsForDate } from '@/lib/eventsApi'
 import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
-import { X, Eye, Trash2, Calendar, Clock, FileText, Edit, Link } from 'lucide-react'
+import { X, Eye, Trash2, Calendar, Clock, FileText, Edit, Link, Plus } from 'lucide-react'
 
 export default function DayEventsModal({
   date,
@@ -16,6 +16,7 @@ export default function DayEventsModal({
   onViewEvent,
   onEditEvent,
   onDeleteEvent,
+  onAddEvent,
 }) {
   const { user } = useAuth()
   const { showToast } = useToast()
@@ -54,7 +55,7 @@ export default function DayEventsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-emerald-50 border-b border-slate-200">
@@ -71,6 +72,14 @@ export default function DayEventsModal({
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                variant="primary"
+                onClick={onAddEvent}
+                className="px-6 py-3 rounded-xl font-medium"
+              >
+                <Plus size={18} className="mr-2" />
+                Add Event
+              </Button>
               <Button
                 variant="danger"
                 onClick={handleClearEvents}
@@ -103,7 +112,7 @@ export default function DayEventsModal({
         </div>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="p-8 overflow-y-auto">
           {events.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -138,7 +147,7 @@ export default function DayEventsModal({
                       </div>
 
                       {event.description && (
-                        <p className="text-slate-600 font-body mb-4 leading-relaxed line-clamp-5">
+                        <div className="text-slate-600 font-body mb-4 leading-relaxed line-clamp-5">
                           <div
                             className="prose prose-sm max-w-none text-slate-600"
                             dangerouslySetInnerHTML={{
@@ -148,7 +157,7 @@ export default function DayEventsModal({
                                   : event.description,
                             }}
                           />
-                        </p>
+                        </div>
                       )}
 
                       {event.link && (

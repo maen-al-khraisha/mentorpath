@@ -151,7 +151,7 @@ export default function NoteDetailsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-md"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={() => {
           setIsEditing(false)
           onClose?.()
@@ -188,7 +188,7 @@ export default function NoteDetailsModal({
         </div>
 
         {/* Content */}
-        <div className="p-8 space-y-6">
+        <div className="p-8 space-y-6 overflow-y-auto">
           {/* Title */}
           <div>
             <label className="block text-base font-semibold text-slate-900 mb-2">Title</label>

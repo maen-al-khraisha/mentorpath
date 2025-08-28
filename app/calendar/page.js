@@ -111,7 +111,11 @@ export default function CalendarPage() {
   // Get events for a specific date
   const getEventsForDate = (date) => {
     if (!date) return []
-    const dateString = date.toISOString().split('T')[0]
+    // Create a timezone-safe date string (YYYY-MM-DD)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
     return events.filter((event) => event.date === dateString)
   }
 
@@ -178,7 +182,11 @@ export default function CalendarPage() {
   const getTotalEvents = () => events.length
   const getUpcomingEvents = () => {
     const today = new Date()
-    const todayString = today.toISOString().split('T')[0]
+    // Create a timezone-safe date string for today (YYYY-MM-DD)
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const todayString = `${year}-${month}-${day}`
     return events.filter((event) => event.date >= todayString).length
   }
   const getEventsThisMonth = () => {
@@ -628,11 +636,31 @@ export default function CalendarPage() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onEventCreated={handleEventCreated}
-        selectedDate={selectedDate?.toISOString().split('T')[0]}
+        selectedDate={
+          selectedDate
+            ? (() => {
+                // Create a timezone-safe date string (YYYY-MM-DD)
+                const year = selectedDate.getFullYear()
+                const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+                const day = String(selectedDate.getDate()).padStart(2, '0')
+                return `${year}-${month}-${day}`
+              })()
+            : undefined
+        }
       />
 
       <DayEventsModal
-        date={selectedDate?.toISOString().split('T')[0]}
+        date={
+          selectedDate
+            ? (() => {
+                // Create a timezone-safe date string (YYYY-MM-DD)
+                const year = selectedDate.getFullYear()
+                const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+                const day = String(selectedDate.getDate()).padStart(2, '0')
+                return `${year}-${month}-${day}`
+              })()
+            : undefined
+        }
         events={selectedDate ? getEventsForDate(selectedDate) : []}
         isOpen={showDayModal}
         onClose={() => setShowDayModal(false)}
@@ -640,6 +668,10 @@ export default function CalendarPage() {
         onViewEvent={handleViewEvent}
         onEditEvent={handleEditEvent}
         onDeleteEvent={handleDeleteEvent}
+        onAddEvent={() => {
+          setShowDayModal(false)
+          setShowAddModal(true)
+        }}
       />
 
       <EventDetailsModal

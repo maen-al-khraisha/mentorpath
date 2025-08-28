@@ -153,7 +153,7 @@ export default function EventDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">
@@ -184,7 +184,7 @@ export default function EventDetailsModal({
         </div>
 
         {/* Content */}
-        <div className="p-8 space-y-6">
+        <div className="p-8 space-y-6 overflow-y-auto">
           {isEditing ? (
             /* Edit Form */
             <div className="space-y-6">
@@ -210,9 +210,14 @@ export default function EventDetailsModal({
                   </label>
                   <CustomDatePicker
                     value={formData.date}
-                    onChange={(date) =>
-                      setFormData({ ...formData, date: date.toISOString().split('T')[0] })
-                    }
+                    onChange={(date) => {
+                      // Create a timezone-safe date string (YYYY-MM-DD)
+                      const year = date.getFullYear()
+                      const month = String(date.getMonth() + 1).padStart(2, '0')
+                      const day = String(date.getDate()).padStart(2, '0')
+                      const dateString = `${year}-${month}-${day}`
+                      setFormData({ ...formData, date: dateString })
+                    }}
                     name="eventDate"
                     required
                   />
@@ -284,12 +289,21 @@ export default function EventDetailsModal({
                       </div>
                       <div className="text-xs text-slate-600">
                         {formData.date
-                          ? new Date(formData.date).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })
+                          ? (() => {
+                              // Parse the date string safely without timezone conversion
+                              const [year, month, day] = formData.date.split('-')
+                              const date = new Date(
+                                parseInt(year),
+                                parseInt(month) - 1,
+                                parseInt(day)
+                              )
+                              return date.toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })
+                            })()
                           : 'Date will appear here'}{' '}
                         at {formData.time}
                       </div>

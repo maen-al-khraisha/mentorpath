@@ -244,7 +244,7 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => onClose?.()} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => onClose?.()} />
       <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-green-50 border-b border-slate-200">
@@ -264,7 +264,7 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
         </div>
 
         {/* Content */}
-        <div className="p-8 space-y-6">
+        <div className="p-8 space-y-6 overflow-y-auto">
           {/* Task Details Form */}
           <div className="space-y-6">
             <h4 className="text-xl font-semibold text-slate-900 font-display flex items-center gap-3">
@@ -388,7 +388,7 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
                     <Plus size={18} />
                   </Button>
                 </div>
-                
+
                 {/* Existing Labels */}
                 {labels.length > 0 && (
                   <div className="flex flex-wrap gap-2">
