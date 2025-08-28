@@ -7,6 +7,7 @@ import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 import Modal from '@/components/ui/Modal'
 import { Plus, Calendar, Target, Hash, TrendingUp } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
   const { user, loading } = useAuth()
@@ -17,6 +18,7 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
   const [selectedIcon, setSelectedIcon] = useState('🎯')
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState({})
+  const [showAllIcons, setShowAllIcons] = useState(false)
 
   const isEditing = !!habit
 
@@ -46,12 +48,19 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
       newErrors.streakPeriod = 'Streak period must be at least 1 day'
 
     setErrors(newErrors)
+
+    // Show toast for validation errors
+    if (Object.keys(newErrors).length > 0) {
+      const firstError = Object.values(newErrors)[0]
+      toast.error(firstError)
+    }
+
     return Object.keys(newErrors).length === 0
   }
 
   async function handleSave() {
     if (!user) {
-      alert('Please wait for authentication to complete')
+      toast.error('Please wait for authentication to complete')
       return
     }
 
@@ -70,8 +79,10 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
       if (isEditing) {
         await updateHabit(habit.id, habitData)
+        toast.success(`Habit "${name.trim()}" updated successfully!`)
       } else {
         await createHabit(habitData)
+        toast.success(`Habit "${name.trim()}" created successfully!`)
       }
 
       onSave?.()
@@ -84,10 +95,12 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
         setStartDate('')
         setStreakPeriod('30')
         setSelectedIcon('🎯')
+        setShowAllIcons(false) // Reset icon view state
       }
     } catch (e) {
       console.error(e)
-      alert(`Failed to ${isEditing ? 'update' : 'save'} habit: ` + e.message)
+      const errorMessage = e.message || 'An unexpected error occurred'
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} habit: ${errorMessage}`)
     } finally {
       setBusy(false)
     }
@@ -173,26 +186,76 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
             <p className="text-red-500 text-sm mt-1">{errors.streakPeriod}</p>
           )}
         </div>
+      </div>
 
-        <div>
-          <label className="block text-base font-semibold text-slate-900 mb-1">Habit Icon</label>
-          <div className="grid grid-cols-6 gap-2">
-            {habitIcons.map((icon) => (
-              <button
-                key={icon}
-                type="button"
-                onClick={() => setSelectedIcon(icon)}
-                className={`w-12 h-12 rounded-xl border-2 text-2xl flex items-center justify-center transition-all duration-200 ${
-                  selectedIcon === icon
-                    ? 'border-emerald-500 bg-emerald-50 shadow-sm'
-                    : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                {icon}
-              </button>
-            ))}
-          </div>
+      {/* Habit Icon - New Row */}
+      <div>
+        <label className="block text-base font-semibold text-slate-900 mb-1">Habit Icon</label>
+
+        {/* Icon Count Indicator */}
+        <div className="mb-3 text-sm text-slate-500">
+          Showing {showAllIcons ? habitIcons.length : Math.min(24, habitIcons.length)} of{' '}
+          {habitIcons.length} icons
         </div>
+
+        <div className="grid grid-cols-8 gap-2 transition-all duration-500 ease-in-out">
+          {habitIcons.slice(0, showAllIcons ? habitIcons.length : 24).map((icon, index) => (
+            <button
+              key={icon}
+              type="button"
+              onClick={() => setSelectedIcon(icon)}
+              className={`w-12 h-12 rounded-xl border-2 text-2xl flex items-center justify-center transition-all duration-200 ${
+                selectedIcon === icon
+                  ? 'border-emerald-500 bg-emerald-50 shadow-sm'
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+              } ${index >= 24 && showAllIcons ? 'animate-fadeIn' : ''}`}
+              style={{
+                animationDelay: index >= 24 ? `${(index - 24) * 50}ms` : '0ms',
+              }}
+            >
+              {icon}
+            </button>
+          ))}
+        </div>
+
+        {/* Visual Separator */}
+        {!showAllIcons && habitIcons.length > 24 && (
+          <div className="mt-4 mb-2 flex items-center justify-center">
+            <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent flex-1 max-w-32"></div>
+            <span className="px-3 text-xs text-slate-400 font-medium">More icons available</span>
+            <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent flex-1 max-w-32"></div>
+          </div>
+        )}
+
+        {/* Collapse/Expand Button */}
+        {habitIcons.length > 24 && (
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAllIcons(!showAllIcons)}
+              className="group flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50 transition-all duration-300 font-medium text-slate-700 hover:text-emerald-700 shadow-sm hover:shadow-md"
+            >
+              <span>{showAllIcons ? 'Collapse Icons' : `View All ${habitIcons.length} Icons`}</span>
+              <div
+                className={`w-5 h-5 transition-transform duration-300 ${showAllIcons ? 'rotate-180' : ''}`}
+              >
+                <svg
+                  className="w-5 h-5 text-slate-500 group-hover:text-emerald-500 transition-colors duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -79,6 +79,22 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Fade-in animation for habit icons */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
 /* Rich text content styling for React Quill output */
 .rich-text-content {
   line-height: 1.6;
@@ -191,6 +207,8 @@ html[data-theme='dark'] {
 html {
   font-size: 14px;
   overflow-y: scroll;
+  /* Add scrollbar-gutter to reserve space */
+  scrollbar-gutter: stable;
 }
 
 body {

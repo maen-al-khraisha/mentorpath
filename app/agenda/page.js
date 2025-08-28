@@ -6,7 +6,7 @@ import { subscribeToSheets } from '@/lib/sheetsApi'
 import Button from '@/components/Button'
 import AddSheetModal from './AddSheetModal'
 import SheetViewer from './SheetViewer'
-import { Plus, ChevronDown } from 'lucide-react'
+import { Plus, ChevronDown, FileText, Target, TrendingUp, ListTodo, Search } from 'lucide-react'
 
 export default function AgendaPage() {
   const { user, loading } = useAuth()
@@ -44,81 +44,209 @@ export default function AgendaPage() {
 
   if (loading) {
     return (
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-4 shadow-soft min-h-[400px] flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="text-lg font-semibold mb-2 text-slate-900 font-display">Loading...</div>
+          <div className="text-sm text-slate-600 font-body">Loading your agenda and sheets</div>
+        </div>
       </div>
     )
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-[var(--bg-card)] border-2 border-[var(--border)] rounded-lg p-6 shadow-soft">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>{' '}
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="text-lg font-semibold mb-2 text-slate-900 font-display">
+            Authentication Required
           </div>
-          <Button variant="primary" onClick={handleAddSheet} className="flex items-center gap-2">
-            <Plus size={16} />
-            <span>Add sheet</span>
-          </Button>
+          <div className="text-sm text-slate-600 font-body">Please sign in to view your agenda</div>
         </div>
-
-        {/* Stats */}
-        {/* <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-2xl font-bold text-blue-600">{sheets.length}</div>
-            <div className="text-sm text-blue-700">Total Sheets</div>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-            <div className="text-2xl font-bold text-green-600">
-              {sheets.reduce((total, sheet) => total + (sheet.rows?.length || 0), 0)}
-            </div>
-            <div className="text-sm text-green-700">Total Rows</div>
-          </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
-            <div className="text-2xl font-bold text-purple-600">
-              {sheets.reduce((total, sheet) => total + (sheet.columns?.length || 0), 0)}
-            </div>
-            <div className="text-sm text-purple-700">Total Columns</div>
-          </div>
-        </div> */}
       </div>
+    )
+  }
 
-      {/* Sheets List */}
-      {isLoading ? (
-        <div className="text-center py-8">
-          <div className="text-gray-500">Loading sheets...</div>
-        </div>
-      ) : sheets.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="text-4xl mb-4">📊</div>
-          <div className="text-xl font-medium text-gray-700 mb-2">No sheets yet!</div>
-          <div className="text-gray-500 mb-4">
-            Create your first sheet to start organizing data.
+  // Calculate stats
+  const totalSheets = sheets.length
+  const totalRows = sheets.reduce((total, sheet) => total + (sheet.rows?.length || 0), 0)
+  const totalColumns = sheets.reduce((total, sheet) => total + (sheet.columns?.length || 0), 0)
+  const activeSheets = sheets.filter((sheet) => sheet.isActive !== false).length
+
+  return (
+    <>
+      <div className="space-y-8">
+        {/* Hero Section - Page Header & KPIs */}
+        <div className="space-y-8">
+          {/* Main Header */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-soft">
+            <div className="flex items-start justify-between mb-8">
+              <div className="flex-1">
+                <h1 className="text-4xl font-bold text-slate-900 font-display bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-3">
+                  Agenda Management
+                </h1>
+                <p className="text-xl text-slate-600 font-body leading-relaxed">
+                  Organize, track, and manage your data with powerful spreadsheet capabilities
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                onClick={handleAddSheet}
+                className="px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-2xl"
+              >
+                <Plus size={24} className="mr-3" />
+                Create Sheet
+              </Button>
+            </div>
+
+            {/* KPI Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Total Sheets */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <FileText size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-slate-900 font-display">
+                      {totalSheets}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mb-1">Total Sheets</div>
+                    <div className="text-xs text-blue-700 font-medium">Data organization</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Sheets */}
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Target size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-slate-900 font-display">
+                      {activeSheets}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mb-1">Active Sheets</div>
+                    <div className="text-xs text-emerald-700 font-medium">Currently tracking</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Rows */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <TrendingUp size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-slate-900 font-display">
+                      {totalRows}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mb-1">Total Rows</div>
+                    <div className="text-xs text-purple-700 font-medium">Data entries</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Columns */}
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 border border-amber-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <ListTodo size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-3xl font-bold text-slate-900 font-display">
+                      {totalColumns}
+                    </div>
+                    <div className="text-sm font-semibold text-slate-700 mb-1">Total Columns</div>
+                    <div className="text-xs text-amber-700 font-medium">Data fields</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <Button variant="primary" onClick={handleAddSheet}>
-            <Plus size={16} className="mr-2" />
-            Create Your First Sheet
-          </Button>
         </div>
-      ) : (
-        <div className="space-y-6">
-          {sheets.map((sheet) => (
-            <SheetViewer
-              key={sheet.id}
-              sheet={sheet}
-              onUpdate={handleSheetSaved}
-              onDelete={handleSheetDeleted}
-            />
-          ))}
-        </div>
-      )}
 
-      {/* Add Sheet Modal */}
-      {showAddModal && (
-        <AddSheetModal open={showAddModal} onClose={handleCloseModal} onSave={handleSheetSaved} />
-      )}
-    </div>
+        {/* Enhanced Toolbar - Full Width */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search
+                size={20}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="text"
+                placeholder="Search sheets by name..."
+                className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex items-center gap-3">
+              <select
+                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-slate-700"
+                aria-label="Filter sheets"
+              >
+                <option value="">All Sheets</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+              </select>
+
+              <select
+                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 text-slate-700"
+                aria-label="Sort sheets"
+              >
+                <option value="recent">Most Recent</option>
+                <option value="name">Name A-Z</option>
+                <option value="rows">Most Rows</option>
+                <option value="columns">Most Columns</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="space-y-6">
+          {/* Sheets List */}
+          {isLoading ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-soft text-center">
+              <div className="text-slate-500">Loading sheets...</div>
+            </div>
+          ) : sheets.length === 0 ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-soft text-center">
+              <div className="text-slate-500 mb-4">
+                <div className="text-4xl mb-4">📊</div>
+                <div className="text-xl font-medium text-slate-700 mb-2">No sheets yet!</div>
+                <div className="text-slate-500 mb-4">
+                  Create your first sheet to start organizing data.
+                </div>
+                <Button variant="primary" onClick={handleAddSheet}>
+                  <Plus size={16} className="mr-2" />
+                  Create Your First Sheet
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {sheets.map((sheet) => (
+                <SheetViewer
+                  key={sheet.id}
+                  sheet={sheet}
+                  onUpdate={handleSheetSaved}
+                  onDelete={handleSheetDeleted}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Add Sheet Modal */}
+        {showAddModal && (
+          <AddSheetModal open={showAddModal} onClose={handleCloseModal} onSave={handleSheetSaved} />
+        )}
+      </div>
+    </>
   )
 }

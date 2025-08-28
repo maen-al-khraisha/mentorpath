@@ -345,18 +345,17 @@ export default function HabitsPage() {
             </div>
           )}
         </div>
-
-        {/* Add/Edit Habit Modal */}
-        {showAddModal && (
-          <AddHabitModal
-            open={showAddModal}
-            habit={editingHabit}
-            onClose={handleCloseModal}
-            onSave={handleHabitSaved}
-          />
-        )}
-        <ToastContainer />
       </div>
+      {/* Add/Edit Habit Modal */}
+      {showAddModal && (
+        <AddHabitModal
+          open={showAddModal}
+          habit={editingHabit}
+          onClose={handleCloseModal}
+          onSave={handleHabitSaved}
+        />
+      )}
+      <ToastContainer />
     </>
   )
 }

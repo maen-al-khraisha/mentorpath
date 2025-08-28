@@ -22,6 +22,7 @@ import {
   ArrowUp,
   ArrowDown,
   Search,
+  FileText,
 } from 'lucide-react'
 
 export default function SheetViewer({ sheet, onUpdate, onDelete }) {
@@ -255,22 +256,13 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
   }
 
   return (
-    <div className="bg-[var(--bg-card)] rounded-lg border border-gray-200 shadow-sm mb-6">
-      {/* Sheet Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            title={isCollapsed ? 'Expand sheet' : 'Collapse sheet'}
-          >
-            {isCollapsed ? (
-              <ChevronRight size={20} className="text-gray-600" />
-            ) : (
-              <ChevronDown size={20} className="text-gray-600" />
-            )}
-          </Button>
+    <div className="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <FileText size={20} className="text-blue-600" />
+          </div>
           <div>
             <div className="flex items-center gap-3 mb-2">
               {isEditingName ? (
@@ -280,43 +272,20 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
                   onChange={handleNameChange}
                   onKeyDown={handleNameKeyDown}
                   onBlur={handleSaveName}
-                  className="text-lg font-semibold text-gray-900 bg-transparent border-b-2 border-blue-500 outline-none focus:border-blue-600 px-1"
+                  className="text-xl font-semibold text-slate-900 font-display bg-transparent border-b-2 border-blue-500 outline-none focus:border-blue-600 px-1"
                   autoFocus
                 />
               ) : (
                 <h3
-                  className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors px-1 py-1 rounded hover:bg-gray-50"
+                  className="text-xl font-semibold text-slate-900 font-display cursor-pointer hover:text-blue-600 transition-colors px-1 py-1 rounded hover:bg-blue-50"
                   onClick={handleNameClick}
                   title="Click to edit sheet name"
                 >
                   {sheet.name}
                 </h3>
               )}
-              <div className="relative">
-                <Search
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={16}
-                />
-                <input
-                  type="text"
-                  placeholder={`Search in ${sheet.columns?.[0]?.name || 'first column'}...`}
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="pl-8 pr-8 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none w-48"
-                />
-                {searchQuery && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={clearSearch}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    <X size={14} />
-                  </Button>
-                )}
-              </div>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-600">
               {filteredAndSortedRows.length} of {sheet.rows?.length || 0} rows •{' '}
               {sheet.columns?.length || 0} columns
               {sortConfig.field && (
@@ -325,57 +294,102 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
                 </span>
               )}
               {searchQuery && (
-                <span className="ml-2 text-green-600">• Filtered by "{searchQuery}"</span>
+                <span className="ml-2 text-emerald-600">• Filtered by "{searchQuery}"</span>
               )}
             </p>
           </div>
+          <span className="px-4 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+            {sheet.columns?.length || 0} columns
+          </span>
         </div>
-
-        {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            {/* Clear Sort Button */}
-            {sortConfig.field && (
-              <Button
-                variant="ghost"
-                onClick={() => setSortConfig({ field: null, direction: 'asc' })}
-                className="flex items-center gap-2 px-3 py-2 text-sm"
-                title="Clear sorting"
-              >
-                <X size={16} />
-                Clear Sort
-              </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-2 rounded-xl hover:bg-slate-100"
+            title={isCollapsed ? 'Expand sheet' : 'Collapse sheet'}
+          >
+            {isCollapsed ? (
+              <ChevronRight size={16} className="text-slate-600" />
+            ) : (
+              <ChevronDown size={16} className="text-slate-600" />
             )}
-            <Button
-              variant="primary"
-              onClick={handleAddRow}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              <Plus size={18} />
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDeleteSheet}
-              disabled={isDeleting}
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              <Trash2 size={18} />
-            </Button>
-          </div>
-        )}
+          </Button>
+          {!isCollapsed && (
+            <>
+              {/* Clear Sort Button */}
+              {sortConfig.field && (
+                <Button
+                  variant="ghost"
+                  onClick={() => setSortConfig({ field: null, direction: 'asc' })}
+                  className="flex items-center gap-2 px-3 py-2 text-sm rounded-xl hover:bg-slate-100"
+                  title="Clear sorting"
+                >
+                  <X size={16} />
+                  Clear Sort
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={handleAddRow}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl"
+              >
+                <Plus size={16} />
+                Add Row
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeleteSheet}
+                disabled={isDeleting}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl"
+              >
+                <Trash2 size={16} />
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Collapsible Sheet Content */}
       {!isCollapsed && (
-        <div className="p-4">
+        <div className="p-6">
+          {/* Search Bar */}
+          <div className="mb-6">
+            <div className="relative">
+              <Search
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder={`Search in ${sheet.columns?.[0]?.name || 'first column'}...`}
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="w-full h-12 pl-12 pr-12 rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={clearSearch}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 p-2 rounded-lg"
+                >
+                  <X size={16} />
+                </Button>
+              )}
+            </div>
+          </div>
+
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-slate-200">
                   {sheet.columns?.map((column) => (
                     <th
                       key={column.name}
-                      className="text-left p-3 font-semibold text-gray-700 bg-gray-50"
+                      className="text-left p-3 font-semibold text-slate-700 bg-slate-50"
                     >
                       <Button
                         variant="ghost"
@@ -388,14 +402,14 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
                       </Button>
                     </th>
                   ))}
-                  <th className="text-left p-3 font-semibold text-gray-700 bg-gray-50 w-24">
+                  <th className="text-left p-3 font-semibold text-slate-700 bg-slate-50 w-24">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredAndSortedRows.map((row) => (
-                  <tr key={row.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50">
                     {sheet.columns?.map((column) => (
                       <td key={column.name} className="p-3">
                         {editingRow === row.id ? (
