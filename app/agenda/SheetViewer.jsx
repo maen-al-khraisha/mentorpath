@@ -1,15 +1,11 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import {
-  addRowToSheet,
-  updateRowInSheet,
-  deleteRowFromSheet,
-  deleteSheet,
-  updateSheet,
-} from '@/lib/sheetsApi'
+import { addRowToSheet, updateRowInSheet, deleteRowFromSheet, updateSheet } from '@/lib/sheetsApi'
 import { useAuth } from '@/lib/useAuth'
+import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
 import {
   Plus,
   Edit,
@@ -23,13 +19,18 @@ import {
   ArrowDown,
   Search,
   FileText,
+  Calendar,
+  Clock,
+  Eye,
+  Download,
 } from 'lucide-react'
 
 export default function SheetViewer({ sheet, onUpdate, onDelete }) {
   const { user } = useAuth()
+  const { showToast } = useToast()
   const [editingRow, setEditingRow] = useState(null)
   const [editingData, setEditingData] = useState({})
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteRowModal, setShowDeleteRowModal] = useState({ isOpen: false, rowId: null })
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   // Column sorting state
@@ -210,33 +211,14 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
   }
 
   async function handleDeleteRow(rowId) {
-    if (!user || !confirm('Are you sure you want to delete this row?')) return
+    if (!user) return
 
     try {
       await deleteRowFromSheet(sheet.id, rowId)
       onUpdate?.()
     } catch (error) {
       console.error('Failed to delete row:', error)
-      alert('Failed to delete row: ' + error.message)
-    }
-  }
-
-  async function handleDeleteSheet() {
-    if (
-      !user ||
-      !confirm(`Are you sure you want to delete "${sheet.name}"? This cannot be undone.`)
-    )
-      return
-
-    try {
-      setIsDeleting(true)
-      await deleteSheet(sheet.id)
-      onDelete?.(sheet.id)
-    } catch (error) {
-      console.error('Failed to delete sheet:', error)
-      alert('Failed to delete sheet: ' + error.message)
-    } finally {
-      setIsDeleting(false)
+      showToast('Failed to delete row: ' + error.message, 'error')
     }
   }
 
@@ -256,163 +238,240 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-            <FileText size={20} className="text-blue-600" />
+    <>
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+              <FileText size={20} className="text-blue-600" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                {isEditingName ? (
+                  <input
+                    type="text"
+                    value={editedName}
+                    onChange={handleNameChange}
+                    onKeyDown={handleNameKeyDown}
+                    onBlur={handleSaveName}
+                    className="text-xl font-semibold text-slate-900 font-display bg-transparent border-b-2 border-blue-500 outline-none focus:border-blue-600 px-1"
+                    autoFocus
+                  />
+                ) : (
+                  <h3
+                    className="text-xl font-semibold text-slate-900 font-display cursor-pointer hover:text-blue-600 transition-colors px-1 py-1 rounded hover:bg-blue-50"
+                    onClick={handleNameClick}
+                    title="Click to edit sheet name"
+                  >
+                    {sheet.name}
+                  </h3>
+                )}
+              </div>
+              <p className="text-sm text-slate-600">
+                {filteredAndSortedRows.length} of {sheet.rows?.length || 0} rows •{' '}
+                {sheet.columns?.length || 0} columns
+                {searchQuery && (
+                  <span className="ml-2 text-emerald-600">• Filtered by "{searchQuery}"</span>
+                )}
+              </p>
+            </div>
+            <span className="px-4 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+              {sheet.columns?.length || 0} columns
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              {isEditingName ? (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-2 rounded-xl hover:bg-slate-100 transition-all duration-200 group"
+              title={isCollapsed ? 'Expand sheet' : 'Collapse sheet'}
+            >
+              <ChevronDown
+                size={20}
+                className={`text-slate-500 group-hover:text-blue-500 transition-all duration-300 ${
+                  isCollapsed ? 'rotate-180' : ''
+                }`}
+              />
+            </Button>
+
+            {/* Clear Sort moved next to search input */}
+
+            {/* Add Row Button - Always visible */}
+            <Button
+              variant="primary"
+              size="icon"
+              onClick={handleAddRow}
+              className="p-2 rounded-xl hover:bg-slate-100"
+              title="Add new row"
+            >
+              <Plus size={16} />
+            </Button>
+
+            {/* Delete sheet - inline with other actions */}
+            <Button
+              variant="danger"
+              size="icon"
+              onClick={() => onDelete?.()}
+              className="p-2 rounded-xl hover:bg-red-50"
+              title="Delete sheet"
+            >
+              <Trash2 size={16} />
+            </Button>
+          </div>
+        </div>
+
+        {/* Collapsible Sheet Content */}
+        {!isCollapsed && (
+          <div className="p-3">
+            {/* Search and Sort Summary Row */}
+            <div className="mb-3 flex items-center justify-between gap-3">
+              {/* Search */}
+              <div className="relative flex-1 min-w-[240px]">
+                <Search
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+                  size={20}
+                />
                 <input
                   type="text"
-                  value={editedName}
-                  onChange={handleNameChange}
-                  onKeyDown={handleNameKeyDown}
-                  onBlur={handleSaveName}
-                  className="text-xl font-semibold text-slate-900 font-display bg-transparent border-b-2 border-blue-500 outline-none focus:border-blue-600 px-1"
-                  autoFocus
+                  placeholder={`Search in ${sheet.columns?.[0]?.name || 'first column'}...`}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="w-auto h-12 pl-12 pr-12 rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
                 />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearSearch}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 p-2 rounded-lg"
+                  >
+                    <X size={16} />
+                  </Button>
+                )}
+              </div>
+
+              {/* Sorted by + Clear */}
+              {sortConfig.field ? (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-blue-600 whitespace-nowrap">
+                    Sorted by {sortConfig.field} ({sortConfig.direction === 'asc' ? 'A→Z' : 'Z→A'})
+                  </span>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setSortConfig({ field: null, direction: 'asc' })}
+                    className="px-3 py-2 rounded-lg text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                    title="Clear sorting"
+                  >
+                    Clear
+                  </Button>
+                </div>
               ) : (
-                <h3
-                  className="text-xl font-semibold text-slate-900 font-display cursor-pointer hover:text-blue-600 transition-colors px-1 py-1 rounded hover:bg-blue-50"
-                  onClick={handleNameClick}
-                  title="Click to edit sheet name"
-                >
-                  {sheet.name}
-                </h3>
+                <div className="h-12" />
               )}
             </div>
-            <p className="text-sm text-slate-600">
-              {filteredAndSortedRows.length} of {sheet.rows?.length || 0} rows •{' '}
-              {sheet.columns?.length || 0} columns
-              {sortConfig.field && (
-                <span className="ml-2 text-blue-600">
-                  • Sorted by {sortConfig.field} ({sortConfig.direction === 'asc' ? 'A→Z' : 'Z→A'})
-                </span>
-              )}
-              {searchQuery && (
-                <span className="ml-2 text-emerald-600">• Filtered by "{searchQuery}"</span>
-              )}
-            </p>
-          </div>
-          <span className="px-4 py-2 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
-            {sheet.columns?.length || 0} columns
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 rounded-xl hover:bg-slate-100"
-            title={isCollapsed ? 'Expand sheet' : 'Collapse sheet'}
-          >
-            {isCollapsed ? (
-              <ChevronRight size={16} className="text-slate-600" />
-            ) : (
-              <ChevronDown size={16} className="text-slate-600" />
-            )}
-          </Button>
-          {!isCollapsed && (
-            <>
-              {/* Clear Sort Button */}
-              {sortConfig.field && (
-                <Button
-                  variant="ghost"
-                  onClick={() => setSortConfig({ field: null, direction: 'asc' })}
-                  className="flex items-center gap-2 px-3 py-2 text-sm rounded-xl hover:bg-slate-100"
-                  title="Clear sorting"
-                >
-                  <X size={16} />
-                  Clear Sort
-                </Button>
-              )}
-              <Button
-                variant="primary"
-                onClick={handleAddRow}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl"
-              >
-                <Plus size={16} />
-                Add Row
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDeleteSheet}
-                disabled={isDeleting}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl"
-              >
-                <Trash2 size={16} />
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
 
-      {/* Collapsible Sheet Content */}
-      {!isCollapsed && (
-        <div className="p-6">
-          {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative">
-              <Search
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
-                size={20}
-              />
-              <input
-                type="text"
-                placeholder={`Search in ${sheet.columns?.[0]?.name || 'first column'}...`}
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full h-12 pl-12 pr-12 rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={clearSearch}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 p-2 rounded-lg"
-                >
-                  <X size={16} />
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  {sheet.columns?.map((column) => (
-                    <th
-                      key={column.name}
-                      className="text-left p-3 font-semibold text-slate-700 bg-slate-50"
-                    >
-                      <Button
-                        variant="ghost"
-                        className="group flex items-center gap-2 w-full hover:text-blue-600 transition-colors p-0 h-auto"
-                        onClick={() => handleSort(column.name)}
-                        title={`Sort by ${column.name}`}
-                      >
-                        {getSortIcon(column.name)}
-                        <span>{column.name}</span>
-                      </Button>
-                    </th>
-                  ))}
-                  <th className="text-left p-3 font-semibold text-slate-700 bg-slate-50 w-24">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedRows.map((row) => (
-                  <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50">
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200">
                     {sheet.columns?.map((column) => (
-                      <td key={column.name} className="p-3">
+                      <th key={column.name} className="  font-semibold text-slate-700 bg-slate-50">
+                        <div
+                          variant="ghost"
+                          className="  cursor-pointer  group flex items-center justify-start gap-2 w-full p-2 hover:text-blue-600 transition-colors "
+                          onClick={() => handleSort(column.name)}
+                          title={`Sort by ${column.name}`}
+                        >
+                          <span>{column.name}</span>
+                          {getSortIcon(column.name)}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="text-left p-3 font-semibold text-slate-700 bg-slate-50 w-24">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAndSortedRows.map((row) => (
+                    <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50">
+                      {sheet.columns?.map((column) => (
+                        <td key={column.name} className="p-3">
+                          {editingRow === row.id ? (
+                            <input
+                              type={getInputType(column.type)}
+                              className="w-full h-9 rounded border border-gray-300 px-2 text-sm focus:border-[var(--primary)] focus:outline-none"
+                              value={editingData[column.name] || ''}
+                              onChange={(e) =>
+                                setEditingData({
+                                  ...editingData,
+                                  [column.name]: e.target.value,
+                                })
+                              }
+                            />
+                          ) : (
+                            <span className="text-sm text-gray-900">
+                              {row.data[column.name] || '-'}
+                            </span>
+                          )}
+                        </td>
+                      ))}
+                      <td className="p-3">
                         {editingRow === row.id ? (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="primary"
+                              size="icon"
+                              onClick={handleSaveRow}
+                              className="p-2 rounded-xl hover:bg-slate-100"
+                              title="Save changes"
+                            >
+                              <Save size={20} />
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              onClick={handleCancelEdit}
+                              className="p-2 rounded-xl hover:bg-slate-100"
+                              title="Cancel editing"
+                            >
+                              <X size={20} />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditRow(row)}
+                              className="p-2 rounded-xl hover:bg-slate-100 transition-all duration-200"
+                              title="Edit row"
+                            >
+                              <Edit size={20} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setShowDeleteRowModal({ isOpen: true, rowId: row.id })}
+                              className="p-2 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+                              title="Delete row"
+                            >
+                              <Trash2 size={20} />
+                            </Button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+
+                  {/* New Row (when adding) */}
+                  {editingRow === 'new' && (
+                    <tr className="border-b border-gray-200 bg-blue-50">
+                      {sheet.columns?.map((column) => (
+                        <td key={column.name} className="p-3">
                           <input
                             type={getInputType(column.type)}
                             className="w-full h-9 rounded border border-gray-300 px-2 text-sm focus:border-[var(--primary)] focus:outline-none"
@@ -423,113 +482,54 @@ export default function SheetViewer({ sheet, onUpdate, onDelete }) {
                                 [column.name]: e.target.value,
                               })
                             }
+                            placeholder={`Enter ${column.name.toLowerCase()}`}
                           />
-                        ) : (
-                          <span className="text-sm text-gray-900">
-                            {row.data[column.name] || '-'}
-                          </span>
-                        )}
-                      </td>
-                    ))}
-                    <td className="p-3">
-                      {editingRow === row.id ? (
+                        </td>
+                      ))}
+                      <td className="p-3">
                         <div className="flex items-center gap-2">
                           <Button
                             variant="primary"
-                            size="sm"
+                            size="icon"
                             onClick={handleSaveRow}
-                            className="p-2 h-10 w-10"
+                            className="p-2 rounded-xl hover:bg-slate-100"
+                            title="Save new row"
                           >
-                            <Save size={18} />
+                            <Save size={20} />
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="sm"
+                            variant="secondary"
+                            size="icon"
                             onClick={handleCancelEdit}
-                            className="p-2 h-10 w-10"
+                            className="p-2 rounded-xl hover:bg-slate-100"
+                            title="Cancel adding row"
                           >
-                            <X size={18} />
+                            <X size={20} />
                           </Button>
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditRow(row)}
-                            className="p-2 h-10 w-10"
-                            title="Edit row"
-                          >
-                            <Edit size={18} />
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeleteRow(row.id)}
-                            className="p-2 h-10 w-10"
-                            title="Delete row"
-                          >
-                            <Trash2 size={18} />
-                          </Button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-
-                {/* New Row (when adding) */}
-                {editingRow === 'new' && (
-                  <tr className="border-b border-gray-200 bg-blue-50">
-                    {sheet.columns?.map((column) => (
-                      <td key={column.name} className="p-3">
-                        <input
-                          type={getInputType(column.type)}
-                          className="w-full h-9 rounded border border-gray-300 px-2 text-sm focus:border-[var(--primary)] focus:outline-none"
-                          value={editingData[column.name] || ''}
-                          onChange={(e) =>
-                            setEditingData({
-                              ...editingData,
-                              [column.name]: e.target.value,
-                            })
-                          }
-                          placeholder={`Enter ${column.name.toLowerCase()}`}
-                        />
                       </td>
-                    ))}
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={handleSaveRow}
-                          className="p-2 h-10 w-10"
-                        >
-                          <Save size={18} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleCancelEdit}
-                          className="p-2 h-10 w-10"
-                        >
-                          <X size={18} />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Empty State */}
-          {(!sheet.rows || sheet.rows.length === 0) && (
-            <div className="text-center py-8 text-gray-500">
-              <p>No rows yet. Click "Add Row" to get started!</p>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-          )}
-        </div>
-      )}
-    </div>
+
+            {/* Empty State */}
+            {(!sheet.rows || sheet.rows.length === 0) && (
+              <div className="text-center py-8 text-gray-500">
+                <p>No rows yet. Click "Add Row" to get started!</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      <DeleteConfirmModal
+        isOpen={showDeleteRowModal.isOpen}
+        onClose={() => setShowDeleteRowModal({ isOpen: false, rowId: null })}
+        onConfirm={() => handleDeleteRow(showDeleteRowModal.rowId)}
+        title="Delete Row"
+        message={`Are you sure you want to delete row "${sheet.rows.find((row) => row.id === showDeleteRowModal.rowId)?.data[sheet.columns[0]?.name] || 'this row'}" from sheet "${sheet.name}"? This action cannot be undone.`}
+      />
+    </>
   )
 }

@@ -5,6 +5,7 @@ import { clearEventsForDate } from '@/lib/eventsApi'
 import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
 import { Eye, Trash2, Calendar, Clock, FileText, Edit, Link, Plus } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 
@@ -22,16 +23,10 @@ export default function DayEventsModal({
   const { user } = useAuth()
   const { showToast } = useToast()
   const [isClearing, setIsClearing] = useState(false)
+  const [showClearModal, setShowClearModal] = useState(false)
+  const [deleteEventModal, setDeleteEventModal] = useState({ isOpen: false, event: null })
 
   const handleClearEvents = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to clear all events for ${new Date(date).toLocaleDateString()}? This cannot be undone.`
-      )
-    ) {
-      return
-    }
-
     try {
       setIsClearing(true)
       await clearEventsForDate(user.uid, date)
@@ -156,9 +151,7 @@ export default function DayEventsModal({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation()
-                      if (confirm('Are you sure you want to delete this event?')) {
-                        onDeleteEvent(event)
-                      }
+                      setDeleteEventModal({ isOpen: true, event })
                     }}
                     className="px-4 py-2 rounded-xl font-medium"
                   >
@@ -181,19 +174,19 @@ export default function DayEventsModal({
         Add Event
       </Button>
       <Button
-        variant="danger"
-        onClick={handleClearEvents}
-        disabled={isClearing || events.length === 0}
-        className="px-6 py-3 rounded-xl font-medium"
+        onClick={() => setShowClearModal(true)}
+        variant="outline"
+        className="px-4 py-2 rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
+        disabled={isClearing}
       >
         {isClearing ? (
           <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-2"></div>
             Clearing...
           </>
         ) : (
           <>
-            <Trash2 size={18} className="mr-2" />
+            <Trash2 size={16} className="mr-2" />
             Clear All Events
           </>
         )}
@@ -202,13 +195,41 @@ export default function DayEventsModal({
   )
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      header={modalHeader}
-      content={modalContent}
-      footer={modalFooter}
-      size="large"
-    />
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        header={modalHeader}
+        content={modalContent}
+        footer={modalFooter}
+        size="large"
+      />
+
+      {/* Clear All Events Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={handleClearEvents}
+        title="Clear All Events"
+        message={`Are you sure you want to clear all events for ${new Date(date).toLocaleDateString()}?`}
+        itemName={`${events.length} event${events.length !== 1 ? 's' : ''} on ${new Date(date).toLocaleDateString()}`}
+        confirmText="Clear All Events"
+        variant="warning"
+      />
+
+      {/* Delete Individual Event Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteEventModal.isOpen}
+        onClose={() => setDeleteEventModal({ isOpen: false, event: null })}
+        onConfirm={() => {
+          onDeleteEvent(deleteEventModal.event)
+          setDeleteEventModal({ isOpen: false, event: null })
+        }}
+        title="Delete Event"
+        message="Are you sure you want to delete this event?"
+        itemName={deleteEventModal.event?.name}
+        confirmText="Delete Event"
+      />
+    </>
   )
 }

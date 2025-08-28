@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react'
 import { createHabit, updateHabit, habitCategories, habitIcons } from '@/lib/habitsApi'
 import { useAuth } from '@/lib/useAuth'
+import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 import Modal from '@/components/ui/Modal'
 import { Plus, Calendar, Target, Hash, TrendingUp } from 'lucide-react'
-import toast from 'react-hot-toast'
 
 export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
   const { user, loading } = useAuth()
+  const { showToast } = useToast()
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
   const [startDate, setStartDate] = useState('')
@@ -52,7 +53,7 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
     // Show toast for validation errors
     if (Object.keys(newErrors).length > 0) {
       const firstError = Object.values(newErrors)[0]
-      toast.error(firstError)
+      showToast(firstError, 'error')
     }
 
     return Object.keys(newErrors).length === 0
@@ -60,7 +61,7 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
   async function handleSave() {
     if (!user) {
-      toast.error('Please wait for authentication to complete')
+      showToast('Please wait for authentication to complete', 'error')
       return
     }
 
@@ -79,10 +80,10 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
 
       if (isEditing) {
         await updateHabit(habit.id, habitData)
-        toast.success(`Habit "${name.trim()}" updated successfully!`)
+        showToast(`Habit "${name.trim()}" updated successfully!`, 'success')
       } else {
         await createHabit(habitData)
-        toast.success(`Habit "${name.trim()}" created successfully!`)
+        showToast(`Habit "${name.trim()}" created successfully!`, 'success')
       }
 
       onSave?.()
@@ -100,7 +101,7 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
     } catch (e) {
       console.error(e)
       const errorMessage = e.message || 'An unexpected error occurred'
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} habit: ${errorMessage}`)
+      showToast(`Failed to ${isEditing ? 'update' : 'create'} habit: ${errorMessage}`, 'error')
     } finally {
       setBusy(false)
     }

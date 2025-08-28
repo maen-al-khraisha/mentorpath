@@ -24,7 +24,7 @@ import {
 
 export default function CalendarPage() {
   const { user, loading } = useAuth()
-  const { showToast, ToastContainer } = useToast()
+  const { showToast } = useToast()
   const [events, setEvents] = useState([])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(null)
@@ -683,7 +683,7 @@ export default function CalendarPage() {
         openInEditMode={openInEditMode}
       />
 
-      <ToastContainer />
+      {/* Toast container is provided globally in RootLayout via ToastProvider */}
     </>
   )
 }

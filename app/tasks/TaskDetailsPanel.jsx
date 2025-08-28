@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { updateTask, addAttachment, deleteTask, removeAttachment } from '@/lib/tasksApi'
+import { updateTask, addAttachment, removeAttachment } from '@/lib/tasksApi'
+import { useAuth } from '@/lib/useAuth'
+import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import Checkbox from '@/components/ui/AnimatedCheckbox'
-import toast from 'react-hot-toast'
 import LabelBadge from '@/components/LabelBadge'
 
 import {
@@ -41,7 +42,16 @@ export default function TaskDetailsPanel({
   onShowCopyModal,
   onPreviewAttachment,
   onEditDescription,
+  onDelete,
 }) {
+  const { user } = useAuth()
+  const { showToast } = useToast()
+
+  // Safety check: don't render if no task
+  if (!task) {
+    return null
+  }
+
   const [description, setDescription] = useState(task?.description || '')
   const [editingTitle, setEditingTitle] = useState(false)
   const [editingTitleValue, setEditingTitleValue] = useState(task?.title || '')
@@ -63,7 +73,7 @@ export default function TaskDetailsPanel({
 
     if (!task?.id) {
       console.error('Task ID is undefined or null:', task)
-      toast.error('Cannot update task: Invalid task ID')
+      showToast('Cannot update task: Invalid task ID', 'error')
       setEditingTitle(false)
       return
     }
@@ -71,11 +81,11 @@ export default function TaskDetailsPanel({
     if (editingTitleValue.trim() && editingTitleValue !== task.title) {
       try {
         await updateTask(task.id, { title: editingTitleValue.trim() })
-        toast.success('Task title updated successfully!')
+        showToast('Task title updated successfully!', 'success')
         onUpdate?.()
       } catch (error) {
         console.error('Failed to update task title:', error)
-        toast.error('Failed to update task title')
+        showToast('Failed to update task title', 'error')
         setEditingTitleValue(task.title) // Reset to original value
       }
     }
@@ -164,7 +174,7 @@ export default function TaskDetailsPanel({
   const handleAddLabel = () => {
     if (!task?.id) {
       console.error('Task ID is undefined in handleAddLabel:', task)
-      toast.error('Cannot update task: Invalid task ID')
+      showToast('Cannot update task: Invalid task ID', 'error')
       return
     }
 
@@ -172,26 +182,26 @@ export default function TaskDetailsPanel({
       const updatedLabels = [...(task.labels || []), newLabel.trim()]
       updateTask(task.id, { labels: updatedLabels })
       setNewLabel('')
-      toast.success(`Label "${newLabel.trim()}" added successfully!`)
+      showToast(`Label "${newLabel.trim()}" added successfully!`, 'success')
     }
   }
 
   const handleRemoveLabel = (labelToRemove) => {
     if (!task?.id) {
       console.error('Task ID is undefined in handleRemoveLabel:', task)
-      toast.error('Cannot update task: Invalid task ID')
+      showToast('Cannot update task: Invalid task ID', 'error')
       return
     }
 
     const updatedLabels = task.labels?.filter((label) => label !== labelToRemove) || []
     updateTask(task.id, { labels: updatedLabels })
-    toast.success(`Label "${labelToRemove}" removed successfully!`)
+    showToast(`Label "${labelToRemove}" removed successfully!`, 'success')
   }
 
   const handleAddChecklistItem = () => {
     if (!task?.id) {
       console.error('Task ID is undefined in handleAddChecklistItem:', task)
-      toast.error('Cannot update task: Invalid task ID')
+      showToast('Cannot update task: Invalid task ID', 'error')
       return
     }
 
@@ -202,14 +212,14 @@ export default function TaskDetailsPanel({
       ]
       updateTask(task.id, { checklist: updatedChecklist })
       setNewChecklistItem('')
-      toast.success(`Checklist item "${newChecklistItem.trim()}" added successfully!`)
+      showToast(`Checklist item "${newChecklistItem.trim()}" added successfully!`, 'success')
     }
   }
 
   const handleToggleChecklistItem = (itemId) => {
     if (!task?.id) {
       console.error('Task ID is undefined in handleToggleChecklistItem:', task)
-      toast.error('Cannot update task: Invalid task ID')
+      showToast('Cannot update task: Invalid task ID', 'error')
       return
     }
 
@@ -220,20 +230,20 @@ export default function TaskDetailsPanel({
 
     const item = task.checklist?.find((item) => item.id === itemId)
     if (item) {
-      toast.success(item.done ? 'Item unchecked!' : 'Item checked! ✅')
+      showToast(item.done ? 'Item unchecked!' : 'Item checked! ✅', 'success')
     }
   }
 
   const handleRemoveChecklistItem = (itemId) => {
     if (!task?.id) {
       console.error('Task ID is undefined in handleRemoveChecklistItem:', task)
-      toast.error('Cannot update task: Invalid task ID')
+      showToast('Cannot update task: Invalid task ID', 'error')
       return
     }
 
     const updatedChecklist = task.checklist?.filter((item) => item.id !== itemId) || []
     updateTask(task.id, { checklist: updatedChecklist })
-    toast.success('Checklist item removed successfully!')
+    showToast('Checklist item removed successfully!', 'success')
   }
 
   const isTimerActive = activeTimer?.taskId === task.id
@@ -243,7 +253,7 @@ export default function TaskDetailsPanel({
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="bg-white space-y-4 overflow-hidden">
         {/* Hero Section - Task Title & Primary Actions */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
           {/* Title & Actions Row */}
@@ -382,14 +392,15 @@ export default function TaskDetailsPanel({
                   onClick={() => {
                     if (!task?.id) {
                       console.error('Task ID is undefined in completion button:', task)
-                      toast.error('Cannot update task: Invalid task ID')
+                      showToast('Cannot update task: Invalid task ID', 'error')
                       return
                     }
 
                     const newStatus = !task.completed
                     updateTask(task.id, { completed: newStatus })
-                    toast.success(
-                      newStatus ? 'Task marked as completed! 🎉' : 'Task marked as incomplete'
+                    showToast(
+                      newStatus ? 'Task marked as completed! 🎉' : 'Task marked as incomplete',
+                      'success'
                     )
                   }}
                   className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
@@ -473,7 +484,7 @@ export default function TaskDetailsPanel({
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-slate-50 transition-colors duration-200 group"
                     >
                       <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors duration-200">
-                        <ClockIcon size={18} className="text-green-600" />
+                        <Clock size={18} className="text-green-600" />
                       </div>
                       <div className="flex-1">
                         <div className="text-sm font-semibold text-slate-900">Add time</div>
@@ -502,15 +513,7 @@ export default function TaskDetailsPanel({
                     <button
                       onClick={async () => {
                         setShowActions(false)
-                        if (!confirm('Delete this task? This cannot be undone.')) return
-                        toast.warning('Deleting task...')
-                        try {
-                          await deleteTask(task.id)
-                          toast.success('Task deleted successfully!')
-                        } catch (e) {
-                          console.error('Delete failed', e)
-                          toast.error('Failed to delete task. Please try again.')
-                        }
+                        onDelete?.()
                       }}
                       className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-red-50 transition-colors duration-200 group"
                     >
@@ -547,7 +550,7 @@ export default function TaskDetailsPanel({
                   size="sm"
                   onClick={() => {
                     onStopTimer?.(task.id)
-                    toast.success('Timer stopped!')
+                    showToast('Timer stopped!', 'success')
                   }}
                   className="px-4 py-2 rounded-xl font-medium"
                 >
@@ -571,7 +574,7 @@ export default function TaskDetailsPanel({
                   size="sm"
                   onClick={() => {
                     onStartTimer?.(task.id)
-                    toast.success('Timer started! ⏱️')
+                    showToast('Timer started! ⏱️', 'success')
                   }}
                   className="px-4 py-2 rounded-xl font-medium"
                 >
@@ -585,7 +588,7 @@ export default function TaskDetailsPanel({
                 size="sm"
                 onClick={() => {
                   onShowShiftModal?.()
-                  toast.success('Task shifted to tomorrow! 📅')
+                  showToast('Task shifted to tomorrow! 📅', 'success')
                 }}
                 className="px-4 py-2 rounded-xl font-medium"
               >
@@ -601,7 +604,7 @@ export default function TaskDetailsPanel({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-                <FileText size={18} className="text-blue-600" />
+                <Edit size={18} className="text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900">Description</h3>
             </div>
@@ -626,7 +629,7 @@ export default function TaskDetailsPanel({
             ) : (
               <div className="flex items-center justify-center h-20 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
                 <div className="text-center">
-                  <FileText size={24} className="text-slate-400 mx-auto mb-2" />
+                  <Edit size={24} className="text-slate-400 mx-auto mb-2" />
                   <p className="text-slate-500 font-medium">No description added</p>
                   <p className="text-xs text-slate-400">Click edit to add a description</p>
                 </div>
@@ -701,7 +704,7 @@ export default function TaskDetailsPanel({
                     onChange={() => {
                       if (!task?.id) {
                         console.error('Task ID is undefined in priority change:', task)
-                        toast.error('Cannot update task: Invalid task ID')
+                        showToast('Cannot update task: Invalid task ID', 'error')
                         return
                       }
                       updateTask(task.id, { priority: p })
@@ -806,29 +809,13 @@ export default function TaskDetailsPanel({
                   key={item.id}
                   className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors duration-200"
                 >
-                  <button
-                    onClick={() => handleToggleChecklistItem(item.id)}
-                    className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200 hover:scale-110 ${
-                      item.done
-                        ? 'border-emerald-500 bg-emerald-500 text-white shadow-md'
-                        : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50'
-                    }`}
-                    aria-label="Toggle checklist item"
-                  >
-                    {item.done ? (
-                      <svg
-                        className="w-3.5 h-3.5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                      >
-                        <path d="M5 12l5 5L20 7" />
-                      </svg>
-                    ) : (
-                      <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
-                    )}
-                  </button>
+                  {item && (
+                    <Checkbox
+                      checked={item.done}
+                      onChange={() => handleToggleChecklistItem(item.id)}
+                      className="flex-shrink-0"
+                    />
+                  )}
                   <span
                     className={`flex-1 text-sm font-medium ${
                       item.done ? 'text-slate-500 line-through' : 'text-slate-900'
@@ -901,13 +888,16 @@ export default function TaskDetailsPanel({
                   // Check file size (20MB limit) - 20971520 bytes exactly as specified
                   const maxSize = 20971520 // 20 MB in bytes
                   if (file.size > maxSize) {
-                    toast.error('The file is too large. Please upload a file smaller than 20 MB.')
+                    showToast(
+                      'The file is too large. Please upload a file smaller than 20 MB.',
+                      'error'
+                    )
                     if (e.target) e.target.value = ''
                     return
                   }
 
                   if (reachedAttachmentLimit) {
-                    toast.warning('Attachment limit reached (max 3 per task)')
+                    showToast('Attachment limit reached (max 3 per task)', 'warning')
                     if (e.target) e.target.value = ''
                     return
                   }
@@ -919,11 +909,11 @@ export default function TaskDetailsPanel({
                     const url = await addAttachment(task.id, file)
                     setPendingAttachmentName('')
                     setLocalAttachments((prev) => [...(prev || []), { name: file.name, url }])
-                    toast.success(`File "${file.name}" uploaded successfully!`)
+                    showToast(`File "${file.name}" uploaded successfully!`, 'success')
                   } catch (err) {
                     console.error('Attachment upload failed:', err)
                     const message = err?.message || 'Failed to upload. Please try again.'
-                    toast.error(message)
+                    showToast(message, 'error')
                   } finally {
                     setIsUploading(false)
                     if (e.target) e.target.value = ''
@@ -1004,10 +994,13 @@ export default function TaskDetailsPanel({
                           try {
                             await removeAttachment(task.id, attachment)
                             setLocalAttachments((prev) => prev.filter((_, i) => i !== index))
-                            toast.success(`Attachment "${attachment.name}" removed successfully!`)
+                            showToast(
+                              `Attachment "${attachment.name}" removed successfully!`,
+                              'success'
+                            )
                           } catch (error) {
                             console.error('Failed to remove attachment:', error)
-                            toast.error('Failed to remove attachment. Please try again.')
+                            showToast('Failed to remove attachment. Please try again.', 'error')
                           }
                         }}
                         className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200"
@@ -1032,6 +1025,9 @@ export default function TaskDetailsPanel({
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {/* This modal is now handled by the parent component */}
     </>
   )
 }

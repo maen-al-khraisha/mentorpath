@@ -5,8 +5,9 @@ import { updateEvent, deleteEvent } from '@/lib/eventsApi'
 import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
 import CustomDatePicker from '@/components/CustomDatePicker'
-import { X, Edit, Trash2, ExternalLink, Calendar, Clock, FileText, Link } from 'lucide-react'
+import { X, Edit, Save, RotateCcw, Trash2, ExternalLink, Calendar, Clock, FileText, Link } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 // Dynamically import ReactQuill to prevent SSR issues
@@ -28,11 +29,12 @@ export default function EventDetailsModal({
   onViewEvent,
   openInEditMode = false,
 }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [formData, setFormData] = useState({
     name: event?.name || '',
     description: event?.description || '',
@@ -110,10 +112,6 @@ export default function EventDetailsModal({
   }
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this event? This cannot be undone.')) {
-      return
-    }
-
     try {
       setIsDeleting(true)
       await deleteEvent(event.id)
@@ -435,7 +433,7 @@ export default function EventDetailsModal({
                 </Button>
                 <Button
                   variant="danger"
-                  onClick={handleDelete}
+                  onClick={() => setShowDeleteModal(true)}
                   disabled={isDeleting}
                   className="px-6 py-3 rounded-xl font-medium"
                 >
@@ -456,6 +454,17 @@ export default function EventDetailsModal({
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Delete Event"
+        message="Are you sure you want to delete this event?"
+        itemName={event?.name}
+        confirmText="Delete Event"
+      />
     </div>
   )
 }

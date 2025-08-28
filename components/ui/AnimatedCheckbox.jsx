@@ -1,12 +1,16 @@
 import React from 'react'
 
 export default function Checkbox({ checked, onChange, label, ...props }) {
+  // Safety check: ensure checked is a boolean and onChange is a function
+  const isChecked = Boolean(checked)
+  const handleChange = onChange || (() => {})
+
   return (
     <label className="relative inline-flex items-center cursor-pointer select-none">
       <input
         type="checkbox"
-        checked={checked}
-        onChange={onChange}
+        checked={isChecked}
+        onChange={handleChange}
         className="peer appearance-none w-5 h-5 border-2 border-black rounded transition-colors duration-300 bg-transparent focus:outline-none focus:ring-2 focus:ring-green-400"
         style={{ minWidth: 14, minHeight: 14 }}
         {...props}
@@ -32,7 +36,7 @@ export default function Checkbox({ checked, onChange, label, ...props }) {
           />
         </svg>
       </span>
-      <span className="ml-3 text-base">{label}</span>
+      {label && <span className="ml-3 text-base">{label}</span>}
       <style jsx>{`
         input:checked {
           border-color: #22c55e; /* Tailwind green-500 */

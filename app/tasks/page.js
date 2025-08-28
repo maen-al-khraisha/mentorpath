@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/lib/useAuth'
+import { useToast } from '@/components/Toast'
 import dynamic from 'next/dynamic'
 import {
   dayKey,
@@ -15,11 +16,13 @@ import {
   shiftTaskToDate,
   addManualWorkSession,
   createTask,
+  deleteTask,
 } from '@/lib/tasksApi'
 import TaskAddModal from './TaskAddModal'
 import TaskDetailsPanel from './TaskDetailsPanel'
 import DescriptionEditModal from './DescriptionEditModal'
 import TaskCopyModal from './TaskCopyModal'
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
 
 import {
   ChevronLeft,
@@ -48,6 +51,7 @@ import LabelBadge from '@/components/LabelBadge'
 
 export default function TasksPage() {
   const { user, loading } = useAuth()
+  const { showToast } = useToast()
   const [date, setDate] = useState(new Date())
   const [tasks, setTasks] = useState([])
   const [workSessions, setWorkSessions] = useState([])
@@ -77,6 +81,8 @@ export default function TasksPage() {
   const [previewItem, setPreviewItem] = useState(null) // { url, name }
   const [showDescriptionModal, setShowDescriptionModal] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState(null)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Modal handlers
   const handleShiftToTomorrow = async () => {
@@ -92,6 +98,41 @@ export default function TasksPage() {
 
   const handlePreviewAttachment = (url, name) => {
     setPreviewItem({ url, name })
+  }
+
+  const handleDeleteTask = async () => {
+    if (!selectedTask?.id) return
+
+    try {
+      setIsDeleting(true)
+      await deleteTask(selectedTask.id)
+
+      // Show toast before closing modal and clearing selection
+      showToast('Task deleted successfully!', 'success')
+
+      // Close modal first
+      setShowDeleteModal(false)
+
+      // Delay clearing the selection to allow toast to display
+      setTimeout(() => {
+        setSelectedId(null) // Close the details panel
+      }, 100)
+
+      // Tasks will update automatically via the subscription
+    } catch (error) {
+      console.error('Delete failed', error)
+      showToast('Failed to delete task.', 'error')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const openDeleteModal = () => {
+    setShowDeleteModal(true)
+  }
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false)
   }
 
   const handleSaveDescription = async (newDescription) => {
@@ -1002,6 +1043,7 @@ export default function TasksPage() {
                       setEditingTaskId(taskId)
                       setShowDescriptionModal(true)
                     }}
+                    onDelete={openDeleteModal}
                   />
                 </div>
               ) : (
@@ -1071,6 +1113,7 @@ export default function TasksPage() {
                     setEditingTaskId(taskId)
                     setShowDescriptionModal(true)
                   }}
+                  onDelete={openDeleteModal}
                 />
               </div>
             </div>
@@ -1608,6 +1651,18 @@ export default function TasksPage() {
           editingTaskId ? tasks.find((t) => t.id === editingTaskId)?.description || '' : ''
         }
         onSave={handleSaveDescription}
+      />
+
+      {/* Delete Task Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteTask}
+        title="Delete Task"
+        message="Are you sure you want to delete this task?"
+        itemName={selectedTask?.title}
+        confirmText="Delete Task"
+        variant="danger"
       />
     </>
   )

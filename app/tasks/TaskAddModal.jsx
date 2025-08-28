@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { createTask } from '@/lib/tasksApi'
 import { useAuth } from '@/lib/useAuth'
+import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 import Modal from '@/components/ui/Modal'
 
 import { Paperclip, Target, Plus, List, TargetIcon, X } from 'lucide-react'
 import LabelBadge from '@/components/LabelBadge'
-import toast from 'react-hot-toast'
 
 // Dynamically import React-Quill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default), {
@@ -24,6 +24,7 @@ const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default
 
 export default function TaskAddModal({ open, onClose, defaultDate }) {
   const { user, loading } = useAuth()
+  const { showToast } = useToast()
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(defaultDate || new Date())
   const [description, setDescription] = useState('')
@@ -73,12 +74,26 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
   async function onSave() {
     if (!user) {
-      alert('Please wait for authentication to complete')
+      showToast('Please wait for authentication to complete', 'error')
+      return
+    }
+
+    // Validate required fields
+    if (!title.trim()) {
+      showToast('Please enter a task title', 'error')
       return
     }
 
     try {
       setBusy(true)
+      console.log('Creating task with data:', {
+        title,
+        date,
+        description,
+        priority,
+        labels,
+        checklist,
+      })
 
       // Create task first without attachments
       const id = await createTask({
@@ -90,6 +105,8 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
         checklist,
         attachments: [], // Start with empty attachments
       })
+
+      console.log('Task created successfully with ID:', id)
 
       // If we have files to upload, handle them separately with proper error handling
       if (selectedFiles.length > 0) {
@@ -114,13 +131,20 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
       }
 
       // Task created successfully
-      toast.success(`Task "${title}" created successfully!`)
-      onClose?.(id)
+      showToast(`Task "${title}" created successfully!`, 'success')
+      console.log('Success toast shown for task:', title)
+
+      // Clear form fields first
       setTitle('')
       setDescription('')
       setLabels([])
       setChecklist([])
       setSelectedFiles([])
+
+      // Delay closing the modal to allow toast to display
+      setTimeout(() => {
+        onClose?.(id)
+      }, 100)
     } catch (e) {
       console.error('Task creation failed:', e)
 
@@ -147,14 +171,14 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
   function addFile(file) {
     if (selectedFiles.length >= 3) {
-      alert('You can only upload up to 3 files')
+      showToast('You can only upload up to 3 files', 'error')
       return
     }
 
     // Check file size (20MB limit) - 20971520 bytes exactly as specified
     const maxSize = 20971520 // 20 MB in bytes
     if (file.size > maxSize) {
-      alert('The file is too large. Please upload a file smaller than 20 MB.')
+      showToast('The file is too large. Please upload a file smaller than 20 MB.', 'error')
       return
     }
 
@@ -199,29 +223,29 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
         error.message.includes('invalid file parameter'))
     ) {
       if (fileName) {
-        alert(`File "${fileName}" is too large. Please select a smaller file.`)
+        showToast(`File "${fileName}" is too large. Please select a smaller file.`, 'error')
       } else {
-        alert('One or more files are too large. Please select smaller files.')
+        showToast('One or more files are too large. Please select smaller files.', 'error')
       }
       return
     }
 
     // Handle other common errors
     if (error.message && error.message.includes('User must be authenticated')) {
-      alert('Please wait for authentication to complete')
+      showToast('Please wait for authentication to complete', 'error')
       return
     }
 
     if ((error.message && error.message.includes('network')) || error.message.includes('fetch')) {
-      alert('Network error. Please check your connection and try again.')
+      showToast('Network error. Please check your connection and try again.', 'error')
       return
     }
 
     // Generic error message
     if (fileName) {
-      alert(`Failed to upload "${fileName}". Please try again.`)
+      showToast(`Failed to upload "${fileName}". Please try again.`, 'error')
     } else {
-      alert('An error occurred. Please try again.')
+      showToast('An error occurred. Please try again.', 'error')
     }
   }
 
@@ -477,7 +501,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                     const file = e.target.files?.[0]
                     if (file) {
                       addFile(file)
-                      toast.success(`File "${file.name}" attached successfully!`)
+                      showToast(`File "${file.name}" attached successfully!`, 'success')
                       // Reset the input so the same file can be selected again if needed
                       e.target.value = ''
                     }
@@ -539,7 +563,7 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
                       <button
                         onClick={() => {
                           removeFile(fileItem.id)
-                          toast.success(`File "${fileItem.file.name}" removed`)
+                          showToast(`File "${fileItem.file.name}" removed`, 'success')
                         }}
                         className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
                         title="Remove attachment"

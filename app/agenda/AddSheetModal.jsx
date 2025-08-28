@@ -6,9 +6,11 @@ import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import Modal from '@/components/ui/Modal'
 import { Plus, Trash2, FileText, ListTodo } from 'lucide-react'
+import { useToast } from '@/components/Toast'
 
 export default function AddSheetModal({ open, onClose, onSave }) {
   const { user, loading } = useAuth()
+  const { showToast } = useToast()
   const [sheetName, setSheetName] = useState('')
   const [columns, setColumns] = useState([
     { name: 'Name', type: 'text' },
@@ -47,7 +49,7 @@ export default function AddSheetModal({ open, onClose, onSave }) {
 
   async function handleSave() {
     if (!user) {
-      alert('Please wait for authentication to complete')
+      showToast('Please wait for authentication to complete', 'error')
       return
     }
 
@@ -62,6 +64,7 @@ export default function AddSheetModal({ open, onClose, onSave }) {
       }
 
       await createSheet(sheetData)
+      showToast(`Sheet "${sheetData.name}" created successfully!`, 'success')
       onSave?.()
       onClose?.()
 
@@ -74,7 +77,7 @@ export default function AddSheetModal({ open, onClose, onSave }) {
       ])
     } catch (e) {
       console.error(e)
-      alert('Failed to create sheet: ' + e.message)
+      showToast('Failed to create sheet: ' + e.message, 'error')
     } finally {
       setBusy(false)
     }

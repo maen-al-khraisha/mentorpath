@@ -84,9 +84,6 @@ export default function AddNoteModal({ open, onClose }) {
       })
       console.log('Note created with ID:', id)
 
-      // Show success toast
-      showToast(`Note "${title}" created successfully!`, 'success')
-
       // Pass the created note ID to onClose
       onClose?.(id)
       setTitle('')

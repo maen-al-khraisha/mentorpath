@@ -7,11 +7,22 @@ import Button from '@/components/Button'
 import { useToast } from '@/components/Toast'
 import AddHabitModal from './AddHabitModal'
 import HabitCard from './HabitCard'
-import { Plus, Filter, Search, TrendingUp, Calendar, Target, CheckCircle2 } from 'lucide-react'
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
+import {
+  Plus,
+  Filter,
+  Search,
+  TrendingUp,
+  Calendar,
+  Target,
+  CheckCircle2,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-react'
 
 export default function HabitsPage() {
   const { user, loading } = useAuth()
-  const { showToast, ToastContainer } = useToast()
+  const { showToast } = useToast()
   const [habits, setHabits] = useState([])
   const [filteredHabits, setFilteredHabits] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
@@ -21,6 +32,8 @@ export default function HabitsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('recent')
   const [isLoading, setIsLoading] = useState(true)
+  const [collapsedHabits, setCollapsedHabits] = useState(new Set())
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, habit: null })
 
   // Fetch habits
   useEffect(() => {
@@ -119,20 +132,25 @@ export default function HabitsPage() {
     fetchHabits()
   }
 
-  const handleDeleteHabit = async (habitId) => {
-    if (!confirm('Are you sure you want to delete this habit? This cannot be undone.')) {
-      return
-    }
+  function handleDeleteHabit(habitId) {
+    const habit = habits.find((h) => h.id === habitId)
+    setDeleteModal({ isOpen: true, habit })
+  }
 
+  async function confirmDeleteHabit() {
     try {
-      await deleteHabit(habitId)
+      await deleteHabit(deleteModal.habit.id)
+      showToast('Habit deleted successfully!', 'success')
       // Refresh habits after deletion
       fetchHabits()
-      showToast('Habit deleted successfully!', 'success')
     } catch (error) {
       console.error('Error deleting habit:', error)
       showToast('Failed to delete habit. Please try again.', 'error')
     }
+  }
+
+  function closeDeleteModal() {
+    setDeleteModal({ isOpen: false, habit: null })
   }
 
   // Group habits by category for display
@@ -368,7 +386,13 @@ export default function HabitsPage() {
         isModalClosing,
         modalOpen: showAddModal && !isModalClosing,
       })}
-      <ToastContainer />
+      {/* Toast container is provided globally in RootLayout via ToastProvider */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDeleteHabit}
+        itemName={deleteModal.habit?.name}
+      />
     </>
   )
 }

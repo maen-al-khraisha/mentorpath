@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { createTask } from '@/lib/tasksApi'
 import { useAuth } from '@/lib/useAuth'
+import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 import Modal from '@/components/ui/Modal'
 
-import { Paperclip, X, Target, Plus, List, TargetIcon } from 'lucide-react'
+import { Paperclip, Target, Plus, List, TargetIcon, X } from 'lucide-react'
 import LabelBadge from '@/components/LabelBadge'
-import toast from 'react-hot-toast'
 
 // Dynamically import React-Quill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default), {
@@ -22,8 +22,9 @@ const ReactQuill = dynamic(() => import('react-quill').then((mod) => mod.default
   ),
 })
 
-export default function TaskCopyModal({ open, onClose, task, defaultDate }) {
+export default function TaskCopyModal({ open, onClose, task, onCopy }) {
   const { user, loading } = useAuth()
+  const { showToast } = useToast()
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(defaultDate || new Date())
   const [description, setDescription] = useState('')

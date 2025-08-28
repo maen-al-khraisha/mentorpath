@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
 import { Trash2, Edit, FileText, Tag, Clock, Calendar } from 'lucide-react'
 import LabelBadge from '@/components/LabelBadge'
 import NoteDetailsModal from './NoteDetailsModal'
@@ -16,21 +17,20 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this note?')) {
-      setIsDeleting(true)
-      try {
-        // Import deleteNote function dynamically
-        const { deleteNote } = await import('@/lib/notesApi')
-        await deleteNote(note.id)
-        onDelete?.(note.id)
-      } catch (error) {
-        console.error('Failed to delete note:', error)
-        onDelete?.(note.id, error) // Pass error to parent for toast handling
-      } finally {
-        setIsDeleting(false)
-      }
+    setIsDeleting(true)
+    try {
+      // Import deleteNote function dynamically
+      const { deleteNote } = await import('@/lib/notesApi')
+      await deleteNote(note.id)
+      onDelete?.(note.id)
+    } catch (error) {
+      console.error('Failed to delete note:', error)
+      onDelete?.(note.id, error) // Pass error to parent for toast handling
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -158,7 +158,7 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleDelete()
+                    setShowDeleteModal(true)
                   }}
                   disabled={isDeleting}
                   className="px-4 py-2 rounded-xl font-medium"
@@ -298,16 +298,12 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
             <Button
               variant="danger"
               size="sm"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteModal(true)}
               disabled={isDeleting}
               className="p-2 rounded-xl hover:bg-red-100 transition-colors"
               title="Delete note"
             >
-              {isDeleting ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Trash2 size={16} />
-              )}
+              <Trash2 size={16} />
             </Button>
           </div>
         </div>
@@ -336,6 +332,17 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
           isEditing={isEditing}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Delete Note"
+        message="Are you sure you want to delete this note?"
+        itemName={note.title}
+        confirmText="Delete Note"
+      />
     </>
   )
 }

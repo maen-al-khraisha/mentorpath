@@ -2,17 +2,35 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/useAuth'
-import { subscribeToSheets } from '@/lib/sheetsApi'
+import { subscribeToSheets, deleteSheet } from '@/lib/sheetsApi'
 import Button from '@/components/Button'
+import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
+import { useToast } from '@/components/Toast'
 import AddSheetModal from './AddSheetModal'
 import SheetViewer from './SheetViewer'
-import { Plus, ChevronDown, FileText, Target, TrendingUp, ListTodo, Search } from 'lucide-react'
+import {
+  Plus,
+  ChevronDown,
+  FileText,
+  Target,
+  TrendingUp,
+  ListTodo,
+  Search,
+  Trash2,
+} from 'lucide-react'
 
 export default function AgendaPage() {
   const { user, loading } = useAuth()
+  const { showToast } = useToast()
   const [sheets, setSheets] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showDeleteModal, setShowDeleteModal] = useState({
+    isOpen: false,
+    sheetId: null,
+    sheetName: '',
+  })
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Subscribe to sheets
   useEffect(() => {
@@ -40,6 +58,31 @@ export default function AgendaPage() {
 
   function handleSheetDeleted(deletedSheetId) {
     setSheets((prev) => prev.filter((sheet) => sheet.id !== deletedSheetId))
+  }
+
+  async function handleDeleteSheet() {
+    if (!showDeleteModal.sheetId) return
+
+    try {
+      setIsDeleting(true)
+      await deleteSheet(showDeleteModal.sheetId)
+      handleSheetDeleted(showDeleteModal.sheetId)
+      setShowDeleteModal({ isOpen: false, sheetId: null, sheetName: '' })
+      showToast('Sheet deleted successfully!', 'success')
+    } catch (error) {
+      console.error('Failed to delete sheet:', error)
+      showToast('Failed to delete sheet.', 'error')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  function openDeleteModal(sheetId, sheetName) {
+    setShowDeleteModal({ isOpen: true, sheetId, sheetName })
+  }
+
+  function closeDeleteModal() {
+    setShowDeleteModal({ isOpen: false, sheetId: null, sheetName: '' })
   }
 
   if (loading) {
@@ -231,22 +274,34 @@ export default function AgendaPage() {
           ) : (
             <div className="space-y-6">
               {sheets.map((sheet) => (
-                <SheetViewer
-                  key={sheet.id}
-                  sheet={sheet}
-                  onUpdate={handleSheetSaved}
-                  onDelete={handleSheetDeleted}
-                />
+                <div key={sheet.id} className="relative">
+                  <SheetViewer
+                    sheet={sheet}
+                    onUpdate={handleSheetSaved}
+                    onDelete={() => openDeleteModal(sheet.id, sheet.name)}
+                  />
+                </div>
               ))}
             </div>
           )}
         </div>
-
-        {/* Add Sheet Modal */}
-        {showAddModal && (
-          <AddSheetModal open={showAddModal} onClose={handleCloseModal} onSave={handleSheetSaved} />
-        )}
       </div>
+      {/* Add Sheet Modal */}
+      {showAddModal && (
+        <AddSheetModal open={showAddModal} onClose={handleCloseModal} onSave={handleSheetSaved} />
+      )}
+
+      {/* Delete Sheet Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteSheet}
+        title="Delete Sheet"
+        message="Are you sure you want to delete this sheet?"
+        itemName={showDeleteModal.sheetName}
+        confirmText="Delete Sheet"
+        variant="danger"
+      />
     </>
   )
 }

@@ -24,7 +24,7 @@ import {
 
 export default function DashboardPage() {
   const { user, loading } = useAuth()
-  const { showToast, ToastContainer } = useToast()
+  const { showToast } = useToast()
   const router = useRouter()
   const [dashboardData, setDashboardData] = useState({
     tasks: [],
@@ -459,7 +459,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <ToastContainer />
+      {/* Toast container is provided globally in RootLayout via ToastProvider */}
     </>
   )
 }

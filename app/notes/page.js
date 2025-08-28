@@ -31,7 +31,7 @@ import {
 
 export default function NotesPage() {
   const { user, loading } = useAuth()
-  const { showToast, ToastContainer } = useToast()
+  const { showToast } = useToast()
   const [notes, setNotes] = useState([])
   const [showAdd, setShowAdd] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -484,8 +484,7 @@ export default function NotesPage() {
         />
       )}
 
-      {/* Toast Container */}
-      <ToastContainer />
+      {/* Toast container is provided globally in RootLayout via ToastProvider */}
     </>
   )
 }
