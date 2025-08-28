@@ -241,13 +241,6 @@ export default function TaskDetailsPanel({
   const totalChecklistItems = task.checklist?.length || 0
   const attachmentInputId = `attachment-input-${task.id}`
 
-  const priorityBadgeClass =
-    (task.priority || 'Medium') === 'High'
-      ? 'bg-red-100 text-red-800'
-      : (task.priority || 'Medium') === 'Low'
-        ? 'bg-green-100 text-green-800'
-        : 'bg-yellow-100 text-yellow-800'
-
   return (
     <>
       <div className="space-y-6">
@@ -660,33 +653,65 @@ export default function TaskDetailsPanel({
           </div>
 
           <div className="flex items-center gap-3">
-            {['High', 'Medium', 'Low'].map((p) => (
-              <label
-                key={p}
-                className={`px-4 py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium ${
-                  (task.priority || 'Medium') === p
-                    ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="priority"
-                  value={p}
-                  className="sr-only"
-                  onChange={() => {
-                    if (!task?.id) {
-                      console.error('Task ID is undefined in priority change:', task)
-                      toast.error('Cannot update task: Invalid task ID')
-                      return
-                    }
-                    updateTask(task.id, { priority: p })
-                  }}
-                  checked={(task.priority || 'Medium') === p}
-                />
-                {p}
-              </label>
-            ))}
+            {['High', 'Medium', 'Low'].map((p) => {
+              const getPriorityColors = (priority, isSelected) => {
+                switch (priority) {
+                  case 'High':
+                    return isSelected
+                      ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-sm'
+                      : 'border-rose-200 bg-white text-rose-600 hover:border-rose-300 hover:bg-rose-50'
+                  case 'Medium':
+                    return isSelected
+                      ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
+                      : 'border-amber-200 bg-white text-amber-600 hover:border-amber-300 hover:bg-amber-50'
+                  case 'Low':
+                    return isSelected
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
+                      : 'border-emerald-200 bg-white text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50'
+                  default:
+                    return isSelected
+                      ? 'border-slate-500 bg-slate-50 text-slate-700 shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                }
+              }
+
+              const getPriorityIcon = (priority) => {
+                switch (priority) {
+                  case 'High':
+                    return '🔥'
+                  case 'Medium':
+                    return '⚡'
+                  case 'Low':
+                    return '🌱'
+                  default:
+                    return '📋'
+                }
+              }
+
+              return (
+                <label
+                  key={p}
+                  className={`px-4 h-[42px] flex items-center rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium ${getPriorityColors(p, (task.priority || 'Medium') === p)}`}
+                >
+                  <input
+                    type="radio"
+                    name="priority"
+                    value={p}
+                    className="sr-only"
+                    onChange={() => {
+                      if (!task?.id) {
+                        console.error('Task ID is undefined in priority change:', task)
+                        toast.error('Cannot update task: Invalid task ID')
+                        return
+                      }
+                      updateTask(task.id, { priority: p })
+                    }}
+                    checked={(task.priority || 'Medium') === p}
+                  />
+                  {getPriorityIcon(p)} {p}
+                </label>
+              )
+            })}
           </div>
         </div>
 

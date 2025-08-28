@@ -28,14 +28,27 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high':
+      case 'High':
         return 'bg-red-100 text-red-800 border-red-200'
-      case 'medium':
+      case 'Medium':
         return 'bg-amber-100 text-amber-800 border-amber-200'
-      case 'low':
+      case 'Low':
         return 'bg-green-100 text-green-800 border-green-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
+
+  const getPriorityIcon = (priority) => {
+    switch (priority) {
+      case 'High':
+        return '🔥'
+      case 'Medium':
+        return '⚡'
+      case 'Low':
+        return '🌱'
+      default:
+        return '📋'
     }
   }
 
@@ -84,6 +97,7 @@ export default function TaskDetailsDrawer({ task, isOpen, onClose }) {
               <span
                 className={`px-3 py-1 text-sm font-medium rounded-full border ${getPriorityColor(task.priority)}`}
               >
+                <span className="mr-2">{getPriorityIcon(task.priority)}</span>
                 {task.priority} Priority
               </span>
               <div className="flex items-center gap-1 text-sm text-gray-600">

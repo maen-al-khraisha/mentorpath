@@ -6,8 +6,9 @@ import { createTask } from '@/lib/tasksApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
+import Modal from '@/components/ui/Modal'
 
-import { Paperclip, X, Target, Plus, List, TargetIcon } from 'lucide-react'
+import { Paperclip, Target, Plus, List, TargetIcon, X } from 'lucide-react'
 import LabelBadge from '@/components/LabelBadge'
 import toast from 'react-hot-toast'
 
@@ -42,8 +43,6 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
       import('react-quill/dist/quill.snow.css')
     }
   }, [open])
-
-  if (!open) return null
 
   // Quill editor configuration
   const quillModules = {
@@ -226,402 +225,380 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose?.()} />
-      <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-blue-600"
-              >
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-slate-900 font-display">Create New Task</h3>
-              <p className="text-slate-600 font-body">Add a new task to your productivity system</p>
-            </div>
+  if (!open) return null
+
+  const modalHeader = {
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-blue-600"
+      >
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    ),
+    iconBgColor: 'bg-blue-100',
+    title: 'Create New Task',
+    subtitle: 'Add a new task to your productivity system',
+  }
+
+  const modalContent = (
+    <div className="space-y-6">
+      {/* Task Details Form */}
+      <div className="space-y-6">
+        <h4 className="text-xl font-semibold text-slate-900 font-display flex items-center gap-3">
+          <TargetIcon size={20} className="text-blue-600" />
+          Task Details
+        </h4>
+
+        {/* Task Title */}
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">Task Title</label>
+          <input
+            className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter task title..."
+          />
+        </div>
+
+        {/* Task Description - Full Width */}
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">
+            Task Description
+          </label>
+          <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
+            <ReactQuill
+              value={description}
+              onChange={setDescription}
+              modules={quillModules}
+              formats={quillFormats}
+              placeholder="Describe your task..."
+              className="min-h-[200px]"
+            />
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-8 space-y-6">
-          {/* Task Details Form */}
-          <div className="space-y-6">
-            <h4 className="text-xl font-semibold text-slate-900 font-display flex items-center gap-3">
-              <TargetIcon size={20} className="text-blue-600" />
-              Task Details
-            </h4>
-
-            {/* Task Title */}
-            <div>
-              <label className="block text-base font-semibold text-slate-900 mb-1">
-                Task Title
-              </label>
-              <input
-                className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter task title..."
-              />
-            </div>
-
-            {/* Task Description - Full Width */}
-            <div>
-              <label className="block text-base font-semibold text-slate-900 mb-1">
-                Task Description
-              </label>
-              <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
-                <ReactQuill
-                  value={description}
-                  onChange={setDescription}
-                  modules={quillModules}
-                  formats={quillFormats}
-                  placeholder="Describe your task..."
-                  className="min-h-[200px]"
-                />
-              </div>
-            </div>
-
-            {/* Date and Priority - Side by Side */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">
-                  Task Date
-                </label>
-                <CustomDatePicker
-                  value={date}
-                  onChange={(selectedDate) => setDate(selectedDate)}
-                  name="taskDate"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">
-                  Priority Level
-                </label>
-                <div className="flex items-center gap-3">
-                  {['High', 'Medium', 'Low'].map((p) => {
-                    const getPriorityColors = (priority, isSelected) => {
-                      switch (priority) {
-                        case 'High':
-                          return isSelected
-                            ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-sm'
-                            : 'border-rose-200 bg-white text-rose-600 hover:border-rose-300 hover:bg-rose-50'
-                        case 'Medium':
-                          return isSelected
-                            ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
-                            : 'border-amber-200 bg-white text-amber-600 hover:border-amber-300 hover:bg-amber-50'
-                        case 'Low':
-                          return isSelected
-                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
-                            : 'border-emerald-200 bg-white text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50'
-                        default:
-                          return isSelected
-                            ? 'border-slate-500 bg-slate-50 text-slate-700 shadow-sm'
-                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                      }
-                    }
-
-                    const getPriorityIcon = (priority) => {
-                      switch (priority) {
-                        case 'High':
-                          return '🔥'
-                        case 'Medium':
-                          return '⚡'
-                        case 'Low':
-                          return '🌱'
-                        default:
-                          return '📋'
-                      }
-                    }
-
-                    return (
-                      <label
-                        key={p}
-                        className={`px-4 h-[42px] flex items-center rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium ${getPriorityColors(p, priority === p)}`}
-                      >
-                        <input
-                          type="radio"
-                          n
-                          ame="priority"
-                          value={p}
-                          className="sr-only"
-                          onChange={() => setPriority(p)}
-                          checked={priority === p}
-                        />
-                        {getPriorityIcon(p)} {p}
-                      </label>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Labels and Checklist - Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Labels */}
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">Labels</label>
-
-                {/* Add New Label */}
-                <div className="flex items-center gap-3 mb-4">
-                  <input
-                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
-                    placeholder="Enter label name..."
-                    value={labelInput}
-                    onChange={(e) => setLabelInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addLabel()}
-                  />
-                  <Button
-                    variant="primary"
-                    size="icon"
-                    onClick={addLabel}
-                    disabled={!labelInput.trim()}
-                  >
-                    <Plus size={18} />
-                  </Button>
-                </div>
-
-                {/* Existing Labels */}
-                {labels.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {labels.map((label, index) => (
-                      <LabelBadge
-                        key={index}
-                        label={label}
-                        onRemove={() => setLabels((ls) => ls.filter((_, i) => i !== index))}
-                        showRemoveButton={true}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Checklist */}
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">
-                  Checklist
-                </label>
-
-                {/* Add New Checklist Item */}
-                <div className="flex items-center gap-3 mb-4">
-                  <input
-                    className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
-                    placeholder="Enter checklist item..."
-                    value={checkInput}
-                    onChange={(e) => setCheckInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addCheck()}
-                  />
-                  <Button
-                    variant="primary"
-                    size="icon"
-                    onClick={addCheck}
-                    disabled={!checkInput.trim()}
-                  >
-                    <Plus size={18} />
-                  </Button>
-                </div>
-
-                {/* Existing Checklist Items */}
-                {checklist.length > 0 && (
-                  <div className="space-y-3">
-                    {checklist.map((c) => (
-                      <div
-                        key={c.id}
-                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200"
-                      >
-                        <span
-                          className={`flex-1 text-sm font-medium ${c.done ? 'line-through text-slate-500' : 'text-slate-700'}`}
-                        >
-                          {c.text}
-                        </span>
-                        <button
-                          onClick={() => setChecklist((ls) => ls.filter((x) => x.id !== c.id))}
-                          aria-label="Remove checklist item"
-                          className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
-                        >
-                          <X size={14} className="text-red-600" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+        {/* Date and Priority - Side by Side */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Task Date</label>
+            <CustomDatePicker
+              value={date}
+              onChange={(selectedDate) => setDate(selectedDate)}
+              name="taskDate"
+              required
+            />
           </div>
 
-          {/* Attachments */}
-          <div className="space-y-4">
-            <div>
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-                    <Paperclip size={18} className="text-purple-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-900">Attachments</h3>
-                  <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
-                    {selectedFiles?.length || 0}/3
-                  </span>
-                </div>
+          <div>
+            <label className="block text-base font-semibold text-slate-900 mb-1">
+              Priority Level
+            </label>
+            <div className="flex items-center gap-3">
+              {['High', 'Medium', 'Low'].map((p) => {
+                const getPriorityColors = (priority, isSelected) => {
+                  switch (priority) {
+                    case 'High':
+                      return isSelected
+                        ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-sm'
+                        : 'border-rose-200 bg-white text-rose-600 hover:border-rose-300 hover:bg-rose-50'
+                    case 'Medium':
+                      return isSelected
+                        ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm'
+                        : 'border-amber-200 bg-white text-amber-600 hover:border-amber-300 hover:bg-amber-50'
+                    case 'Low':
+                      return isSelected
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
+                        : 'border-emerald-200 bg-white text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50'
+                    default:
+                      return isSelected
+                        ? 'border-slate-500 bg-slate-50 text-slate-700 shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                  }
+                }
 
-                <div className="space-y-4">
-                  {/* Upload Area */}
-                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-slate-300 transition-colors duration-200">
+                const getPriorityIcon = (priority) => {
+                  switch (priority) {
+                    case 'High':
+                      return '🔥'
+                    case 'Medium':
+                      return '⚡'
+                    case 'Low':
+                      return '🌱'
+                    default:
+                      return '📋'
+                  }
+                }
+
+                return (
+                  <label
+                    key={p}
+                    className={`px-4 h-[42px] flex items-center rounded-xl border-2 cursor-pointer transition-all duration-200 font-medium ${getPriorityColors(p, priority === p)}`}
+                  >
                     <input
-                      type="file"
-                      accept="image/*,.pdf,.txt,.doc,.docx"
-                      className="hidden"
-                      id="attachment-input"
-                      disabled={selectedFiles.length >= 3}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          addFile(file)
-                          toast.success(`File "${file.name}" attached successfully!`)
-                          // Reset the input so the same file can be selected again if needed
-                          e.target.value = ''
-                        }
-                      }}
+                      type="radio"
+                      name="priority"
+                      value={p}
+                      className="sr-only"
+                      onChange={() => setPriority(p)}
+                      checked={priority === p}
                     />
-
-                    <label
-                      htmlFor={selectedFiles.length >= 3 ? undefined : 'attachment-input'}
-                      className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 cursor-pointer ${
-                        selectedFiles.length >= 3
-                          ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                          : 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-200'
-                      }`}
-                      aria-disabled={selectedFiles.length >= 3}
-                    >
-                      <Paperclip size={18} />
-                      {selectedFiles.length >= 3 ? 'Max 3 attachments' : 'Choose file to attach'}
-                    </label>
-
-                    <div className="mt-3 text-sm text-slate-500">
-                      Support for documents, images, and more - Max 20MB per file
-                    </div>
-                  </div>
-
-                  {/* File List */}
-                  {selectedFiles && selectedFiles.length > 0 ? (
-                    <div className="space-y-3">
-                      {selectedFiles.map((fileItem) => (
-                        <div
-                          key={fileItem.id}
-                          className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors duration-200"
-                        >
-                          {/* File Preview Rectangle */}
-                          <div className="w-12 h-12 rounded-md bg-slate-200 flex items-center justify-center flex-shrink-0">
-                            {fileItem.file.type.startsWith('image/') ? (
-                              <img
-                                src={URL.createObjectURL(fileItem.file)}
-                                alt={fileItem.file.name}
-                                className="w-full h-full object-cover rounded-md"
-                              />
-                            ) : (
-                              <Paperclip size={20} className="text-slate-600" />
-                            )}
-                          </div>
-
-                          {/* File Info */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900 truncate">
-                              {fileItem.file.name}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              {fileItem.file.size > 1024 * 1024
-                                ? `${(fileItem.file.size / (1024 * 1024)).toFixed(1)} MB`
-                                : `${(fileItem.file.size / 1024).toFixed(1)} KB`}
-                            </p>
-                          </div>
-
-                          {/* Remove Button */}
-                          <button
-                            onClick={() => {
-                              removeFile(fileItem.id)
-                              toast.success(`File "${fileItem.file.name}" removed`)
-                            }}
-                            className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
-                            title="Remove attachment"
-                            aria-label={`Remove ${fileItem.file.name}`}
-                          >
-                            <X size={14} className="text-red-600" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    /* Empty State */
-                    <div className="text-center py-8 text-slate-500">
-                      <Paperclip size={32} className="mx-auto mb-3 text-slate-400" />
-                      <p className="text-sm font-medium">No attachments yet</p>
-                      <p className="text-xs text-slate-400">Add files to support your task</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+                    {getPriorityIcon(p)} {p}
+                  </label>
+                )
+              })}
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
-          <Button
-            variant="secondary"
-            onClick={() => onClose?.()}
-            className="px-6  rounded-xl font-medium"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={onSave}
-            disabled={!user || loading || busy || !title.trim()}
-            className="px-8  rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Loading...
-              </>
-            ) : busy ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Creating Task...
-              </>
-            ) : (
-              <>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="mr-2"
-                >
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                Create Task
-              </>
+        {/* Labels and Checklist - Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Labels */}
+          <div>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Labels</label>
+
+            {/* Add New Label */}
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+                placeholder="Enter label name..."
+                value={labelInput}
+                onChange={(e) => setLabelInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && addLabel()}
+              />
+              <Button
+                variant="primary"
+                size="icon"
+                onClick={addLabel}
+                disabled={!labelInput.trim()}
+              >
+                <Plus size={18} />
+              </Button>
+            </div>
+
+            {/* Existing Labels */}
+            {labels.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {labels.map((label, index) => (
+                  <LabelBadge
+                    key={index}
+                    label={label}
+                    onRemove={() => setLabels((ls) => ls.filter((_, i) => i !== index))}
+                    showRemoveButton={true}
+                  />
+                ))}
+              </div>
             )}
-          </Button>
+          </div>
+
+          {/* Checklist */}
+          <div>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Checklist</label>
+
+            {/* Add New Checklist Item */}
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                className="flex-1 h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+                placeholder="Enter checklist item..."
+                value={checkInput}
+                onChange={(e) => setCheckInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && addCheck()}
+              />
+              <Button
+                variant="primary"
+                size="icon"
+                onClick={addCheck}
+                disabled={!checkInput.trim()}
+              >
+                <Plus size={18} />
+              </Button>
+            </div>
+
+            {/* Existing Checklist Items */}
+            {checklist.length > 0 && (
+              <div className="space-y-3">
+                {checklist.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200"
+                  >
+                    <span
+                      className={`flex-1 text-sm font-medium ${c.done ? 'line-through text-slate-500' : 'text-slate-700'}`}
+                    >
+                      {c.text}
+                    </span>
+                    <button
+                      onClick={() => setChecklist((ls) => ls.filter((x) => x.id !== c.id))}
+                      aria-label="Remove checklist item"
+                      className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                    >
+                      <X size={14} className="text-red-600" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Attachments */}
+      <div className="space-y-4">
+        <div>
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                <Paperclip size={18} className="text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">Attachments</h3>
+              <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-medium">
+                {selectedFiles?.length || 0}/3
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {/* Upload Area */}
+              <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-slate-300 transition-colors duration-200">
+                <input
+                  type="file"
+                  accept="image/*,.pdf,.txt,.doc,.docx"
+                  className="hidden"
+                  id="attachment-input"
+                  disabled={selectedFiles.length >= 3}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      addFile(file)
+                      toast.success(`File "${file.name}" attached successfully!`)
+                      // Reset the input so the same file can be selected again if needed
+                      e.target.value = ''
+                    }
+                  }}
+                />
+
+                <label
+                  htmlFor={selectedFiles.length >= 3 ? undefined : 'attachment-input'}
+                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 cursor-pointer ${
+                    selectedFiles.length >= 3
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      : 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-200'
+                  }`}
+                  aria-disabled={selectedFiles.length >= 3}
+                >
+                  <Paperclip size={18} />
+                  {selectedFiles.length >= 3 ? 'Max 3 attachments' : 'Choose file to attach'}
+                </label>
+
+                <div className="mt-3 text-sm text-slate-500">
+                  Support for documents, images, and more - Max 20MB per file
+                </div>
+              </div>
+
+              {/* File List */}
+              {selectedFiles && selectedFiles.length > 0 ? (
+                <div className="space-y-3">
+                  {selectedFiles.map((fileItem) => (
+                    <div
+                      key={fileItem.id}
+                      className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors duration-200"
+                    >
+                      {/* File Preview Rectangle */}
+                      <div className="w-12 h-12 rounded-md bg-slate-200 flex items-center justify-center flex-shrink-0">
+                        {fileItem.file.type.startsWith('image/') ? (
+                          <img
+                            src={URL.createObjectURL(fileItem.file)}
+                            alt={fileItem.file.name}
+                            className="w-full h-full object-cover rounded-md"
+                          />
+                        ) : (
+                          <Paperclip size={20} className="text-slate-600" />
+                        )}
+                      </div>
+
+                      {/* File Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {fileItem.file.name}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {fileItem.file.size > 1024 * 1024
+                            ? `${(fileItem.file.size / (1024 * 1024)).toFixed(1)} MB`
+                            : `${(fileItem.file.size / 1024).toFixed(1)} KB`}
+                        </p>
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        onClick={() => {
+                          removeFile(fileItem.id)
+                          toast.success(`File "${fileItem.file.name}" removed`)
+                        }}
+                        className="w-8 h-8 rounded-lg bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors duration-200 flex-shrink-0"
+                        title="Remove attachment"
+                        aria-label={`Remove ${fileItem.file.name}`}
+                      >
+                        <X size={14} className="text-red-600" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Empty State */
+                <div className="text-center py-8 text-slate-500">
+                  <Paperclip size={32} className="mx-auto mb-3 text-slate-400" />
+                  <p className="text-sm font-medium">No attachments yet</p>
+                  <p className="text-xs text-slate-400">Add files to support your task</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  )
+
+  const modalFooter = (
+    <>
+      <Button variant="secondary" onClick={onClose} className="px-6 py-3 rounded-xl font-medium">
+        Cancel
+      </Button>
+      <Button
+        variant="primary"
+        onClick={onSave}
+        disabled={busy || !title.trim()}
+        className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+      >
+        {busy ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            Creating Task...
+          </>
+        ) : (
+          <>
+            <Target size={18} className="mr-2" />
+            Create Task
+          </>
+        )}
+      </Button>
+    </>
+  )
+
+  return (
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      header={modalHeader}
+      content={modalContent}
+      footer={modalFooter}
+      size="large"
+    />
   )
 }

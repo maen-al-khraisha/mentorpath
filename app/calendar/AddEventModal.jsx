@@ -6,10 +6,11 @@ import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
-import { X, Calendar, Clock, Link, FileText } from 'lucide-react'
+import { Calendar, Clock, Link, FileText } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import Modal from '@/components/ui/Modal'
 
-// Dynamically import ReactQuill to prevent SSR issues
+// Dynamically import React-Quill to prevent SSR issues
 const ReactQuill = dynamic(() => import('react-quill'), {
   ssr: false,
   loading: () => (
@@ -172,216 +173,186 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
     onClose()
   }
 
-  if (!isOpen) return null
+  const modalHeader = {
+    icon: <Calendar size={24} className="text-blue-600" />,
+    iconBgColor: 'bg-blue-100',
+    title: 'Create New Event',
+    subtitle: 'Schedule a new event in your calendar',
+  }
 
-  return (
+  const modalContent = (
     <>
       <style jsx global>
         {quillStyles}
       </style>
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        onClick={handleClose}
-      >
-        <div
-          className="bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-2xl h-[90vh] flex flex-col overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200 flex-shrink-0 ">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-                  <Calendar size={24} className="text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-slate-900 font-display">
-                    Create New Event
-                  </h3>
-                  <p className="text-slate-600 font-body">Schedule a new event in your calendar</p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleClose}
-                className="w-10 h-10 rounded-xl hover:bg-slate-100 transition-all duration-200"
-                aria-label="Close modal"
-              >
-                <X size={20} className="text-slate-600" />
-              </Button>
-            </div>
+      <div className="space-y-6">
+        {/* Event Name - Full Width */}
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">Event Name</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+            placeholder="Enter event name..."
+            required
+          />
+        </div>
+
+        {/* Date and Time - Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Event Date</label>
+            <CustomDatePicker
+              value={formData.date}
+              onChange={(date) => {
+                // Create a timezone-safe date string (YYYY-MM-DD)
+                const year = date.getFullYear()
+                const month = String(date.getMonth() + 1).padStart(2, '0')
+                const day = String(date.getDate()).padStart(2, '0')
+                const dateString = `${year}-${month}-${day}`
+                setFormData({ ...formData, date: dateString })
+              }}
+              name="eventDate"
+              required
+            />
           </div>
 
-          {/* Content - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-6">
-            {/* Event Name - Full Width */}
-            <div>
-              <label className="block text-base font-semibold text-slate-900 mb-1">
-                Event Name
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
-                placeholder="Enter event name..."
-                required
-              />
-            </div>
-
-            {/* Date and Time - Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">
-                  Event Date
-                </label>
-                <CustomDatePicker
-                  value={formData.date}
-                  onChange={(date) => {
-                    // Create a timezone-safe date string (YYYY-MM-DD)
-                    const year = date.getFullYear()
-                    const month = String(date.getMonth() + 1).padStart(2, '0')
-                    const day = String(date.getDate()).padStart(2, '0')
-                    const dateString = `${year}-${month}-${day}`
-                    setFormData({ ...formData, date: dateString })
-                  }}
-                  name="eventDate"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-base font-semibold text-slate-900 mb-1">
-                  Event Time
-                </label>
-                <input
-                  type="time"
-                  value={formData.time}
-                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Event Link - Full Width */}
-            <div>
-              <label className="block text-base font-semibold text-slate-900 mb-1">
-                Event Link (Optional)
-              </label>
-              <div className="relative">
-                <Link
-                  size={18}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
-                />
-                <input
-                  type="url"
-                  value={formData.link}
-                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                  className="w-full h-12 pl-12 pr-4 rounded-xl border-2 border-slate-200 bg-white text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
-                  placeholder="https://meet.google.com/..."
-                />
-              </div>
-            </div>
-
-            {/* Event Description - Full Width */}
-            <div>
-              <label className="block text-base font-semibold text-slate-900 mb-1">
-                Event Description
-              </label>
-              <div className="border-2 border-slate-200 rounded-2xl overflow-hidden bg-white">
-                <ReactQuill
-                  value={formData.description}
-                  onChange={(value) => setFormData({ ...formData, description: value })}
-                  modules={quillModules}
-                  formats={quillFormats}
-                  placeholder="Describe your event..."
-                  className="min-h-[200px] max-h-[250px]"
-                  theme="snow"
-                  style={{ height: 'auto' }}
-                />
-              </div>
-            </div>
-
-            {/* Event Preview */}
-            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-              <div className="flex items-center gap-2 mb-4">
-                <FileText size={16} className="text-slate-600" />
-                <span className="text-sm font-semibold text-slate-700">Event Preview</span>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-slate-900">
-                      {formData.name || 'Event name will appear here'}
-                    </div>
-                    <div className="text-xs text-slate-600">
-                      {formData.date
-                        ? (() => {
-                            // Parse the date string safely without timezone conversion
-                            const [year, month, day] = formData.date.split('-')
-                            const date = new Date(
-                              parseInt(year),
-                              parseInt(month) - 1,
-                              parseInt(day)
-                            )
-                            return date.toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })
-                          })()
-                        : 'Date will appear here'}{' '}
-                      at {formData.time}
-                    </div>
-                  </div>
-                </div>
-                {formData.description && (
-                  <div className="text-xs text-slate-600 ml-6">
-                    <div dangerouslySetInnerHTML={{ __html: formData.description }} />
-                  </div>
-                )}
-                {formData.link && (
-                  <div className="text-xs text-blue-600 ml-6 truncate">🔗 {formData.link}</div>
-                )}
-              </div>
-            </div>
+          <div>
+            <label className="block text-base font-semibold text-slate-900 mb-1">Event Time</label>
+            <input
+              type="time"
+              value={formData.time}
+              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              className="w-full h-12 rounded-xl border-2 border-slate-200 bg-white px-4 text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
+              required
+            />
           </div>
+        </div>
 
-          {/* Action Buttons - Fixed */}
-          <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4 flex-shrink-0">
-            <Button
-              variant="secondary"
-              onClick={handleClose}
-              className="px-6 py-3 rounded-xl font-medium"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              onClick={handleSubmit}
-              disabled={isSubmitting || !formData.name.trim()}
-              className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Creating Event...
-                </>
-              ) : (
-                <>
-                  <Calendar size={18} className="mr-2" />
-                  Create Event
-                </>
-              )}
-            </Button>
+        {/* Event Link - Full Width */}
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">
+            Event Link (Optional)
+          </label>
+          <div className="relative">
+            <Link
+              size={18}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="url"
+              value={formData.link}
+              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+              className="w-full h-12 pl-12 pr-4 rounded-xl border-2 border-slate-200 bg-white text-base font-body focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 placeholder-slate-400"
+              placeholder="https://meet.google.com/..."
+            />
+          </div>
+        </div>
+
+        {/* Event Description - Full Width */}
+        <div>
+          <label className="block text-base font-semibold text-slate-900 mb-1">
+            Event Description
+          </label>
+          <div className="border-2 border-slate-200 rounded-2xl overflow-hidden bg-white">
+            <ReactQuill
+              value={formData.description}
+              onChange={(value) => setFormData({ ...formData, description: value })}
+              modules={quillModules}
+              formats={quillFormats}
+              placeholder="Describe your event..."
+              className="min-h-[200px] max-h-[250px]"
+              theme="snow"
+              style={{ height: 'auto' }}
+            />
+          </div>
+        </div>
+
+        {/* Event Preview */}
+        <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText size={16} className="text-slate-600" />
+            <span className="text-sm font-semibold text-slate-700">Event Preview</span>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-slate-900">
+                  {formData.name || 'Event name will appear here'}
+                </div>
+                <div className="text-xs text-slate-600">
+                  {formData.date
+                    ? (() => {
+                        // Parse the date string safely without timezone conversion
+                        const [year, month, day] = formData.date.split('-')
+                        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+                        return date.toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                      })()
+                    : 'Date will appear here'}{' '}
+                  at {formData.time}
+                </div>
+              </div>
+            </div>
+            {formData.description && (
+              <div className="text-xs text-slate-600 ml-6">
+                <div dangerouslySetInnerHTML={{ __html: formData.description }} />
+              </div>
+            )}
+            {formData.link && (
+              <div className="text-xs text-blue-600 ml-6 truncate">🔗 {formData.link}</div>
+            )}
           </div>
         </div>
       </div>
     </>
+  )
+
+  const modalFooter = (
+    <>
+      <Button
+        variant="secondary"
+        onClick={handleClose}
+        className="px-6 py-3 rounded-xl font-medium"
+      >
+        Cancel
+      </Button>
+      <Button
+        variant="primary"
+        type="submit"
+        onClick={handleSubmit}
+        disabled={isSubmitting || !formData.name.trim()}
+        className="px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+      >
+        {isSubmitting ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            Creating Event...
+          </>
+        ) : (
+          <>
+            <Calendar size={18} className="mr-2" />
+            Create Event
+          </>
+        )}
+      </Button>
+    </>
+  )
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      header={modalHeader}
+      content={modalContent}
+      footer={modalFooter}
+      size="large"
+    />
   )
 }

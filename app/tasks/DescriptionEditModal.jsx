@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Button from '@/components/Button'
-import { X } from 'lucide-react'
+import { X, Edit3 } from 'lucide-react'
+import Modal from '@/components/ui/Modal'
 
 // Dynamically import React-Quill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill'), {
@@ -21,34 +22,13 @@ export default function DescriptionEditModal({ isOpen, onClose, description, onS
   const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  // Dynamically import Quill CSS when modal opens
   useEffect(() => {
     if (isOpen) {
       setContent(description || '')
-      // Dynamically import Quill CSS when modal opens
       import('react-quill/dist/quill.snow.css')
     }
   }, [isOpen, description])
-
-  const handleSave = async () => {
-    setIsLoading(true)
-    try {
-      await onSave(content)
-      onClose()
-    } catch (error) {
-      console.error('Error saving description:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleClose = () => {
-    if (!isLoading) {
-      setContent(description || '')
-      onClose()
-    }
-  }
-
-  if (!isOpen) return null
 
   // Quill editor configuration
   const quillModules = {
@@ -77,85 +57,81 @@ export default function DescriptionEditModal({ isOpen, onClose, description, onS
     'code-block',
   ]
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+  const handleClose = () => {
+    if (!isLoading) {
+      setContent(description)
+      onClose()
+    }
+  }
 
-      {/* Modal */}
-      <div className="relative bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-blue-600"
-                >
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900 font-display">
-                  Edit Task Description
-                </h3>
-                <p className="text-slate-600 font-body">
-                  Update your task description with rich text formatting
-                </p>
-              </div>
-            </div>
-            <Button variant="ghost" size="icon" onClick={handleClose} disabled={isLoading}>
-              <X size={20} className="text-slate-600" />
-            </Button>
-          </div>
-        </div>
+  const handleSave = async () => {
+    if (content === description) {
+      onClose()
+      return
+    }
 
-        {/* Content - Scrollable */}
-        <div className="p-8 overflow-y-auto flex-1">
-          <div className="mb-6">
-            <label className="block text-base font-semibold text-slate-900 mb-2">
-              Task Description
-            </label>
-            <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
-              <ReactQuill
-                value={content}
-                onChange={setContent}
-                modules={quillModules}
-                formats={quillFormats}
-                placeholder="Describe your task..."
-                className="min-h-[200px]"
-              />
-            </div>
-          </div>
-        </div>
+    setIsLoading(true)
+    try {
+      await onSave(content)
+      onClose()
+    } catch (error) {
+      console.error('Failed to save description:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-        {/* Action Buttons Footer */}
-        <div className="px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4 flex-shrink-0">
-          <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleSave} disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </Button>
-        </div>
+  if (!isOpen) return null
+
+  const modalHeader = {
+    icon: <Edit3 size={24} className="text-blue-600" />,
+    iconBgColor: 'bg-blue-100',
+    title: 'Edit Task Description',
+    subtitle: 'Update your task description with rich text formatting',
+  }
+
+  const modalContent = (
+    <div className="mb-6">
+      <label className="block text-base font-semibold text-slate-900 mb-2">Task Description</label>
+      <div className="border-2 border-slate-200 rounded-2xl overflow-hidden">
+        <ReactQuill
+          value={content}
+          onChange={setContent}
+          modules={quillModules}
+          formats={quillFormats}
+          placeholder="Describe your task..."
+          className="min-h-[200px]"
+        />
       </div>
     </div>
+  )
+
+  const modalFooter = (
+    <>
+      <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
+        Cancel
+      </Button>
+      <Button variant="primary" onClick={handleSave} disabled={isLoading}>
+        {isLoading ? (
+          <>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            Saving...
+          </>
+        ) : (
+          'Save Changes'
+        )}
+      </Button>
+    </>
+  )
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      header={modalHeader}
+      content={modalContent}
+      footer={modalFooter}
+      size="default"
+    />
   )
 }
