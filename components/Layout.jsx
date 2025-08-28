@@ -48,7 +48,7 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
           onCloseMobile={closeMobileSidebar}
         />
 
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div className="main-content flex-1 min-w-0 flex flex-col">
           <Header
             user={user}
             title="Dashboard"
