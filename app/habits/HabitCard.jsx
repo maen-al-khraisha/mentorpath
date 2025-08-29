@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { markHabitCompleted, markHabitIncomplete, deleteHabit } from '@/lib/habitsApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
@@ -13,6 +13,73 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [daysPerRow, setDaysPerRow] = useState(21) // Default for SSR
+  const [lastResizeTime, setLastResizeTime] = useState(Date.now()) // Track last resize
+
+  // Calculate responsive days per row with custom 1300px breakpoint
+  const calculateDaysPerRow = () => {
+    if (typeof window === 'undefined') return 21 // SSR fallback
+
+    const width = window.innerWidth
+    console.log('Screen width:', width, 'Calculating days per row...')
+
+    let result
+    if (width < 640) {
+      result = 7 // sm: 7 days (mobile)
+    } else if (width < 768) {
+      result = 14 // md: 14 days (tablet)
+    } else if (width < 1024) {
+      result = 21 // lg: 21 days (desktop)
+    } else if (width < 1300) {
+      result = 14 // 1024px to 1300px: 14 days (tablet/medium desktop)
+    } else if (width >= 1300 && width < 1400) {
+      result = 14 // 1300px to 1400px: 14 days (custom breakpoint range)
+    } else {
+      result = 28 // xl+: 28 days (large screens)
+    }
+
+    console.log('Days per row calculated:', result)
+    return result
+  }
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      console.log('🔄 Window resized, recalculating days per row...')
+      const newDaysPerRow = calculateDaysPerRow()
+      console.log('📏 New days per row:', newDaysPerRow)
+
+      // Only update if the days per row actually changed
+      if (newDaysPerRow !== daysPerRow) {
+        console.log('🔄 Days per row changed from', daysPerRow, 'to', newDaysPerRow)
+        setDaysPerRow(newDaysPerRow)
+        setLastResizeTime(Date.now()) // Update timestamp
+      } else {
+        console.log('⏭️ Days per row unchanged, skipping update')
+      }
+    }
+
+    // Set initial value
+    const initialDaysPerRow = calculateDaysPerRow()
+    console.log('🚀 Initial days per row:', initialDaysPerRow)
+    setDaysPerRow(initialDaysPerRow)
+
+    // Add event listener without throttling for immediate response
+    window.addEventListener('resize', handleResize)
+
+    // Also trigger on orientation change for mobile
+    window.addEventListener('orientationchange', handleResize)
+
+    // Test resize event is working
+    console.log('📱 Resize event listeners added')
+
+    // Cleanup
+    return () => {
+      console.log('🧹 Cleaning up resize event listeners')
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleResize)
+    }
+  }, [daysPerRow]) // Add daysPerRow as dependency to prevent infinite loops
 
   // Calculate progress
   const progress = habit.totalCompletedDays / habit.streakPeriod
@@ -197,11 +264,31 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
             <div className="text-sm font-semibold text-slate-700 mb-3">
               Habit Days ({habit.streakPeriod} days) - Started{' '}
               {new Date(habit.startDate).toLocaleDateString()}
+              <span className="ml-2 text-xs text-gray-500">
+                Last resize: {new Date(lastResizeTime).toLocaleTimeString()}
+              </span>
+              <button
+                onClick={() => {
+                  const currentWidth = window.innerWidth
+                  const currentDays = calculateDaysPerRow()
+                  console.log(
+                    '📊 Current state - Width:',
+                    currentWidth,
+                    'Days per row:',
+                    currentDays,
+                    'State days per row:',
+                    daysPerRow
+                  )
+                }}
+                className="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+              >
+                Show State
+              </button>
             </div>
 
             {/* Weekday Header Row */}
             <div className="flex gap-1 mb-3">
-              {habitDays.slice(0, 21).map((day, index) => (
+              {habitDays.slice(0, daysPerRow).map((day, index) => (
                 <div key={`header-${index}`} className="flex-1 text-center min-w-0">
                   <div className="text-xs text-slate-500 font-medium truncate">
                     {day.date.toLocaleDateString('en-US', { weekday: 'short' })}
@@ -210,11 +297,11 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
               ))}
             </div>
 
-            {/* Day Checkboxes - Organized in rows of 21 */}
+            {/* Day Checkboxes - Organized in dynamic rows */}
             <div className="space-y-2">
-              {Array.from({ length: Math.ceil(habitDays.length / 21) }, (_, rowIndex) => {
-                const rowDays = habitDays.slice(rowIndex * 21, (rowIndex + 1) * 21)
-                const emptySlots = 21 - rowDays.length
+              {Array.from({ length: Math.ceil(habitDays.length / daysPerRow) }, (_, rowIndex) => {
+                const rowDays = habitDays.slice(rowIndex * daysPerRow, (rowIndex + 1) * daysPerRow)
+                const emptySlots = daysPerRow - rowDays.length
 
                 return (
                   <div key={`row-${rowIndex}`} className="flex gap-1">
