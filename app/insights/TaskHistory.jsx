@@ -1,16 +1,33 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { format, isSameDay } from 'date-fns'
+import { format, isSameDay, eachDayOfInterval } from 'date-fns'
 import { ChevronDown, ChevronRight, Play, Clock, Tag } from 'lucide-react'
 import Button from '@/components/Button'
 
-export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
+export default function TaskHistory({ tasks, workSessions, onTaskSelect, periodDates }) {
   const [expandedDates, setExpandedDates] = useState(new Set())
 
   // Group tasks by date
   const groupedTasks = useMemo(() => {
     const groups = {}
+
+    // First, pre-populate all days in the period with empty arrays
+    if (periodDates && periodDates.start && periodDates.end) {
+      const allDays = eachDayOfInterval({ start: periodDates.start, end: periodDates.end })
+      allDays.forEach((day) => {
+        // Use local date string to avoid timezone issues
+        const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+        groups[dateKey] = {
+          date: day,
+          tasks: [],
+          workSessions: [],
+        }
+      })
+    }
+
+    // Now add tasks to their respective days
+    console.log('📥 TaskHistory received tasks:', tasks.length, 'tasks')
 
     tasks.forEach((task) => {
       // Try to get a valid date from the task
@@ -30,27 +47,62 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
       } else if (task.createdAt) {
         taskDate = new Date(task.createdAt)
       } else {
-        console.log('⚠️ Task has no valid date:', task.id)
+        console.log('⚠️ Task has no valid date:', task.id, task.title)
         return // Skip this task
       }
 
       // Check if we have a valid date
       if (isNaN(taskDate.getTime())) {
-        console.log('⚠️ Task has invalid date after fallback:', task.id)
+        console.log('⚠️ Task has invalid date after fallback:', task.id, task.title)
         return // Skip this task
       }
 
-      const dateKey = taskDate.toISOString().split('T')[0]
+      // Use local date string to avoid timezone issues (same format as above)
+      const dateKey = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}-${String(taskDate.getDate()).padStart(2, '0')}`
 
-      if (!groups[dateKey]) {
-        groups[dateKey] = {
-          date: taskDate,
-          tasks: [],
-        }
+      console.log('🔍 Task date matching:', {
+        taskId: task.id,
+        taskTitle: task.title,
+        taskDate: taskDate.toISOString(),
+        dateKey,
+        hasGroup: !!groups[dateKey],
+        availableKeys: Object.keys(groups),
+      })
+
+      // Only add to groups that exist (within the selected period)
+      if (groups[dateKey]) {
+        groups[dateKey].tasks.push(task)
+        console.log(
+          '✅ Task added to day:',
+          dateKey,
+          'Total tasks for this day:',
+          groups[dateKey].tasks.length
+        )
+      } else {
+        console.log('❌ Task date not found in period:', dateKey, 'Task:', task.title)
       }
-
-      groups[dateKey].tasks.push(task)
     })
+
+    // Add work sessions to their respective days
+    if (workSessions) {
+      workSessions.forEach((session) => {
+        const dateKey = session.dateKey
+        if (groups[dateKey]) {
+          groups[dateKey].workSessions.push(session)
+        }
+      })
+    }
+
+    // Debug: Show final grouping results
+    console.log(
+      '📊 Final grouping results:',
+      Object.entries(groups).map(([dateKey, group]) => ({
+        dateKey,
+        tasksCount: group.tasks.length,
+        workSessionsCount: group.workSessions.length,
+        taskTitles: group.tasks.map((t) => t.title),
+      }))
+    )
 
     // Sort by date (newest first)
     return Object.entries(groups)
@@ -59,7 +111,7 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
         dateKey,
         ...group,
       }))
-  }, [tasks])
+  }, [tasks, workSessions, periodDates])
 
   const toggleDate = (dateKey) => {
     const newExpanded = new Set(expandedDates)
@@ -105,6 +157,45 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
       default:
         return '📋'
     }
+  }
+
+  // Helper function to render HTML content safely
+  const renderHtmlContent = (htmlString) => {
+    if (!htmlString) return ''
+
+    // Basic HTML sanitization - only allow safe tags
+    const allowedTags = [
+      'p',
+      'strong',
+      'em',
+      'b',
+      'i',
+      'u',
+      'br',
+      'ol',
+      'ul',
+      'li',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+    ]
+    const allowedAttributes = ['class', 'style']
+
+    // Create a temporary div to parse and sanitize HTML
+    const tempDiv = document.createElement('div')
+    tempDiv.innerHTML = htmlString
+
+    // Remove any script tags or dangerous content
+    const scripts = tempDiv.querySelectorAll(
+      'script, iframe, object, embed, form, input, button, select, textarea'
+    )
+    scripts.forEach((el) => el.remove())
+
+    // Get the sanitized HTML
+    return tempDiv.innerHTML
   }
 
   if (groupedTasks.length === 0) {
@@ -195,12 +286,25 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
                             >
                               {getPriorityIcon(task.priority)}
                             </span>
+                            {/* Completion Status Label */}
+                            <span
+                              className={`px-2 py-1 text-xs font-medium rounded-full border ${
+                                task.completed
+                                  ? 'bg-green-100 text-green-800 border-green-200'
+                                  : 'bg-amber-100 text-amber-800 border-amber-200'
+                              }`}
+                            >
+                              {task.completed ? '✅ Completed' : '⏳ Todo'}
+                            </span>
                           </div>
 
                           {task.description && (
-                            <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                              {task.description}
-                            </p>
+                            <div
+                              className="text-sm text-gray-600 line-clamp-2 mb-2"
+                              dangerouslySetInnerHTML={{
+                                __html: renderHtmlContent(task.description),
+                              }}
+                            />
                           )}
 
                           <div className="flex items-center gap-4 text-xs text-gray-500">

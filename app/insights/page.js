@@ -21,6 +21,35 @@ export default function InsightsPage() {
   const [selectedTask, setSelectedTask] = useState(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
+  // Calculate period dates
+  const getPeriodDates = () => {
+    const now = new Date()
+    let start, end
+
+    if (selectedPeriod === 'week') {
+      // Week starts from Sunday (0) and ends on Saturday (6)
+      const currentDay = now.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const daysFromSunday = currentDay
+
+      start = new Date(now)
+      start.setDate(now.getDate() - daysFromSunday) // Go back to Sunday
+      start.setHours(0, 0, 0, 0) // Start of Sunday
+
+      end = new Date(start)
+      end.setDate(start.getDate() + 6) // Add 6 days to get to Saturday
+      end.setHours(23, 59, 59, 999) // End of Saturday
+    } else {
+      // Month: from 1st to last day of the month
+      start = new Date(now.getFullYear(), now.getMonth(), 1) // 1st of current month
+      start.setHours(0, 0, 0, 0)
+
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Last day of current month
+      end.setHours(23, 59, 59, 999)
+    }
+
+    return { start, end }
+  }
+
   // Set up real-time subscription to tasks
   useEffect(() => {
     if (!user) return
@@ -58,35 +87,6 @@ export default function InsightsPage() {
       unsubscribes.forEach((unsub) => unsub())
     }
   }, [user, selectedPeriod, selectedDate])
-
-  // Calculate period dates
-  const getPeriodDates = () => {
-    const now = new Date()
-    let start, end
-
-    if (selectedPeriod === 'week') {
-      // Week starts from Sunday (0) and ends on Saturday (6)
-      const currentDay = now.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-      const daysFromSunday = currentDay
-
-      start = new Date(now)
-      start.setDate(now.getDate() - daysFromSunday) // Go back to Sunday
-      start.setHours(0, 0, 0, 0) // Start of Sunday
-
-      end = new Date(start)
-      end.setDate(start.getDate() + 6) // Add 6 days to get to Saturday
-      end.setHours(23, 59, 59, 999) // End of Saturday
-    } else {
-      // Month: from 1st to last day of the month
-      start = new Date(now.getFullYear(), now.getMonth(), 1) // 1st of current month
-      start.setHours(0, 0, 0, 0)
-
-      end = new Date(now.getFullYear(), now.getMonth() + 1, 0) // Last day of current month
-      end.setHours(23, 59, 59, 999)
-    }
-
-    return { start, end }
-  }
 
   // Filter tasks by selected period and filters
   const filteredTasks = tasks.filter((task) => {
@@ -291,6 +291,7 @@ export default function InsightsPage() {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
         <TaskHistory
           tasks={filteredTasks}
+          workSessions={workSessions}
           onTaskSelect={handleTaskSelect}
           periodDates={getPeriodDates()}
         />
