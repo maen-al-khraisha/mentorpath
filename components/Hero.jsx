@@ -23,7 +23,7 @@ export default function Hero() {
           <div className="flex justify-center mb-8">
             <Logo size="xl" showText={true} animated={true} />
           </div>
-          
+
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-full text-sm font-medium text-slate-700 mb-8 shadow-soft">
             <Zap className="w-4 h-4 text-indigo-500" />
@@ -101,22 +101,41 @@ export default function Hero() {
 
               {/* Mockup content */}
               <div className="p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Left column - Tasks */}
-                  <div className="lg:col-span-2 space-y-4">
-                    <div className="h-8 bg-indigo-100 rounded-lg w-3/4" />
-                    <div className="space-y-3">
-                      <div className="h-12 bg-slate-100 rounded-lg" />
-                      <div className="h-12 bg-slate-100 rounded-lg" />
-                      <div className="h-12 bg-emerald-100 rounded-lg" />
-                    </div>
-                    <div className="h-24 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200" />
-                  </div>
+                {/* Replace skeleton with actual app screenshot */}
+                <div className="relative">
+                  {/* Main app screenshot */}
+                  <img
+                    src="/screenshots/tasks-dashboard.png"
+                    alt="MentorPath Tasks Dashboard - Beautiful task management interface with KPI cards, task list, and productivity tracking"
+                    className="w-full h-auto rounded-2xl shadow-soft border border-slate-200"
+                    onError={(e) => {
+                      // Fallback to skeleton if image fails to load
+                      e.target.style.display = 'none'
+                      e.target.nextElementSibling.style.display = 'block'
+                    }}
+                  />
 
-                  {/* Right column - Stats */}
-                  <div className="space-y-4">
-                    <div className="h-32 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border border-indigo-200" />
-                    <div className="h-24 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg border border-emerald-200" />
+                  {/* Fallback skeleton (hidden by default) */}
+                  <div
+                    className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+                    style={{ display: 'none' }}
+                  >
+                    {/* Left column - Tasks */}
+                    <div className="lg:col-span-2 space-y-4">
+                      <div className="h-8 bg-indigo-100 rounded-lg w-3/4" />
+                      <div className="space-y-3">
+                        <div className="h-12 bg-slate-100 rounded-lg" />
+                        <div className="h-12 bg-slate-100 rounded-lg" />
+                        <div className="h-12 bg-emerald-100 rounded-lg" />
+                      </div>
+                      <div className="h-24 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200" />
+                    </div>
+
+                    {/* Right column - Stats */}
+                    <div className="space-y-4">
+                      <div className="h-32 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border border-indigo-200" />
+                      <div className="h-24 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg border border-emerald-200" />
+                    </div>
                   </div>
                 </div>
               </div>

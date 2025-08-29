@@ -131,19 +131,19 @@ function HowItWorks() {
 function DemoScreens() {
   const shots = [
     {
-      src: '/screenshot-1.svg',
+      src: '/screenshots/tasks-dashboard.png',
       alt: 'Smart Task Management Dashboard',
       title: 'Smart Task Management',
       desc: 'Organize, prioritize, and execute with intelligent daily lists',
     },
     {
-      src: '/screenshot-2.svg',
+      src: '/screenshots/notes-dashboard.png',
       alt: 'Linked Notes & Ideas System',
       title: 'Linked Notes & Ideas',
       desc: 'Connect thoughts to actions for seamless execution',
     },
     {
-      src: '/screenshot-3.svg',
+      src: '/screenshots/insights-dashboard.png',
       alt: 'Productivity Insights Dashboard',
       title: 'Productivity Insights',
       desc: 'Track progress and optimize your workflow with data',
