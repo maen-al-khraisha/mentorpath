@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/lib/useAuth'
-import { subscribeToTasks } from '@/lib/tasksApi'
+import { subscribeToTasks, listenWorkSessionsByDate } from '@/lib/tasksApi'
 import InsightsFilters from './InsightsFilters'
 import StatsCards from './StatsCards'
 import WorkHoursChart from './WorkHoursChart'
@@ -13,6 +13,7 @@ import { CheckCircle2, Clock3, Target, TrendingUp } from 'lucide-react'
 export default function InsightsPage() {
   const { user } = useAuth()
   const [tasks, setTasks] = useState([])
+  const [workSessions, setWorkSessions] = useState([])
   const [selectedPeriod, setSelectedPeriod] = useState('week')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [priorityFilter, setPriorityFilter] = useState('all')
@@ -30,6 +31,33 @@ export default function InsightsPage() {
 
     return () => unsubscribe()
   }, [user])
+
+  // Fetch work sessions for the selected period
+  useEffect(() => {
+    if (!user) return
+
+    const { start, end } = getPeriodDates()
+
+    // Fetch work sessions for each day in the period
+    const unsubscribes = []
+    const currentDate = new Date(start)
+
+    while (currentDate <= end) {
+      const unsubscribe = listenWorkSessionsByDate(currentDate, user.uid, (sessions) => {
+        setWorkSessions((prev) => {
+          // Remove old sessions for this date and add new ones
+          const filtered = prev.filter((s) => s.dateKey !== currentDate.toISOString().split('T')[0])
+          return [...filtered, ...sessions]
+        })
+      })
+      unsubscribes.push(unsubscribe)
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+
+    return () => {
+      unsubscribes.forEach((unsub) => unsub())
+    }
+  }, [user, selectedPeriod, selectedDate])
 
   // Calculate period dates
   const getPeriodDates = () => {
@@ -62,7 +90,33 @@ export default function InsightsPage() {
 
   // Filter tasks by selected period and filters
   const filteredTasks = tasks.filter((task) => {
-    const taskDate = new Date(task.date || task.createdAt?.toDate())
+    // Try to get a valid date from the task
+    let taskDate
+    if (task.date) {
+      taskDate = new Date(task.date)
+
+      // If task.date is invalid, fall back to createdAt
+      if (isNaN(taskDate.getTime())) {
+        if (task.createdAt && typeof task.createdAt.toDate === 'function') {
+          taskDate = task.createdAt.toDate()
+        } else if (task.createdAt) {
+          taskDate = new Date(task.createdAt)
+        }
+      }
+    } else if (task.createdAt && typeof task.createdAt.toDate === 'function') {
+      taskDate = task.createdAt.toDate()
+    } else if (task.createdAt) {
+      taskDate = new Date(task.createdAt)
+    } else {
+      return false
+    }
+
+    // Check if taskDate is valid
+    const isValidDate = !isNaN(taskDate.getTime())
+    if (!isValidDate) {
+      return false // Skip tasks with invalid dates
+    }
+
     const { start, end } = getPeriodDates()
 
     const inPeriod = taskDate >= start && taskDate <= end
@@ -75,33 +129,29 @@ export default function InsightsPage() {
   // Get all available labels from tasks
   const allLabels = [...new Set(tasks.flatMap((task) => task.labels || []))]
 
+  // Format helper function for time display
+  const formatTotalTime = (sec) => {
+    const h = Math.floor(sec / 3600)
+    const m = Math.floor((sec % 3600) / 60)
+    if (h > 0) return `${h}h ${m}m`
+    if (m > 0) return `${m}m`
+    return `0m`
+  }
+
   // Derived metrics for KPI cards
   const kpis = useMemo(() => {
     const completed = filteredTasks.filter((t) => t.completed).length
     const total = filteredTasks.length
     const active = filteredTasks.filter((t) => !t.completed).length
 
-    // Sum work time if tasks include embedded workSessions with durationSec
-    const totalFocusSec = filteredTasks.reduce((acc, t) => {
-      const ws = Array.isArray(t.workSessions) ? t.workSessions : []
-      const sum = ws.reduce(
-        (s, w) => s + (typeof w.durationSec === 'number' ? Math.max(0, w.durationSec) : 0),
-        0
-      )
-      return acc + sum
+    // Sum work time from work sessions for the selected period
+    const totalFocusSec = workSessions.reduce((acc, session) => {
+      const duration =
+        typeof session.durationSec === 'number' ? Math.max(0, session.durationSec) : 0
+      return acc + duration
     }, 0)
 
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0
-
-    // Format helper similar to tasks
-    const formatTotalTime = (sec) => {
-      const h = Math.floor(sec / 3600)
-      const m = Math.floor((sec % 3600) / 60)
-      const s = Math.floor(sec % 60)
-      if (h > 0) return `${h}h ${m}m ${s}s`
-      if (m > 0) return `${m}m ${s}s`
-      return `${s}s`
-    }
 
     return {
       completed,
@@ -110,7 +160,7 @@ export default function InsightsPage() {
       progress,
       totalFocusLabel: formatTotalTime(totalFocusSec),
     }
-  }, [filteredTasks])
+  }, [filteredTasks, workSessions])
 
   const handleTaskSelect = (task) => {
     setSelectedTask(task)
@@ -145,10 +195,10 @@ export default function InsightsPage() {
           </div>
         </div>
         {/* KPI Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
           {/* Completed */}
-          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center gap-4">
+          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-4 border border-emerald-200 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center gap-2">
               <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <CheckCircle2 size={28} className="text-white" />
               </div>
@@ -165,8 +215,8 @@ export default function InsightsPage() {
           </div>
 
           {/* Focus Time */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center gap-4">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-4 border border-blue-200 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center gap-2">
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Clock3 size={28} className="text-white" />
               </div>
@@ -181,31 +231,31 @@ export default function InsightsPage() {
           </div>
 
           {/* Active Tasks */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-4 border border-amber-200 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center gap-2">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Target size={28} className="text-white" />
               </div>
               <div className="flex-1">
                 <div className="text-3xl font-bold text-slate-900 font-display">{kpis.active}</div>
                 <div className="text-sm font-semibold text-slate-700 mb-1">Active Tasks</div>
-                <div className="text-xs text-purple-700 font-medium">Ready to tackle</div>
+                <div className="text-xs text-amber-700 font-medium">In progress</div>
               </div>
             </div>
           </div>
 
           {/* Progress */}
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 border border-amber-200 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-4 border border-purple-200 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center gap-2">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <TrendingUp size={28} className="text-white" />
               </div>
               <div className="flex-1">
                 <div className="text-3xl font-bold text-slate-900 font-display">
                   {kpis.progress}%
                 </div>
-                <div className="text-sm font-semibold text-slate-700 mb-1">Progress</div>
-                <div className="text-xs text-amber-700 font-medium">Period achievement</div>
+                <div className="text-sm font-semibold text-slate-700 mb-1">Completion Rate</div>
+                <div className="text-xs text-purple-700 font-medium">Success metric</div>
               </div>
             </div>
           </div>

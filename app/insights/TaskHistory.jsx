@@ -13,7 +13,33 @@ export default function TaskHistory({ tasks, onTaskSelect, periodDates }) {
     const groups = {}
 
     tasks.forEach((task) => {
-      const taskDate = new Date(task.date || task.createdAt?.toDate())
+      // Try to get a valid date from the task
+      let taskDate
+      if (task.date) {
+        taskDate = new Date(task.date)
+        // If task.date is invalid, fall back to createdAt
+        if (isNaN(taskDate.getTime())) {
+          if (task.createdAt && typeof task.createdAt.toDate === 'function') {
+            taskDate = task.createdAt.toDate()
+          } else if (task.createdAt) {
+            taskDate = new Date(task.createdAt)
+          }
+        }
+      } else if (task.createdAt && typeof task.createdAt.toDate === 'function') {
+        taskDate = task.createdAt.toDate()
+      } else if (task.createdAt) {
+        taskDate = new Date(task.createdAt)
+      } else {
+        console.log('⚠️ Task has no valid date:', task.id)
+        return // Skip this task
+      }
+
+      // Check if we have a valid date
+      if (isNaN(taskDate.getTime())) {
+        console.log('⚠️ Task has invalid date after fallback:', task.id)
+        return // Skip this task
+      }
+
       const dateKey = taskDate.toISOString().split('T')[0]
 
       if (!groups[dateKey]) {

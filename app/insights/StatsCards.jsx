@@ -37,7 +37,31 @@ export default function StatsCards({ tasks, periodDates }) {
     while (currentDate <= periodDates.end) {
       const dateKey = currentDate.toISOString().split('T')[0]
       const dayTasks = tasks.filter((task) => {
-        const taskDate = new Date(task.date || task.createdAt?.toDate())
+        // Try to get a valid date from the task
+        let taskDate
+        if (task.date) {
+          taskDate = new Date(task.date)
+          // If task.date is invalid, fall back to createdAt
+          if (isNaN(taskDate.getTime())) {
+            if (task.createdAt && typeof task.createdAt.toDate === 'function') {
+              taskDate = task.createdAt.toDate()
+            } else if (task.createdAt) {
+              taskDate = new Date(task.createdAt)
+            }
+          }
+        } else if (task.createdAt && typeof task.createdAt.toDate === 'function') {
+          taskDate = task.createdAt.toDate()
+        } else if (task.createdAt) {
+          taskDate = new Date(task.createdAt)
+        } else {
+          return false // Skip this task
+        }
+
+        // Check if we have a valid date
+        if (isNaN(taskDate.getTime())) {
+          return false // Skip this task
+        }
+
         return taskDate.toISOString().split('T')[0] === dateKey
       })
 
