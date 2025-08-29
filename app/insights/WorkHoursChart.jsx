@@ -4,12 +4,14 @@ import { useMemo } from 'react'
 import { format, eachDayOfInterval, isSameDay } from 'date-fns'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-export default function WorkHoursChart({ tasks, periodDates }) {
+export default function WorkHoursChart({ tasks, workSessions, periodDates }) {
   const chartData = useMemo(() => {
     const days = eachDayOfInterval({ start: periodDates.start, end: periodDates.end })
 
     return days.map((day) => {
       const dayKey = day.toISOString().split('T')[0]
+
+      // Get tasks for this day
       const dayTasks = tasks.filter((task) => {
         let taskDate
         if (task.date) {
@@ -26,26 +28,20 @@ export default function WorkHoursChart({ tasks, periodDates }) {
         return isSameDay(taskDate, day)
       })
 
-      const totalWorkTime = dayTasks.reduce((total, task) => {
-        if (task.workSessions) {
-          return (
-            total +
-            task.workSessions.reduce(
-              (sessionTotal, session) => sessionTotal + (session.durationSec || 0),
-              0
-            )
-          )
-        }
-        return total
+      // Get work sessions for this day
+      const dayWorkSessions = workSessions.filter((session) => {
+        return session.dateKey === dayKey
+      })
+
+      // Calculate total work time from work sessions
+      const totalWorkTime = dayWorkSessions.reduce((total, session) => {
+        const duration =
+          typeof session.durationSec === 'number' ? Math.max(0, session.durationSec) : 0
+        return total + duration
       }, 0)
 
-      // If no work time but we have tasks, show a minimal bar (0.1 hours) so bars are visible
-      const displayHours =
-        totalWorkTime > 0
-          ? Math.round((totalWorkTime / 3600) * 100) / 100
-          : dayTasks.length > 0
-            ? 0.1
-            : 0
+      // Convert to hours for display
+      const displayHours = totalWorkTime > 0 ? Math.round((totalWorkTime / 3600) * 100) / 100 : 0
 
       // Get priority for color coding - find the highest priority task for the day
       let priority = 'low'
@@ -62,11 +58,12 @@ export default function WorkHoursChart({ tasks, periodDates }) {
         priority,
         dayKey,
         dayTasks: dayTasks.length,
+        dayWorkSessions: dayWorkSessions.length,
         totalWorkTime,
         hasWorkTime: totalWorkTime > 0,
       }
     })
-  }, [tasks, periodDates])
+  }, [tasks, workSessions, periodDates])
 
   const getBarColor = (priority) => {
     switch (priority) {
@@ -91,6 +88,7 @@ export default function WorkHoursChart({ tasks, periodDates }) {
             Work time: <span className="font-semibold">{data.hours}h</span>
           </p>
           <p className="text-xs text-gray-500">Tasks: {data.dayTasks}</p>
+          <p className="text-xs text-gray-500">Work Sessions: {data.dayWorkSessions}</p>
           {data.priority && (
             <p className="text-xs text-gray-500 capitalize">Priority: {data.priority}</p>
           )}

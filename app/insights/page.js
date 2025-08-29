@@ -280,7 +280,11 @@ export default function InsightsPage() {
 
       {/* Work Hours Chart */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
-        <WorkHoursChart tasks={filteredTasks} periodDates={getPeriodDates()} />
+        <WorkHoursChart
+          tasks={filteredTasks}
+          workSessions={workSessions}
+          periodDates={getPeriodDates()}
+        />
       </div>
 
       {/* Task History */}
