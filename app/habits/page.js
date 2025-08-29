@@ -207,10 +207,10 @@ export default function HabitsPage() {
             </div>
 
             {/* KPI Dashboard */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Habits */}
               <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-6 border border-emerald-200 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
                     <TrendingUp size={28} className="text-white" />
                   </div>
@@ -227,8 +227,8 @@ export default function HabitsPage() {
               </div>
 
               {/* Active Habits */}
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-4 border border-blue-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-2">
                   <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                     <Target size={28} className="text-white" />
                   </div>
@@ -243,8 +243,8 @@ export default function HabitsPage() {
               </div>
 
               {/* Total Streaks */}
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-4 border border-purple-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-2">
                   <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                     <Calendar size={28} className="text-white" />
                   </div>
@@ -259,8 +259,8 @@ export default function HabitsPage() {
               </div>
 
               {/* Completed Today */}
-              <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 border border-amber-200 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-4 border border-amber-200 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center gap-2">
                   <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
                     <CheckCircle2 size={28} className="text-white" />
                   </div>
