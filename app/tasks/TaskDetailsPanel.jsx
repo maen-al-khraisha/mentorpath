@@ -486,7 +486,7 @@ export default function TaskDetailsPanel({
         {/* Quick Actions Bar */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
           {/* Top Row: Timer Controls */}
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex flex-col items-start gap-3 mb-4">
             <div className="flex items-center gap-2">
               <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
                 <Clock size={18} className="text-slate-600" />

@@ -1308,7 +1308,7 @@ export default function TasksPage() {
       <Modal
         isOpen={showAddTime && !!selectedTask}
         onClose={() => setShowAddTime(false)}
-        size="small"
+        size="default"
         header={{
           icon: <ClockIcon size={24} className="text-green-600" />,
           iconBgColor: 'bg-green-100',
@@ -1316,7 +1316,7 @@ export default function TasksPage() {
           subtitle: 'Log manual work time for this task',
         }}
         content={
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-visible">
             {/* Current Task Info */}
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
               <div className="flex items-center gap-3 mb-2">
@@ -1346,32 +1346,34 @@ export default function TasksPage() {
               <div>
                 <label className="block text-base font-semibold text-slate-900 mb-1">Start</label>
                 <div className="space-y-3">
-                  {/* Date picker on its own row */}
-                  <CustomDatePicker
-                    value={startDate}
-                    onChange={(date) => {
-                      try {
-                        if (date && !isNaN(date.getTime())) {
-                          // Create date string manually to avoid timezone issues
-                          // Use local date components instead of toISOString()
-                          const year = date.getFullYear()
-                          const month = String(date.getMonth() + 1).padStart(2, '0')
-                          const day = String(date.getDate()).padStart(2, '0')
-                          const dateString = `${year}-${month}-${day}`
-                          setStartDate(dateString)
-                        } else {
+                  {/* Date picker on its own row with proper spacing */}
+                  <div className="relative w-full">
+                    <CustomDatePicker
+                      value={startDate}
+                      onChange={(date) => {
+                        try {
+                          if (date && !isNaN(date.getTime())) {
+                            // Create date string manually to avoid timezone issues
+                            // Use local date components instead of toISOString()
+                            const year = date.getFullYear()
+                            const month = String(date.getMonth() + 1).padStart(2, '0')
+                            const day = String(date.getDate()).padStart(2, '0')
+                            const dateString = `${year}-${month}-${day}`
+                            setStartDate(dateString)
+                          } else {
+                            setStartDate('')
+                          }
+                        } catch (error) {
+                          console.error('Error setting start date:', error)
                           setStartDate('')
                         }
-                      } catch (error) {
-                        console.error('Error setting start date:', error)
-                        setStartDate('')
-                      }
-                    }}
-                    name="startDate"
-                    required
-                  />
+                      }}
+                      name="startDate"
+                      required
+                    />
+                  </div>
                   {/* Time inputs on a separate row */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 w-full">
                     <input
                       type="number"
                       min="1"
