@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
-import { Trash2, Edit, FileText, Tag, Clock, Calendar } from 'lucide-react'
+import { Trash2, Edit, FileText, Tag, Clock, Calendar, Pin } from 'lucide-react'
 import LabelBadge from '@/components/LabelBadge'
 import NoteDetailsModal from './NoteDetailsModal'
 import ConvertToTaskModal from './ConvertToTaskModal'
@@ -93,9 +93,9 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
                 <h3 className="text-xl font-semibold text-slate-900 font-body group-hover:text-blue-600 transition-colors leading-tight">
                   {note.title}
                 </h3>
-                <div className="flex items-center gap-2 text-sm text-slate-500 font-body">
-                  <Clock size={16} className="text-slate-400" />
-                  {formatDate(note.createdAt)}
+                {/* Pin Icon */}
+                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                  <Pin size={14} className="text-amber-600 fill-current" />
                 </div>
               </div>
 
@@ -223,9 +223,9 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
           <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
             <FileText size={20} className="text-blue-600" />
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-body">
-            <Calendar size={14} className="text-slate-400" />
-            {formatDate(note.createdAt)}
+          {/* Pin Icon */}
+          <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+            <Pin size={14} className="text-amber-600 fill-current" />
           </div>
         </div>
 
