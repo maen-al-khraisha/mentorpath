@@ -1,10 +1,11 @@
+import MainHeader from '@/components/MainHeader'
+import FooterLegal from '@/components/FooterLegal'
+import ContactForm from './ContactForm'
+
 export const metadata = {
   title: 'Contact — MentorPath',
   description: 'Send suggestions or complaints to the MentorPath team.',
 }
-
-import MainHeader from '@/components/MainHeader'
-import FooterLanding from '@/components/FooterLanding'
 
 export default function ContactPage() {
   return (
@@ -16,8 +17,22 @@ export default function ContactPage() {
           <p className="text-[var(--neutral-700)] mt-1">We respond to every message.</p>
         </div>
       </section>
-      {/* Reuse the landing footer which includes the contact form */}
-      <FooterLanding />
+
+      {/* Contact Form Section */}
+      <section className="py-10 md:py-14">
+        <div className="mx-auto max-w-4xl px-4">
+          <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-8 shadow-soft">
+            <h2 className="text-2xl font-semibold text-[var(--neutral-900)] mb-2">Get in Touch</h2>
+            <p className="text-[var(--neutral-700)] mb-6">
+              Suggestions or complaints welcome. We'd love to hear from you.
+            </p>
+
+            <ContactForm />
+          </div>
+        </div>
+      </section>
+
+      <FooterLegal />
     </main>
   )
 }

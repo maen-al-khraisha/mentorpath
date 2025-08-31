@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic'
 import Modal from '@/components/ui/Modal'
 
 // Dynamically import React-Quill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), {
+const ReactQuill = dynamic(() => import('react-quill-new'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-32 bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center">
@@ -29,7 +29,7 @@ const ReactQuill = dynamic(() => import('react-quill'), {
 })
 
 // Import ReactQuill CSS
-import 'react-quill/dist/quill.snow.css'
+import 'react-quill-new/dist/quill.snow.css'
 
 // Custom styles for ReactQuill
 const quillStyles = `
@@ -116,7 +116,6 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
     'underline',
     'strike',
     'list',
-    'bullet',
     'color',
     'background',
     'link',

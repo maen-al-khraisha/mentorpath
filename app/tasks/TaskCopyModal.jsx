@@ -13,7 +13,7 @@ import { Paperclip, Target, Plus, List, TargetIcon, X } from 'lucide-react'
 import LabelBadge from '@/components/LabelBadge'
 
 // Dynamically import React-Quill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), {
+const ReactQuill = dynamic(() => import('react-quill-new'), {
   ssr: false,
   loading: () => (
     <div className="h-32 bg-gray-100 animate-pulse rounded flex items-center justify-center">
@@ -135,7 +135,7 @@ export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate
   // Dynamically import Quill CSS when modal opens
   useEffect(() => {
     if (open) {
-      import('react-quill/dist/quill.snow.css')
+      import('react-quill-new/dist/quill.snow.css')
     }
   }, [open])
 
@@ -158,7 +158,6 @@ export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate
     'underline',
     'strike',
     'list',
-    'bullet',
     'color',
     'background',
     'link',

@@ -22,7 +22,7 @@ import {
 import dynamic from 'next/dynamic'
 
 // Dynamically import ReactQuill to prevent SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), {
+const ReactQuill = dynamic(() => import('react-quill-new'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-32 bg-slate-100 rounded-xl border-2 border-slate-200 flex items-center justify-center">
@@ -81,7 +81,6 @@ export default function EventDetailsModal({
     'underline',
     'strike',
     'list',
-    'bullet',
     'color',
     'background',
     'link',

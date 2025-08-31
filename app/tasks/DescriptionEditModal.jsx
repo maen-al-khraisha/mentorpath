@@ -7,7 +7,7 @@ import { X, Edit3 } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 
 // Dynamically import React-Quill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), {
+const ReactQuill = dynamic(() => import('react-quill-new'), {
   ssr: false,
   loading: () => (
     <div className="h-32 bg-gray-100 animate-pulse rounded flex items-center justify-center">
@@ -34,7 +34,7 @@ export default function DescriptionEditModal({ isOpen, onClose, description, onS
   useEffect(() => {
     if (isOpen) {
       setContent(description || '')
-      import('react-quill/dist/quill.snow.css')
+      import('react-quill-new/dist/quill.snow.css')
     }
   }, [isOpen, description])
 
@@ -57,7 +57,6 @@ export default function DescriptionEditModal({ isOpen, onClose, description, onS
     'underline',
     'strike',
     'list',
-    'bullet',
     'color',
     'background',
     'link',

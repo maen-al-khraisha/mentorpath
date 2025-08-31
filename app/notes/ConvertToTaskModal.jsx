@@ -23,7 +23,7 @@ import { useToast } from '@/components/Toast'
 import dynamic from 'next/dynamic'
 
 // Dynamically import React-Quill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), {
+const ReactQuill = dynamic(() => import('react-quill-new'), {
   ssr: false,
   loading: () => (
     <div className="h-32 bg-gray-100 animate-pulse rounded flex items-center justify-center">
@@ -60,7 +60,7 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
   // Dynamically import Quill CSS when modal opens
   useEffect(() => {
     if (isOpen) {
-      import('react-quill/dist/quill.snow.css')
+      import('react-quill-new/dist/quill.snow.css')
     }
   }, [isOpen])
 
@@ -83,7 +83,6 @@ export default function ConvertToTaskModal({ isOpen, note, onClose, onConvert })
     'underline',
     'strike',
     'list',
-    'bullet',
     'color',
     'background',
     'link',
