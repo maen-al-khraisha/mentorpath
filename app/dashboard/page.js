@@ -22,10 +22,11 @@ import {
   Clock as ClockIcon,
 } from 'lucide-react'
 
-export default function DashboardPage() {
+export default function DashboardPage({ settingsModalOpen, setSettingsModalOpen }) {
   const { user, loading } = useAuth()
   const { showToast } = useToast()
   const router = useRouter()
+
   const [dashboardData, setDashboardData] = useState({
     tasks: [],
     events: [],
@@ -482,6 +483,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Toast container is provided globally in RootLayout via ToastProvider */}
+
+      {/* Settings Modal - Now rendered at dashboard page level */}
+      {/* The SettingsModal component is no longer imported, so this block is removed. */}
     </>
   )
 }

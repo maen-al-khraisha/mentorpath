@@ -2,7 +2,7 @@
 
 import { X } from 'lucide-react'
 import Button from '@/components/Button'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function Modal({
   isOpen,
@@ -14,21 +14,19 @@ export default function Modal({
   showCloseButton = true,
   closeOnBackdropClick = true,
   className = '',
+  position = 'center', // 'center', 'top' - for large modals that need top positioning
 }) {
   const [isAnimating, setIsAnimating] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
-  const scrollPositionRef = useRef(0)
 
   useEffect(() => {
     if (isOpen) {
-      // Store current scroll position immediately
-      scrollPositionRef.current = window.scrollY
-
-      // Hide body scroll immediately to prevent any jumping
+      // Stop main page scroll when modal opens - use multiple properties for better control
       document.body.style.overflow = 'hidden'
       document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollPositionRef.current}px`
       document.body.style.width = '100%'
+      document.body.style.top = '0'
+      document.body.style.left = '0'
 
       setShouldRender(true)
       // Small delay to ensure smooth animation
@@ -42,17 +40,13 @@ export default function Modal({
       // Re-enable body scroll when modal closes
       const timer = setTimeout(() => {
         setShouldRender(false)
-        // Restore scroll position and body styles
+        // Restore main page scroll
         document.body.style.overflow = ''
         document.body.style.position = ''
-        document.body.style.top = ''
         document.body.style.width = ''
-
-        // Use requestAnimationFrame to ensure DOM is ready
-        requestAnimationFrame(() => {
-          window.scrollTo(0, scrollPositionRef.current)
-        })
-      }, 300) // Reduced from 600ms to 300ms for better UX
+        document.body.style.top = ''
+        document.body.style.left = ''
+      }, 300)
       return () => clearTimeout(timer)
     }
   }, [isOpen])
@@ -63,9 +57,9 @@ export default function Modal({
       if (shouldRender) {
         document.body.style.overflow = ''
         document.body.style.position = ''
-        document.body.style.top = ''
         document.body.style.width = ''
-        window.scrollTo(0, scrollPositionRef.current)
+        document.body.style.top = ''
+        document.body.style.left = ''
       }
     }
   }, [shouldRender])
@@ -83,9 +77,15 @@ export default function Modal({
 
   return (
     <div
-      className={`fixed inset-0 z-50 p-4 transition-all duration-300 ease-in-out ${
+      className={`fixed inset-0 z-[9999] transition-all duration-300 ease-in-out ${
         isAnimating ? 'bg-black/50 backdrop-blur-sm' : 'bg-black/0 backdrop-blur-none'
       }`}
+      style={{
+        display: 'flex',
+        alignItems: position === 'top' ? 'flex-start' : 'center',
+        justifyContent: 'center',
+        padding: position === 'top' ? '2rem 1rem 1rem 1rem' : '1rem',
+      }}
       onClick={closeOnBackdropClick ? onClose : undefined}
     >
       {/* Backdrop with fade animation */}
@@ -95,16 +95,22 @@ export default function Modal({
         }`}
       />
 
-      {/* Modal container with scale and slide animation */}
+      {/* Modal container with proper centering */}
       <div
-        className={`relative flex items-center justify-center w-full h-full transition-all duration-300 ease-in-out ${
+        className={`relative flex transition-all duration-300 ease-in-out z-[10000] ${
           isAnimating
             ? 'transform scale-100 translate-y-0'
             : 'transform scale-90 translate-y-12 rotate-2'
         }`}
+        style={{
+          justifyContent: 'center',
+          alignItems: position === 'top' ? 'flex-start' : 'center',
+          width: 'auto',
+          height: 'auto',
+        }}
       >
         <div
-          className={`bg-white border border-slate-200 rounded-3xl shadow-2xl w-full ${sizeClass} flex flex-col overflow-hidden transition-all duration-300 ease-in-out max-h-[90vh] ${
+          className={`bg-white border border-slate-200 rounded-3xl shadow-2xl ${sizeClass} flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
             isAnimating
               ? 'opacity-100 transform scale-100 translate-y-0 shadow-2xl rotate-0'
               : 'opacity-0 transform scale-75 translate-y-8 shadow-none -rotate-3'
@@ -113,11 +119,18 @@ export default function Modal({
           style={{
             transformOrigin: 'center center',
             willChange: 'transform, opacity',
+            maxHeight: '90vh',
+            width: 'auto',
           }}
         >
           {/* Header */}
           {header && (
-            <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200 flex-shrink-0">
+            <div
+              className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-slate-200 flex-shrink-0"
+              style={{
+                padding: '1.5rem 2rem',
+              }}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   {header.icon && (
@@ -176,13 +189,21 @@ export default function Modal({
 
           {/* Content - Scrollable with fade animation */}
           <div
-            className={`flex-1 overflow-y-auto p-8 transition-all duration-300 ease-out modal-content-scroll ${
+            className={`transition-all duration-300 ease-out modal-content-scroll ${
               isAnimating
                 ? 'opacity-100 transform translate-y-0'
                 : 'opacity-0 transform translate-y-12 scale-95'
             }`}
             style={{
               transitionDelay: isAnimating ? '300ms' : '150ms',
+              padding: '2rem',
+              paddingTop: '1.5rem',
+              paddingBottom: '1.5rem',
+              height: '400px',
+              overflowY: 'scroll',
+              WebkitOverflowScrolling: 'touch',
+              border: '2px solid #e5e7eb',
+              backgroundColor: '#f9fafb',
             }}
           >
             {content}
@@ -191,13 +212,14 @@ export default function Modal({
           {/* Footer - Fixed with fade animation */}
           {footer && (
             <div
-              className={`px-8 py-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-4 flex-shrink-0 transition-all duration-300 ease-out ${
+              className={`bg-slate-50 border-t border-slate-200 flex justify-end gap-4 flex-shrink-0 transition-all duration-300 ease-out ${
                 isAnimating
                   ? 'opacity-100 transform translate-y-0'
                   : 'opacity-0 transform translate-y-12 scale-95'
               }`}
               style={{
                 transitionDelay: isAnimating ? '400ms' : '250ms',
+                padding: '1.5rem 2rem',
               }}
             >
               {footer}

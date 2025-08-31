@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   onAuthStateChanged,
   signInWithPopup,
@@ -21,6 +21,7 @@ export default function MainHeader() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (!authClient) return
@@ -98,19 +99,53 @@ export default function MainHeader() {
       {/* Navigation */}
       <nav className="flex items-center space-x-6">
         <Link
+          href="/"
+          className={`transition-colors duration-200 ${
+            pathname === '/'
+              ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1'
+              : 'text-[var(--neutral-700)] hover:text-[var(--neutral-900)]'
+          }`}
+        >
+          Home
+        </Link>
+        <Link
           href="/features"
-          className="text-[var(--neutral-700)] hover:text-[var(--neutral-900)]"
+          className={`transition-colors duration-200 ${
+            pathname === '/features'
+              ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1'
+              : 'text-[var(--neutral-700)] hover:text-[var(--neutral-900)]'
+          }`}
         >
           Features
         </Link>
-        <Link href="/contact" className="text-[var(--neutral-700)] hover:text-[var(--neutral-900)]">
+        <Link 
+          href="/contact" 
+          className={`transition-colors duration-200 ${
+            pathname === '/contact'
+              ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1'
+              : 'text-[var(--neutral-700)] hover:text-[var(--neutral-900)]'
+          }`}
+        >
           Contact
         </Link>
-
-        <Link href="/donate" className="text-[var(--neutral-700)] hover:text-[var(--neutral-900)]">
-          Donate
+        <Link 
+          href="/pricing" 
+          className={`transition-colors duration-200 ${
+            pathname === '/pricing'
+              ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1'
+              : 'text-[var(--neutral-700)] hover:text-[var(--neutral-900)]'
+          }`}
+        >
+          Pricing
         </Link>
-        <Link href="/about" className="text-[var(--neutral-700)] hover:text-[var(--neutral-900)]">
+        <Link 
+          href="/about" 
+          className={`transition-colors duration-200 ${
+            pathname === '/about'
+              ? 'text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1'
+              : 'text-[var(--neutral-700)] hover:text-[var(--neutral-900)]'
+          }`}
+        >
           About
         </Link>
       </nav>

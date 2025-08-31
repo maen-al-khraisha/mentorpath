@@ -1,6 +1,51 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // 🔒 SECURITY: Only specific admin can access admin functions
+    function isDesignatedAdmin() {
+      return request.auth != null && 
+        request.auth.token.email == 'maen.alkhraisha@gmail.com';
+    }
+
+    // Users collection - restricted access
+    match /users/{uid} {
+      // Allow users to read/write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      
+      // 🚫 REMOVED: No more admin user creation
+      // Only designated admin can manage users
+      allow read, write: if isDesignatedAdmin();
+    }
+    
+    // Allow admin to list all users (for admin panel)
+    match /users/{document=**} {
+      allow list: if isDesignatedAdmin();
+    }
+
+    // Usage tracking collection
+    match /usage/{usageId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Plans collection - only designated admin
+    match /plans/{planId} {
+      allow read: if true; // Anyone can read plans
+      allow write: if isDesignatedAdmin(); // Only designated admin
+    }
+
+    // Packages collection - only designated admin
+    match /packages/{packageId} {
+      allow read: if true; // Anyone can read packages
+      allow write: if isDesignatedAdmin(); // Only designated admin
+    }
+
+    // Settings collection - only designated admin
+    match /settings/{document} {
+      allow read: if true; // Anyone can read settings
+      allow write: if isDesignatedAdmin(); // Only designated admin
+    }
+
     // Tasks owned by a user
     match /tasks/{taskId} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.ownerId;
@@ -16,7 +61,7 @@ service cloud.firestore {
 
     // Task shift audit log
     match /taskShifts/{shiftId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId || isAdmin();
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId || isDesignatedAdmin();
       allow create: if request.auth != null; // created by client; no sensitive data
     }
 
@@ -41,37 +86,28 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
-    // Public readable app settings
-    match /settings/{document=**} {
-      allow read: if true;
-      // Only admins can write settings.
-      allow write: if isAdmin();
+    // Notes owned by a user
+    match /notes/{noteId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      // On create, ensure userId is the caller
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
-    // Admins collection: document exists for each admin uid
+    // Legacy admins collection (for backward compatibility)
     match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid || isAdmin();
+      allow read: if request.auth != null && request.auth.uid == uid || isDesignatedAdmin();
       allow write: if false; // manage via secure server-side script/console
-    }
-
-    // Users can read their own profile
-    match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
     // Feedback collection - allow anyone to create feedback
     match /feedback/{document} {
       allow create: if true;
-      allow read: if isAdmin();
+      allow read: if isDesignatedAdmin();
     }
 
     // Debug collection - for testing (remove in production)
     match /debugTest/{document} {
       allow read, write: if request.auth != null;
-    }
-
-    function isAdmin() {
-      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
   }
 }

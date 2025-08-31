@@ -6,7 +6,7 @@ const nextConfig = {
   },
   experimental: {
     // Enable modern CSS features
-    optimizeCss: true,
+    // optimizeCss: true, // Commented out to fix static asset loading
   },
   async headers() {
     return [

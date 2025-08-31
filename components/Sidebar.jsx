@@ -4,9 +4,18 @@ import React, { useEffect, useCallback, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/useAuth'
-import { ChevronsLeft, ChevronsRight, Menu, X, User, LogOut, Heart, Share2 } from 'lucide-react'
+import {
+  ChevronsLeft,
+  ChevronsRight,
+  Menu,
+  X,
+  User,
+  LogOut,
+  Heart,
+  Share2,
+  Zap,
+} from 'lucide-react'
 import navConfig from '../lib/navConfig'
-import DonationDialog from './DonationDialog'
 import ShareDialog from './ShareDialog'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/Button'
@@ -22,7 +31,6 @@ export default function Sidebar({
   const pathname = usePathname()
   const { signOut } = useAuth()
   const router = useRouter()
-  const [showDonationDialog, setShowDonationDialog] = useState(false)
   const [showShareDialog, setShowShareDialog] = useState(false)
 
   const handleSignOut = async () => {
@@ -171,19 +179,19 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Donate Button */}
+      {/* Upgrade Button */}
       <div
         className={`${collapsed ? 'flex justify-center' : 'px-3'} py-2 border-t border-slate-200`}
       >
         <Button
           variant="primary"
-          onClick={() => setShowDonationDialog(true)}
+          onClick={() => router.push('/pricing')}
           className={`${collapsed ? 'w-[42px] h-[42px]' : 'w-full'}`}
-          title={collapsed ? 'Donate' : 'Support Development'}
+          title={collapsed ? 'Upgrade' : 'Upgrade to Pro'}
           size={collapsed ? 'icon' : 'default'}
         >
-          <Heart size={collapsed ? 22 : 20} className="animate-pulse" />
-          {!collapsed && <span className="text-sm font-medium ml-2">Donate</span>}
+          <Zap size={collapsed ? 22 : 20} className="text-yellow-400" />
+          {!collapsed && <span className="text-sm font-medium ml-2">Upgrade</span>}
         </Button>
       </div>
 
@@ -375,9 +383,6 @@ export default function Sidebar({
           <Logo size="sm" showText={true} animated={false} textColor="white" />
         </div>
       </div>
-
-      {/* Donation Dialog */}
-      <DonationDialog isOpen={showDonationDialog} onClose={() => setShowDonationDialog(false)} />
 
       {/* Share Dialog */}
       <ShareDialog isOpen={showShareDialog} onClose={() => setShowShareDialog(false)} />

@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Tasks owned by a user
+    match /tasks/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.ownerId;
+      // On create, ensure ownerId is the caller
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+    }
+
+    // Per-task work sessions (timers)
+    match /taskWorkSessions/{sessionId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Task shift audit log
+    match /taskShifts/{shiftId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId || isAdmin();
+      allow create: if request.auth != null; // created by client; no sensitive data
+    }
+
+    // Sheets owned by a user
+    match /sheets/{sheetId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      // On create, ensure userId is the caller
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Events owned by a user
+    match /events/{eventId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      // On create, ensure userId is the caller
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Habits owned by a user
+    match /habits/{habitId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      // On create, ensure userId is the caller
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Public readable app settings
+    match /settings/{document=**} {
+      allow read: if true;
+      // Only admins can write settings.
+      allow write: if isAdmin();
+    }
+
+    // Admins collection: document exists for each admin uid
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid || isAdmin();
+      allow write: if false; // manage via secure server-side script/console
+    }
+
+    // Users can read their own profile
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Feedback collection - allow anyone to create feedback
+    match /feedback/{document} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
+
+    // Debug collection - for testing (remove in production)
+    match /debugTest/{document} {
+      allow read, write: if request.auth != null;
+    }
+
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+  }
+}

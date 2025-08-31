@@ -1,8 +1,8 @@
 // components/Header.jsx
 'use client'
 
-import { useState } from 'react'
-import { Bell, Sun, User, Settings, LogOut } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Bell, Sun, User, Settings, LogOut, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
@@ -17,9 +17,44 @@ export default function Header({
   isAdmin,
   onOpenMobileSidebar,
   ThemeToggle,
+  onOpenSettings,
 }) {
   const router = useRouter()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  // Close dropdown when pressing Escape key
+  useEffect(() => {
+    function handleEscape(event) {
+      if (event.key === 'Escape') {
+        setDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+
+  const handleSettingsClick = () => {
+    onOpenSettings()
+    setDropdownOpen(false)
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-soft">
@@ -77,7 +112,7 @@ export default function Header({
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
           </Button>
 
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <Button
               variant="ghost"
               onClick={() => setDropdownOpen((d) => !d)}
@@ -100,39 +135,68 @@ export default function Header({
               <div
                 role="menu"
                 aria-label="User menu"
-                className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-elevated py-2 z-50"
+                className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-elevated py-1 z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200"
               >
-                <Button variant="ghost" className="w-full justify-start px-4 py-3">
-                  <User size={16} className="text-slate-600" />
-                  <span className="text-slate-700">Profile</span>
-                </Button>
-                <Button variant="ghost" className="w-full justify-start px-4 py-3">
-                  <Settings size={16} className="text-slate-600" />
-                  <span className="text-slate-700">Settings</span>
-                </Button>
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="block w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors duration-200 text-slate-700"
+                <div className="py-1">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-4 py-3 h-auto hover:bg-slate-50 transition-colors duration-200 rounded-none text-left"
                   >
-                    Admin
-                  </Link>
+                    <div className="flex items-center w-full">
+                      <User size={16} className="text-slate-600 mr-3 flex-shrink-0" />
+                      <span className="text-slate-700">Profile</span>
+                    </div>
+                  </Button>
+                </div>
+
+                <div className="py-1">
+                  <Button
+                    variant="ghost"
+                    onClick={handleSettingsClick}
+                    className="w-full justify-start px-4 py-3 h-auto hover:bg-slate-50 transition-colors duration-200 rounded-none text-left"
+                  >
+                    <div className="flex items-center w-full">
+                      <Settings size={16} className="text-slate-600 mr-3 flex-shrink-0" />
+                      <span className="text-slate-700">Settings</span>
+                    </div>
+                  </Button>
+                </div>
+
+                {user?.email === 'maen.alkhraisha@gmail.com' && (
+                  <div className="py-1">
+                    <Link
+                      href="/admin"
+                      className="flex items-center w-full px-4 py-3 hover:bg-slate-50 transition-colors duration-200 text-slate-700 rounded-none"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      <div className="flex items-center w-full">
+                        <Shield size={16} className="text-slate-600 mr-3 flex-shrink-0" />
+                        <span className="text-slate-700">Admin</span>
+                      </div>
+                    </Link>
+                  </div>
                 )}
-                <hr className="my-2 border-slate-200" />
-                <Button
-                  variant="ghost"
-                  onClick={async () => {
-                    try {
-                      await signOut(auth)
-                    } finally {
-                      router.replace('/')
-                    }
-                  }}
-                  className="w-full justify-start px-4 py-3"
-                >
-                  <LogOut size={16} className="text-slate-600" />
-                  <span className="text-slate-700">Sign out</span>
-                </Button>
+
+                <hr className="my-1 border-slate-200" />
+
+                <div className="py-1">
+                  <Button
+                    variant="ghost"
+                    onClick={async () => {
+                      try {
+                        await signOut(auth)
+                      } finally {
+                        router.replace('/')
+                      }
+                    }}
+                    className="w-full justify-start px-4 py-3 h-auto hover:bg-slate-50 transition-colors duration-200 rounded-none text-left"
+                  >
+                    <div className="flex items-center w-full">
+                      <LogOut size={16} className="text-slate-600 mr-3 flex-shrink-0" />
+                      <span className="text-slate-700">Sign out</span>
+                    </div>
+                  </Button>
+                </div>
               </div>
             )}
           </div>

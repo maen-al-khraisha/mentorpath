@@ -12,8 +12,7 @@ README (Landing Page):
 
 import Hero from '@/components/Hero'
 import FeaturesGrid from '@/components/FeaturesGrid'
-import Testimonials from '@/components/Testimonials'
-import FooterLanding from '@/components/FooterLanding'
+import FooterLegal from '@/components/FooterLegal'
 import MainHeader from '@/components/MainHeader'
 
 function HowItWorks() {
@@ -105,23 +104,95 @@ function HowItWorks() {
             ))}
           </div>
         </div>
+      </div>
+    </section>
+  )
+}
 
-        {/* CTA */}
-        <div className="text-center mt-16">
-          <a
-            href="/login"
-            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-2xl shadow-elevated hover:shadow-lg transition-all duration-300 hover:scale-105"
-          >
-            Start Your Productivity Journey
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
-          </a>
+function Testimonials() {
+  const testimonials = [
+    {
+      name: 'Alex Chen',
+      role: 'Freelance Designer',
+      avatar: '/avatar.svg',
+      content:
+        'MentorPath transformed how I manage my projects. The task organization is intuitive and the insights help me stay on track.',
+      rating: 5,
+    },
+    {
+      name: 'Sarah Kim',
+      role: 'Content Creator',
+      avatar: '/avatar.svg',
+      content:
+        'Finally, a productivity app that actually works for creative workflows. The notes system is brilliant!',
+      rating: 5,
+    },
+    {
+      name: 'Marcus Rodriguez',
+      role: 'Startup Founder',
+      avatar: '/avatar.svg',
+      content:
+        "The habit tracking and insights have been game-changing for our team. We're 40% more productive now.",
+      rating: 5,
+    },
+  ]
+
+  return (
+    <section className="py-20 md:py-28 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 via-white to-indigo-50/50" />
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 font-display">
+            Loved by <span className="text-gradient">thousands of users</span>
+          </h2>
+          <p className="text-xl text-slate-600 leading-relaxed font-body">
+            Join the community of productivity enthusiasts who've transformed their daily workflow
+          </p>
+        </div>
+
+        {/* Testimonials Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl p-8 shadow-soft border border-slate-200 hover:shadow-elevated transition-all duration-300"
+            >
+              {/* Rating */}
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <svg
+                    key={i}
+                    className="w-5 h-5 text-yellow-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+
+              {/* Content */}
+              <blockquote className="text-slate-700 mb-6 font-body leading-relaxed">
+                "{testimonial.content}"
+              </blockquote>
+
+              {/* Author */}
+              <div className="flex items-center gap-3">
+                <img
+                  src={testimonial.avatar}
+                  alt={testimonial.name}
+                  className="w-10 h-10 rounded-full bg-slate-200"
+                />
+                <div>
+                  <div className="font-semibold text-slate-900">{testimonial.name}</div>
+                  <div className="text-sm text-slate-600">{testimonial.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -231,7 +302,7 @@ function DemoScreens() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0 11 8z"
               />
             </svg>
             Want to explore more? Try the interactive demo
@@ -249,28 +320,25 @@ function PricingCTA() {
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-white to-emerald-50/50" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 font-display">
-              Start building your <span className="text-gradient">productivity empire</span>
+              Choose Your <span className="text-gradient">Productivity Path</span>
             </h2>
             <p className="text-xl text-slate-600 leading-relaxed font-body">
-              Join thousands of freelancers, creators, and productivity enthusiasts who've already
-              transformed their workflow
+              Start with our free plan and scale up as you grow. No hidden fees, transparent
+              pricing.
             </p>
           </div>
 
-          {/* Pricing Card */}
-          <div className="relative bg-white rounded-3xl shadow-elevated border border-slate-200 overflow-hidden">
-            {/* Accent border */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-emerald-500 to-purple-500" />
-
-            <div className="p-8 md:p-12">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                {/* Left content */}
-                <div>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold mb-6">
+          {/* Package Plans */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="relative bg-white rounded-2xl shadow-soft border border-slate-200 overflow-hidden hover:shadow-elevated transition-all duration-300">
+              <div className="p-8">
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-semibold mb-4">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path
                         strokeLinecap="round"
@@ -279,135 +347,144 @@ function PricingCTA() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Always Free
+                    Free Forever
                   </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2 font-display">Starter</h3>
+                  <div className="text-4xl font-bold text-slate-900 mb-1 font-display">$0</div>
+                  <div className="text-slate-600 font-body">No credit card required</div>
+                </div>
 
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 font-display">
-                    Everything you need to get started
-                  </h3>
-
-                  <p className="text-lg text-slate-600 mb-6 leading-relaxed font-body">
-                    Unlimited tasks, notes, and habits. Calendar and insights included. No hidden
-                    fees, no credit card required.
-                  </p>
-
-                  {/* Feature list */}
-                  <div className="space-y-3 mb-8">
-                    {[
-                      'Unlimited tasks, notes, and habits',
-                      'Full calendar integration',
-                      'Productivity insights & analytics',
-                      'Meeting agenda management',
-                      'Mobile-responsive design',
-                      'Real-time sync across devices',
-                    ].map((feature, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <div className="w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center">
-                          <svg
-                            className="w-3 h-3 text-emerald-600"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-slate-700 font-body">{feature}</span>
+                <div className="space-y-3 mb-8">
+                  {[
+                    '20 tasks per month',
+                    '5 notes per month',
+                    '3 habits per month',
+                    '1 event per day',
+                    '2 agenda sheets',
+                    'Basic support',
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <svg
+                          className="w-3 h-3 text-emerald-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
                       </div>
-                    ))}
+                      <span className="text-slate-700 font-body text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <a
+                  href="/login"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-all duration-300"
+                >
+                  Get Started Free
+                </a>
+              </div>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="relative bg-white rounded-2xl shadow-elevated border-2 border-indigo-500 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500" />
+              <div className="absolute top-4 right-4">
+                <span className="bg-indigo-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  Most Popular
+                </span>
+              </div>
+
+              <div className="p-8">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2 font-display">Pro</h3>
+                  <div className="text-4xl font-bold text-slate-900 mb-1 font-display">$7</div>
+                  <div className="text-slate-600 font-body">per month</div>
+                  <div className="text-sm text-indigo-600 font-medium">
+                    Save $24 with annual billing
                   </div>
                 </div>
 
-                {/* Right CTA */}
-                <div className="text-center lg:text-right">
-                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-8 border border-slate-200">
-                    <div className="text-4xl font-bold text-slate-900 mb-2 font-display">$0</div>
-                    <div className="text-slate-600 mb-6 font-body">Forever</div>
-
-                    <a
-                      href="/login"
-                      className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-2xl shadow-elevated hover:shadow-lg transition-all duration-300 hover:scale-105 w-full justify-center"
-                    >
-                      Get Started — Free
-                      <svg
-                        className="w-5 h-5 group-hover:translate-x-1 transition-transform"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 7l5 5m0 0l-5 5m5-5H6"
-                        />
-                      </svg>
-                    </a>
-
-                    <p className="text-sm text-slate-500 mt-4">
-                      No credit card • No commitment • Start in seconds
-                    </p>
-                  </div>
+                <div className="space-y-3 mb-8">
+                  {[
+                    'Unlimited tasks, notes, and habits',
+                    'Unlimited events and agenda sheets',
+                    'Advanced insights dashboard',
+                    'Priority support',
+                    'Data export & backup',
+                    'Custom categories & tags',
+                    'Early access to features',
+                    'API access',
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="w-5 h-5 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <svg
+                          className="w-3 h-3 text-indigo-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      </div>
+                      <span className="text-slate-700 font-body text-sm">{feature}</span>
+                    </div>
+                  ))}
                 </div>
+
+                <a
+                  href="/billing"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all duration-300 shadow-soft"
+                >
+                  Start Free Trial
+                </a>
               </div>
             </div>
           </div>
 
-          {/* Trust indicators */}
-          <div className="text-center mt-12">
-            <div className="flex items-center justify-center gap-8 text-sm text-slate-500">
-              <div className="flex items-center gap-2">
-                <svg
-                  className="w-4 h-4 text-emerald-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          {/* CTA Section */}
+          <div className="text-center">
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-12 text-white">
+              <h3 className="text-3xl font-bold mb-4 font-display">
+                Ready to Transform Your Productivity?
+              </h3>
+              <p className="text-xl text-slate-300 mb-8 font-body max-w-2xl mx-auto">
+                Join thousands of users who've already built their productivity empire with
+                MentorPath
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <a
+                  href="/pricing"
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-all duration-300"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span className="font-body">10,000+ active users</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg
-                  className="w-4 h-4 text-emerald-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                  View All Plans
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </a>
+                <a
+                  href="/login"
+                  className="inline-flex items-center gap-3 px-8 py-4 border border-white text-white font-semibold rounded-xl hover:bg-white hover:text-slate-900 transition-all duration-300"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span className="font-body">99.9% uptime</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <svg
-                  className="w-4 h-4 text-emerald-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span className="font-body">24/7 support</span>
+                  Start Free Trial
+                </a>
               </div>
             </div>
           </div>
@@ -433,7 +510,7 @@ export default function LandingPage() {
       <DemoScreens />
       <Testimonials />
       <PricingCTA />
-      <FooterLanding />
+      <FooterLegal />
     </main>
   )
 }

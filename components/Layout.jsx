@@ -1,9 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
 import MobileBottomNav from '@/components/MobileBottomNav'
+import SettingsModal from '@/components/SettingsModal'
+import TrialBanner from '@/components/TrialBanner'
 import { useSidebar } from '@/lib/SidebarContext'
 
 // Layout: Root layout wrapper composing Sidebar, Header, and content area
@@ -19,6 +21,9 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
     closeMobileSidebar,
     openMobileSidebar,
   } = useSidebar()
+
+  // Settings modal state
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
 
   // Compute grid template columns from prop for large screens
   const gridColsLg = useMemo(() => {
@@ -49,6 +54,7 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
         />
 
         <div className="main-content flex-1 min-w-0 flex flex-col">
+          <TrialBanner />
           <Header
             user={user}
             title="Dashboard"
@@ -59,6 +65,7 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
             onToggleSidebarMobile={toggleMobileSidebar}
             onToggleSidebarCollapse={toggleSidebar}
             sidebarCollapsed={sidebarCollapsed}
+            onOpenSettings={() => setSettingsModalOpen(true)}
           />
 
           <main id="main" className="flex-1 min-w-0 p-4 md:p-6">
@@ -85,6 +92,13 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
           <MobileBottomNav />
         </div>
       </div>
+
+      {/* Settings Modal - Rendered at Layout level */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        user={user}
+      />
     </div>
   )
 }
