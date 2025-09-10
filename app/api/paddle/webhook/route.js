@@ -9,6 +9,8 @@ import {
   where,
   getDocs,
 } from 'firebase/firestore'
+import { PADDLE_CONFIG } from '@/lib/paddleApi'
+import crypto from 'crypto'
 
 // Paddle webhook handler for subscription events
 export async function POST(request) {
@@ -18,11 +20,12 @@ export async function POST(request) {
 
     console.log('Paddle webhook received:', { event_type, data })
 
-    // Verify webhook signature (implement proper verification in production)
-    // const signature = request.headers.get('paddle-signature')
-    // if (!verifyPaddleSignature(body, signature)) {
-    //   return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
-    // }
+    // Verify webhook signature
+    const signature = request.headers.get('paddle-signature')
+    if (!verifyPaddleSignature(body, signature)) {
+      console.error('Invalid webhook signature')
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
 
     switch (event_type) {
       case 'subscription.created':
@@ -267,10 +270,62 @@ async function handlePaymentFailed(data) {
   }
 }
 
-// Verify Paddle webhook signature (implement in production)
+// Verify Paddle webhook signature
 function verifyPaddleSignature(payload, signature) {
-  // TODO: Implement proper signature verification
-  // This should verify the webhook signature using Paddle's public key
-  // For now, we'll return true (implement proper verification)
-  return true
+  if (!signature || !PADDLE_CONFIG.webhookSecret) {
+    console.error('Missing signature or webhook secret')
+    return false
+  }
+
+  try {
+    // Parse the signature header
+    const elements = signature.split(',')
+    const signatureElements = {}
+
+    for (const element of elements) {
+      const [key, value] = element.split('=')
+      signatureElements[key] = value
+    }
+
+    const timestamp = signatureElements.t
+    const v1 = signatureElements.v1
+
+    if (!timestamp || !v1) {
+      console.error('Invalid signature format')
+      return false
+    }
+
+    // Check if timestamp is within acceptable range (5 minutes)
+    const currentTime = Math.floor(Date.now() / 1000)
+    const signatureTime = parseInt(timestamp)
+
+    if (currentTime - signatureTime > 300) {
+      console.error('Signature timestamp too old')
+      return false
+    }
+
+    // Create the payload string
+    const payloadString = JSON.stringify(payload)
+    const signedPayload = `${timestamp}:${payloadString}`
+
+    // Create HMAC signature
+    const hmac = crypto.createHmac('sha256', PADDLE_CONFIG.webhookSecret)
+    hmac.update(signedPayload)
+    const expectedSignature = hmac.digest('hex')
+
+    // Compare signatures
+    const isValid = crypto.timingSafeEqual(
+      Buffer.from(v1, 'hex'),
+      Buffer.from(expectedSignature, 'hex')
+    )
+
+    if (!isValid) {
+      console.error('Signature verification failed')
+    }
+
+    return isValid
+  } catch (error) {
+    console.error('Error verifying signature:', error)
+    return false
+  }
 }

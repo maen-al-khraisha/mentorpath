@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/useAuth'
 import { getUserSubscription, updateUserPlan } from '@/lib/subscriptionApi'
+import { createCheckoutSession, initializePaddle, PADDLE_CONFIG, getPaddle } from '@/lib/paddleApi'
+import { handlePaymentError } from '@/lib/paymentErrors'
 import AppShell from '@/components/AppShell'
 import Button from '@/components/Button'
 import { Check, Crown, Star, Zap } from 'lucide-react'
@@ -27,7 +29,30 @@ export default function BillingPage() {
       }
     }
 
-    loadSubscription()
+    // Initialize Paddle on component mount
+    if (typeof window !== 'undefined') {
+      initializePaddle()
+    }
+
+    // Handle checkout success/cancel from URL parameters
+    const urlParams = new URLSearchParams(window.location.search)
+    const checkoutStatus = urlParams.get('checkout')
+
+    if (checkoutStatus === 'success') {
+      // Reload subscription data after successful checkout
+      loadSubscription()
+      // Show success message
+      alert('Payment successful! Welcome to Pro!')
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } else if (checkoutStatus === 'cancelled') {
+      // Show cancellation message
+      alert('Payment was cancelled. You can try again anytime.')
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } else {
+      loadSubscription()
+    }
   }, [user])
 
   const plans = [
@@ -36,6 +61,7 @@ export default function BillingPage() {
       name: 'Free',
       price: '$0',
       period: 'forever',
+      productId: null,
       features: [
         '20 tasks per month',
         '5 notes per month',
@@ -52,6 +78,7 @@ export default function BillingPage() {
       name: 'Pro',
       price: '$7',
       period: 'per month',
+      productId: process.env.NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID,
       features: [
         'Unlimited tasks',
         'Unlimited notes',
@@ -74,29 +101,80 @@ export default function BillingPage() {
 
     setUpgrading(true)
     try {
-      // In a real implementation, this would redirect to Paddle checkout
-      // For now, we'll simulate the upgrade process
-
       if (planId === 'pro') {
-        // Simulate Paddle checkout redirect
-        const paddleCheckoutUrl = `https://checkout.paddle.com/pay/your-product-id?email=${user.email}&customer_id=${user.uid}`
+        // Initialize Paddle if not already done
+        initializePaddle()
 
-        // For demo purposes, we'll update the plan directly
-        // In production, this would happen after successful Paddle payment
-        await updateUserPlan(user.uid, 'pro', {
-          paddleCustomerId: `demo-${user.uid}`,
-          paddleSubscriptionId: `demo-sub-${Date.now()}`,
+        // Get the appropriate product ID based on billing period
+        const productId =
+          plans.find((p) => p.id === planId)?.productId ||
+          process.env.NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID
+
+        // Debug logging
+        console.log('🔍 Debug Info:', {
+          planId,
+          productId,
+          userEmail: user.email,
+          userId: user.uid,
+          environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
         })
 
-        // Reload subscription data
-        const updatedSubscription = await getUserSubscription(user.uid)
-        setSubscription(updatedSubscription)
+        if (!productId) {
+          throw new Error('Product ID is missing. Please check your environment variables.')
+        }
 
-        alert('Upgrade successful! You now have Pro access.')
+        // Use Paddle JS SDK with redirect mode to avoid CSP issues
+        const paddle = getPaddle()
+
+        if (!paddle) {
+          throw new Error('Paddle SDK not initialized. Please check your Paddle client ID.')
+        }
+
+        console.log('🚀 Creating Paddle checkout with redirect mode...')
+
+        // Create checkout using Paddle SDK with redirect mode
+        paddle.Checkout.open({
+          items: [
+            {
+              priceId: productId,
+              quantity: 1,
+            },
+          ],
+          customer: {
+            email: user.email,
+            customData: {
+              user_id: user.uid,
+              plan: planId,
+            },
+          },
+          customData: {
+            user_id: user.uid,
+            plan: planId,
+          },
+          settings: {
+            displayMode: 'redirect',
+            theme: 'light',
+            locale: 'en',
+            allowLogout: false,
+          },
+          eventCallback: (data) => {
+            console.log('🔍 Paddle checkout event:', data)
+
+            if (data.name === 'checkout.completed') {
+              console.log('✅ Checkout completed!')
+              // Reload the page to show updated subscription
+              window.location.reload()
+            } else if (data.name === 'checkout.error') {
+              console.error('❌ Checkout error:', data)
+              alert('Payment failed. Please try again.')
+            }
+          },
+        })
       }
     } catch (error) {
       console.error('Error upgrading:', error)
-      alert('Error upgrading. Please try again.')
+      const errorInfo = handlePaymentError(error)
+      alert(`Error upgrading: ${errorInfo.userMessage}`)
     } finally {
       setUpgrading(false)
     }
