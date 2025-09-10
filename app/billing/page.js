@@ -117,10 +117,22 @@ export default function BillingPage() {
           userEmail: user.email,
           userId: user.uid,
           environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
+          allEnvVars: {
+            NEXT_PUBLIC_PADDLE_CLIENT_ID: process.env.NEXT_PUBLIC_PADDLE_CLIENT_ID,
+            NEXT_PUBLIC_PADDLE_ENVIRONMENT: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
+            NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID: process.env.NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID,
+            NEXT_PUBLIC_PADDLE_VENDOR_ID: process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID,
+          },
         })
 
         if (!productId) {
-          throw new Error('Product ID is missing. Please check your environment variables.')
+          console.error('❌ Missing Product ID. Environment variables:', {
+            NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID: process.env.NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID,
+            planProductId: plans.find((p) => p.id === planId)?.productId,
+          })
+          throw new Error(
+            'Product ID is missing. Please check your environment variables. Contact support if this persists.'
+          )
         }
 
         // Use Paddle JS SDK with redirect mode to avoid CSP issues
