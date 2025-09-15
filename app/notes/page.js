@@ -135,7 +135,6 @@ export default function NotesPage() {
   }
 
   const handleNoteConverted = (convertedNoteId, newTaskId) => {
-    console.log('Note converted to task:', { noteId: convertedNoteId, taskId: newTaskId })
     setNotes((prev) => prev.filter((note) => note.id !== convertedNoteId))
   }
 

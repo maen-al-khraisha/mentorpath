@@ -116,6 +116,9 @@ export default function Modal({
               : 'opacity-0 transform scale-75 translate-y-8 shadow-none -rotate-3'
           } ${className}`}
           onClick={(e) => e.stopPropagation()}
+          data-modal="true"
+          role="dialog"
+          aria-modal="true"
           style={{
             transformOrigin: 'center center',
             willChange: 'transform, opacity',

@@ -59,50 +59,38 @@ export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate
       // Handle date conversion properly
       let initialDate
       if (task.date) {
-        console.log('Task date value:', task.date)
-        console.log('Task date type:', typeof task.date)
-        console.log('Task date constructor:', task.date.constructor?.name)
-
         try {
           // Handle different date formats (Firestore timestamp, Date object, string, etc.)
           if (task.date.toDate && typeof task.date.toDate === 'function') {
             // Firestore timestamp
             initialDate = task.date.toDate()
-            console.log('Converted from Firestore timestamp:', initialDate)
           } else if (task.date instanceof Date) {
             // Already a Date object
             initialDate = task.date
-            console.log('Already a Date object:', initialDate)
           } else {
             // Try to create a Date from the value
             initialDate = new Date(task.date)
-            console.log('Created new Date from value:', initialDate)
           }
 
           // Validate the date
           if (isNaN(initialDate.getTime())) {
-            console.log('Invalid date, using default')
             initialDate = defaultDate || new Date()
           } else {
-            console.log('Valid date set:', initialDate)
           }
         } catch (error) {
           console.error('Error processing task date:', error)
           initialDate = defaultDate || new Date()
         }
       } else {
-        console.log('No task date, using default')
         initialDate = defaultDate || new Date()
       }
 
       // Ensure we always set a valid date
       if (initialDate && !isNaN(initialDate.getTime())) {
         setDate(initialDate)
-        console.log('Setting valid date:', initialDate)
       } else {
         const fallbackDate = new Date()
         setDate(fallbackDate)
-        console.log('Setting fallback date:', fallbackDate)
       }
 
       setDescription(task.description || '')
@@ -111,7 +99,6 @@ export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate
       setChecklist([...(task.checklist || [])])
       // Load original task attachments
       if (task.attachments && Array.isArray(task.attachments) && task.attachments.length > 0) {
-        console.log('Loading original task attachments:', task.attachments)
         // Convert original attachments to the format expected by the component
         const originalAttachments = task.attachments.map((attachment, index) => ({
           id: `original-${index}`,
@@ -125,7 +112,6 @@ export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate
           originalData: attachment, // Keep original data for reference
         }))
         setSelectedFiles(originalAttachments)
-        console.log('Converted attachments:', originalAttachments)
       } else {
         setSelectedFiles([])
       }
@@ -196,7 +182,6 @@ export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate
             try {
               if (fileItem.isOriginal) {
                 // For original attachments, we need to copy them properly
-                console.log('Copying original attachment:', fileItem.file.name)
 
                 try {
                   // Since there's no copyAttachment function, we need to download and re-upload
@@ -229,7 +214,6 @@ export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate
                     )
 
                     // Upload the copied file to the new task
-                    console.log('Uploading copied attachment:', file.name)
                     await addAttachment(id, file)
 
                     showToast(`Successfully copied attachment "${file.name}"`, 'success')
@@ -252,7 +236,6 @@ export default function TaskCopyModal({ open, onClose, task, onCopy, defaultDate
                 }
               } else {
                 // For new files, upload them
-                console.log('Uploading new attachment:', fileItem.file.name)
                 await addAttachment(id, fileItem.file)
               }
             } catch (uploadError) {

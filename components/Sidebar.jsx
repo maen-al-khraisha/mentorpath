@@ -4,6 +4,7 @@ import React, { useEffect, useCallback, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/useAuth'
+import { getUserSubscription } from '@/lib/subscriptionApi'
 import {
   ChevronsLeft,
   ChevronsRight,
@@ -14,6 +15,7 @@ import {
   Heart,
   Share2,
   Zap,
+  Crown,
 } from 'lucide-react'
 import navConfig from '../lib/navConfig'
 import ShareDialog from './ShareDialog'
@@ -29,9 +31,32 @@ export default function Sidebar({
   onCloseMobile,
 }) {
   const pathname = usePathname()
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth()
   const router = useRouter()
   const [showShareDialog, setShowShareDialog] = useState(false)
+  const [subscription, setSubscription] = useState(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true)
+
+  // Load subscription data
+  useEffect(() => {
+    async function loadSubscription() {
+      if (!user) {
+        setSubscriptionLoading(false)
+        return
+      }
+
+      try {
+        const userSubscription = await getUserSubscription(user.uid)
+        setSubscription(userSubscription)
+      } catch (error) {
+        console.error('Error loading subscription:', error)
+      } finally {
+        setSubscriptionLoading(false)
+      }
+    }
+
+    loadSubscription()
+  }, [user])
 
   const handleSignOut = async () => {
     try {
@@ -40,6 +65,28 @@ export default function Sidebar({
       router.push('/')
     } catch (error) {
       console.error('Error signing out:', error)
+    }
+  }
+
+  const handleDowngrade = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to downgrade to the Free plan? You will lose access to unlimited features and advanced insights.'
+    )
+
+    if (confirmed) {
+      try {
+        const { downgradeToFree } = await import('@/lib/subscriptionApi')
+        await downgradeToFree(user.uid)
+
+        // Refresh subscription data
+        const userSubscription = await getUserSubscription(user.uid)
+        setSubscription(userSubscription)
+
+        alert('Successfully downgraded to Free plan!')
+      } catch (error) {
+        console.error('Downgrade failed:', error)
+        alert('Failed to downgrade. Please try again.')
+      }
     }
   }
 
@@ -179,20 +226,61 @@ export default function Sidebar({
         </div>
       </div>
 
+      {/* Plan Status */}
+      {!subscriptionLoading && subscription && (
+        <div
+          className={`${collapsed ? 'flex justify-center' : 'px-3'} py-2 border-t border-slate-200`}
+        >
+          <div
+            className={`${collapsed ? 'w-[42px] h-[42px]' : 'w-full'} flex items-center justify-center ${collapsed ? '' : 'gap-2'} bg-gradient-to-r ${subscription.plan === 'pro' ? 'from-yellow-400 to-yellow-500' : 'from-gray-400 to-gray-500'} rounded-lg p-2`}
+          >
+            <Crown size={collapsed ? 22 : 18} className="text-white" />
+            {!collapsed && (
+              <span className="text-sm font-medium text-white capitalize">
+                {subscription.plan} Plan
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Upgrade Button */}
       <div
-        className={`${collapsed ? 'flex justify-center' : 'px-3'} py-2 border-t border-slate-200`}
+        className={`${collapsed ? 'flex justify-center' : 'px-3'} py-2 ${subscription?.plan === 'pro' ? 'border-t border-slate-200' : ''}`}
       >
-        <Button
-          variant="primary"
-          onClick={() => router.push('/pricing')}
-          className={`${collapsed ? 'w-[42px] h-[42px]' : 'w-full'}`}
-          title={collapsed ? 'Upgrade' : 'Upgrade to Pro'}
-          size={collapsed ? 'icon' : 'default'}
-        >
-          <Zap size={collapsed ? 22 : 20} className="text-yellow-400" />
-          {!collapsed && <span className="text-sm font-medium ml-2">Upgrade</span>}
-        </Button>
+        {subscription?.plan === 'pro' ? (
+          <div className="space-y-2">
+            <div
+              className={`${collapsed ? 'w-[42px] h-[42px]' : 'w-full'} flex items-center justify-center bg-green-100 rounded-lg p-2`}
+            >
+              <Crown size={collapsed ? 22 : 18} className="text-green-600" />
+              {!collapsed && (
+                <span className="text-sm font-medium text-green-600 ml-2">Pro Active</span>
+              )}
+            </div>
+            {!collapsed && (
+              <Button
+                variant="outline"
+                onClick={handleDowngrade}
+                className="w-full text-red-600 border-red-300 hover:bg-red-50 text-xs"
+                size="sm"
+              >
+                Downgrade
+              </Button>
+            )}
+          </div>
+        ) : (
+          <Button
+            variant="primary"
+            onClick={() => router.push('/mock-payment')}
+            className={`${collapsed ? 'w-[42px] h-[42px]' : 'w-full'}`}
+            title={collapsed ? 'Upgrade' : 'Upgrade to Pro'}
+            size={collapsed ? 'icon' : 'default'}
+          >
+            <Zap size={collapsed ? 22 : 20} className="text-yellow-400" />
+            {!collapsed && <span className="text-sm font-medium ml-2">Upgrade</span>}
+          </Button>
+        )}
       </div>
 
       {/* Share Button */}

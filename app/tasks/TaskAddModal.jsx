@@ -8,6 +8,7 @@ import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 import Modal from '@/components/ui/Modal'
+import UpgradeModal from '@/components/UpgradeModal'
 
 import { Paperclip, Target, Plus, List, TargetIcon, X } from 'lucide-react'
 import LabelBadge from '@/components/LabelBadge'
@@ -45,11 +46,24 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
   const [selectedFiles, setSelectedFiles] = useState([])
   const [uploadingFiles, setUploadingFiles] = useState(new Set())
   const [uploadProgress, setUploadProgress] = useState({})
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   // Dynamically import Quill CSS when modal opens
   useEffect(() => {
     if (open) {
-      import('react-quill-new/dist/quill.snow.css')
+      // Import Quill CSS
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = 'https://cdn.quilljs.com/1.3.6/quill.snow.css'
+      document.head.appendChild(link)
+
+      return () => {
+        // Clean up CSS when modal closes
+        const existingLink = document.querySelector('link[href*="quill.snow.css"]')
+        if (existingLink) {
+          existingLink.remove()
+        }
+      }
     }
   }, [open])
 
@@ -113,8 +127,6 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
         attachments: [], // Start with empty attachments
       })
 
-      console.log('Task created successfully with ID:', id)
-
       // If we have files to upload, handle them separately with proper error handling
       if (selectedFiles.length > 0) {
         try {
@@ -139,7 +151,6 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
       // Task created successfully
       showToast(`Task "${title}" created successfully!`, 'success')
-      console.log('Success toast shown for task:', title)
 
       // Clear form fields first
       setTitle('')
@@ -153,8 +164,6 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
         onClose?.(id)
       }, 100)
     } catch (e) {
-      console.error('Task creation failed:', e)
-
       // Use our professional error handling function
       showUserFriendlyError(e)
     } finally {
@@ -218,6 +227,13 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
 
   // Professional error handling function
   function showUserFriendlyError(error, fileName = '') {
+    // Handle task limit errors first (don't log these to console)
+    if (error.message && error.message.includes('task limit')) {
+      setShowUpgradeModal(true)
+      return
+    }
+
+    // Only log unexpected errors, not limit errors
     console.error('Error details:', error)
 
     // Handle file size errors specifically
@@ -622,14 +638,33 @@ export default function TaskAddModal({ open, onClose, defaultDate }) {
     </>
   )
 
+  const handleUpgrade = () => {
+    window.location.href = '/mock-payment'
+  }
+
+  const handleCloseUpgradeModal = () => {
+    setShowUpgradeModal(false)
+  }
+
   return (
-    <Modal
-      isOpen={open}
-      onClose={onClose}
-      header={modalHeader}
-      content={modalContent}
-      footer={modalFooter}
-      size="large"
-    />
+    <>
+      <Modal
+        isOpen={open}
+        onClose={onClose}
+        header={modalHeader}
+        content={modalContent}
+        footer={modalFooter}
+        size="large"
+      />
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={handleCloseUpgradeModal}
+        onUpgrade={handleUpgrade}
+        limitType="tasks"
+        limitCount={20}
+        limitPeriod="month"
+      />
+    </>
   )
 }

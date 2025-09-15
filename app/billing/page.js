@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/useAuth'
-import { getUserSubscription, updateUserPlan } from '@/lib/subscriptionApi'
-import { createCheckoutSession, initializePaddle, PADDLE_CONFIG, getPaddle } from '@/lib/paddleApi'
-import { handlePaymentError } from '@/lib/paymentErrors'
+import { getUserSubscription } from '@/lib/subscriptionApi'
 import AppShell from '@/components/AppShell'
 import Button from '@/components/Button'
 import { Check, Crown, Star, Zap } from 'lucide-react'
@@ -13,7 +11,6 @@ export default function BillingPage() {
   const { user } = useAuth()
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [upgrading, setUpgrading] = useState(false)
 
   useEffect(() => {
     async function loadSubscription() {
@@ -29,31 +26,41 @@ export default function BillingPage() {
       }
     }
 
-    // Initialize Paddle on component mount
-    if (typeof window !== 'undefined') {
-      initializePaddle()
-    }
-
-    // Handle checkout success/cancel from URL parameters
-    const urlParams = new URLSearchParams(window.location.search)
-    const checkoutStatus = urlParams.get('checkout')
-
-    if (checkoutStatus === 'success') {
-      // Reload subscription data after successful checkout
-      loadSubscription()
-      // Show success message
-      alert('Payment successful! Welcome to Pro!')
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname)
-    } else if (checkoutStatus === 'cancelled') {
-      // Show cancellation message
-      alert('Payment was cancelled. You can try again anytime.')
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname)
-    } else {
-      loadSubscription()
-    }
+    loadSubscription()
   }, [user])
+
+  const handleUpgrade = async (planId) => {
+    if (!user) return
+
+    if (planId === 'pro') {
+      // Redirect to mock payment page
+      window.location.href = '/mock-payment'
+    }
+  }
+
+  const handleDowngrade = async () => {
+    if (!user) return
+
+    const confirmed = window.confirm(
+      'Are you sure you want to downgrade to the Free plan? You will lose access to unlimited features and advanced insights.'
+    )
+
+    if (confirmed) {
+      try {
+        const { downgradeToFree } = await import('@/lib/subscriptionApi')
+        await downgradeToFree(user.uid)
+
+        // Refresh subscription data
+        const userSubscription = await getUserSubscription(user.uid)
+        setSubscription(userSubscription)
+
+        alert('Successfully downgraded to Free plan!')
+      } catch (error) {
+        console.error('Downgrade failed:', error)
+        alert('Failed to downgrade. Please try again.')
+      }
+    }
+  }
 
   const plans = [
     {
@@ -61,7 +68,6 @@ export default function BillingPage() {
       name: 'Free',
       price: '$0',
       period: 'forever',
-      productId: null,
       features: [
         '20 tasks per month',
         '5 notes per month',
@@ -78,7 +84,6 @@ export default function BillingPage() {
       name: 'Pro',
       price: '$7',
       period: 'per month',
-      productId: process.env.NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID,
       features: [
         'Unlimited tasks',
         'Unlimited notes',
@@ -95,102 +100,6 @@ export default function BillingPage() {
       savings: 'Save $24/year with annual billing',
     },
   ]
-
-  const handleUpgrade = async (planId) => {
-    if (!user) return
-
-    setUpgrading(true)
-    try {
-      if (planId === 'pro') {
-        // Initialize Paddle if not already done
-        initializePaddle()
-
-        // Get the appropriate product ID based on billing period
-        const productId =
-          plans.find((p) => p.id === planId)?.productId ||
-          process.env.NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID
-
-        // Debug logging
-        console.log('🔍 Debug Info:', {
-          planId,
-          productId,
-          userEmail: user.email,
-          userId: user.uid,
-          environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
-          allEnvVars: {
-            NEXT_PUBLIC_PADDLE_CLIENT_ID: process.env.NEXT_PUBLIC_PADDLE_CLIENT_ID,
-            NEXT_PUBLIC_PADDLE_ENVIRONMENT: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
-            NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID: process.env.NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID,
-            NEXT_PUBLIC_PADDLE_VENDOR_ID: process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID,
-          },
-        })
-
-        if (!productId) {
-          console.error('❌ Missing Product ID. Environment variables:', {
-            NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID: process.env.NEXT_PUBLIC_PADDLE_PRO_MONTHLY_ID,
-            planProductId: plans.find((p) => p.id === planId)?.productId,
-          })
-          throw new Error(
-            'Product ID is missing. Please check your environment variables. Contact support if this persists.'
-          )
-        }
-
-        // Use Paddle JS SDK with redirect mode to avoid CSP issues
-        const paddle = getPaddle()
-
-        if (!paddle) {
-          throw new Error('Paddle SDK not initialized. Please check your Paddle client ID.')
-        }
-
-        console.log('🚀 Creating Paddle checkout with redirect mode...')
-
-        // Create checkout using Paddle SDK with redirect mode
-        paddle.Checkout.open({
-          items: [
-            {
-              priceId: productId,
-              quantity: 1,
-            },
-          ],
-          customer: {
-            email: user.email,
-            customData: {
-              user_id: user.uid,
-              plan: planId,
-            },
-          },
-          customData: {
-            user_id: user.uid,
-            plan: planId,
-          },
-          settings: {
-            displayMode: 'redirect',
-            theme: 'light',
-            locale: 'en',
-            allowLogout: false,
-          },
-          eventCallback: (data) => {
-            console.log('🔍 Paddle checkout event:', data)
-
-            if (data.name === 'checkout.completed') {
-              console.log('✅ Checkout completed!')
-              // Reload the page to show updated subscription
-              window.location.reload()
-            } else if (data.name === 'checkout.error') {
-              console.error('❌ Checkout error:', data)
-              alert('Payment failed. Please try again.')
-            }
-          },
-        })
-      }
-    } catch (error) {
-      console.error('Error upgrading:', error)
-      const errorInfo = handlePaymentError(error)
-      alert(`Error upgrading: ${errorInfo.userMessage}`)
-    } finally {
-      setUpgrading(false)
-    }
-  }
 
   const getCurrentPlan = () => {
     if (!subscription) return null
@@ -214,22 +123,28 @@ export default function BillingPage() {
     <AppShell>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Plan</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Current Plan</h1>
           <p className="text-gray-600 mb-4">
             {subscription?.plan === 'pro'
-              ? 'You are currently on the Pro plan. Manage your subscription below.'
-              : 'Upgrade to unlock unlimited features and advanced insights.'}
+              ? 'You are currently on the Pro plan with unlimited access to all features.'
+              : 'You are currently on the Free plan. Contact support to upgrade.'}
           </p>
-          <a href="/pricing" className="text-blue-600 hover:text-blue-800 underline text-sm">
-            View detailed pricing information →
-          </a>
         </div>
 
         {subscription?.plan === 'pro' && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
-            <div className="flex items-center space-x-2">
-              <Crown className="h-5 w-5 text-green-600" />
-              <span className="text-green-800 font-medium">Pro Plan Active</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Crown className="h-5 w-5 text-green-600" />
+                <span className="text-green-800 font-medium">Pro Plan Active</span>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleDowngrade}
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                Downgrade to Free
+              </Button>
             </div>
             <p className="text-green-700 text-sm mt-1">
               You have unlimited access to all features. Thank you for being a Pro user!
@@ -247,7 +162,7 @@ export default function BillingPage() {
                 key={plan.id}
                 className={`relative border rounded-lg p-6 ${
                   plan.popular ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
-                }`}
+                } ${isCurrentPlan ? 'ring-2 ring-green-500' : ''}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -293,28 +208,19 @@ export default function BillingPage() {
 
                 <div className="text-center">
                   {isCurrentPlan ? (
-                    <div className="bg-gray-100 text-gray-700 py-2 px-4 rounded-md text-sm font-medium">
-                      Current Plan
+                    <div className="bg-green-100 text-green-700 py-2 px-4 rounded-md text-sm font-medium">
+                      ✓ Current Plan
                     </div>
                   ) : (
                     <Button
                       onClick={() => handleUpgrade(plan.id)}
-                      disabled={upgrading}
                       className={`w-full ${
-                        isPro ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700'
+                        plan.popular
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                          : 'bg-gray-900 hover:bg-gray-800 text-white'
                       }`}
                     >
-                      {upgrading ? (
-                        <div className="flex items-center space-x-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          <span>Processing...</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-2">
-                          {isPro && <Crown className="h-4 w-4" />}
-                          <span>Upgrade to {plan.name}</span>
-                        </div>
-                      )}
+                      Upgrade to {plan.name}
                     </Button>
                   )}
                 </div>

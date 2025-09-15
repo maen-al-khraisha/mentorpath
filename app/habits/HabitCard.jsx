@@ -21,7 +21,6 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
     if (typeof window === 'undefined') return 21 // SSR fallback
 
     const width = window.innerWidth
-    console.log('Screen width:', width, 'Calculating days per row...')
 
     let result
     if (width < 640) {
@@ -38,30 +37,24 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
       result = 28 // xl+: 28 days (large screens)
     }
 
-    console.log('Days per row calculated:', result)
     return result
   }
 
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      console.log('🔄 Window resized, recalculating days per row...')
       const newDaysPerRow = calculateDaysPerRow()
-      console.log('📏 New days per row:', newDaysPerRow)
 
       // Only update if the days per row actually changed
       if (newDaysPerRow !== daysPerRow) {
-        console.log('🔄 Days per row changed from', daysPerRow, 'to', newDaysPerRow)
         setDaysPerRow(newDaysPerRow)
         setLastResizeTime(Date.now()) // Update timestamp
       } else {
-        console.log('⏭️ Days per row unchanged, skipping update')
       }
     }
 
     // Set initial value
     const initialDaysPerRow = calculateDaysPerRow()
-    console.log('🚀 Initial days per row:', initialDaysPerRow)
     setDaysPerRow(initialDaysPerRow)
 
     // Add event listener without throttling for immediate response
@@ -71,11 +64,9 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
     window.addEventListener('orientationchange', handleResize)
 
     // Test resize event is working
-    console.log('📱 Resize event listeners added')
 
     // Cleanup
     return () => {
-      console.log('🧹 Cleaning up resize event listeners')
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('orientationchange', handleResize)
     }
@@ -139,12 +130,10 @@ export default function HabitCard({ habit, onEdit, onUpdate, onDelete }) {
       // Check if this day is already completed
       if (habit.completedDates?.includes(dateKey)) {
         // If completed, mark as incomplete (uncheck)
-        console.log('Marking day as incomplete:', dateKey)
         await markHabitIncomplete(habit.id, date)
         showToast('Day marked as incomplete', 'info')
       } else {
         // If not completed, mark as complete (check)
-        console.log('Marking day as complete:', dateKey)
         await markHabitCompleted(habit.id, date)
         showToast('Day marked as complete', 'success')
       }

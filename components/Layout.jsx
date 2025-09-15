@@ -5,7 +5,7 @@ import Sidebar from '@/components/Sidebar'
 import Header from '@/components/Header'
 import MobileBottomNav from '@/components/MobileBottomNav'
 import SettingsModal from '@/components/SettingsModal'
-import TrialBanner from '@/components/TrialBanner'
+import PlanBanner from '@/components/TrialBanner'
 import { useSidebar } from '@/lib/SidebarContext'
 
 // Layout: Root layout wrapper composing Sidebar, Header, and content area
@@ -54,7 +54,7 @@ export default function Layout({ children, columns = '1', onPrevDate, onNextDate
         />
 
         <div className="main-content flex-1 min-w-0 flex flex-col">
-          <TrialBanner />
+          <PlanBanner />
           <Header
             user={user}
             title="Dashboard"

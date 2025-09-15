@@ -52,7 +52,6 @@ export default function CustomDatePicker({
     }
     return null
   })
-  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 })
   const buttonRef = useRef(null)
 
   // Update current month when value changes
@@ -89,70 +88,12 @@ export default function CustomDatePicker({
     }
   }, [value])
 
-  // Recalculate position on window resize and scroll
-  useEffect(() => {
-    const handleResize = () => {
-      if (isOpen) {
-        calculatePopupPosition()
-      }
-    }
-
-    const handleScroll = () => {
-      if (isOpen) {
-        calculatePopupPosition()
-      }
-    }
-
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('scroll', handleScroll, true)
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      window.removeEventListener('scroll', handleScroll, true)
-    }
-  }, [isOpen])
-
   const handleDateSelect = (date) => {
     // Create a new date using local components to avoid timezone issues
     const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
     setSelectedDate(localDate)
     onChange(localDate)
     setIsOpen(false)
-  }
-
-  const calculatePopupPosition = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      const viewportHeight = window.innerHeight
-      const viewportWidth = window.innerWidth
-      const popupHeight = 400 // Approximate height of the popup
-      const popupWidth = 320 // Width of the popup (w-80 = 320px)
-
-      // Calculate top position
-      let top = rect.bottom + 8
-      if (top + popupHeight > viewportHeight) {
-        // If popup would go below viewport, position it above the button
-        top = rect.top - popupHeight - 8
-      }
-
-      // Ensure minimum top position
-      if (top < 16) {
-        top = 16
-      }
-
-      // Calculate left position
-      let left = rect.left
-      if (left + popupWidth > viewportWidth) {
-        // If popup would go beyond right edge, align it to the right
-        left = viewportWidth - popupWidth - 16
-      }
-
-      // Ensure minimum left position
-      if (left < 16) {
-        left = 16
-      }
-
-      setPopupPosition({ top, left })
-    }
   }
 
   const goToPreviousMonth = () => {
@@ -276,7 +217,6 @@ export default function CustomDatePicker({
   // Ensure currentMonth is always valid
   useEffect(() => {
     if (!currentMonth || isNaN(currentMonth.getTime())) {
-      console.log('Resetting invalid currentMonth to current date')
       setCurrentMonth(new Date())
     }
   }, [currentMonth])
@@ -297,9 +237,6 @@ export default function CustomDatePicker({
           type="button"
           onClick={() => {
             if (!disabled) {
-              if (!isOpen) {
-                calculatePopupPosition()
-              }
               setIsOpen(!isOpen)
             }
           }}
@@ -319,10 +256,11 @@ export default function CustomDatePicker({
         {/* Calendar Dropdown */}
         {isOpen && (
           <div
-            className="fixed z-[9999] bg-white border border-slate-200 rounded-2xl shadow-2xl w-80 overflow-hidden"
+            className="absolute z-[10001] bg-white border border-slate-200 rounded-2xl shadow-2xl w-80 overflow-hidden"
             style={{
-              top: `${popupPosition.top}px`,
-              left: `${popupPosition.left}px`,
+              top: '100%',
+              left: '0',
+              marginTop: '8px',
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -425,7 +363,7 @@ export default function CustomDatePicker({
       </div>
 
       {/* Click outside to close */}
-      {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
+      {isOpen && <div className="fixed inset-0 z-[9998]" onClick={() => setIsOpen(false)} />}
     </div>
   )
 }

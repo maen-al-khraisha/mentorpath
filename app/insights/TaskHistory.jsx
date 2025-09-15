@@ -27,7 +27,6 @@ export default function TaskHistory({ tasks, workSessions, onTaskSelect, periodD
     }
 
     // Now add tasks to their respective days
-    console.log('📥 TaskHistory received tasks:', tasks.length, 'tasks')
 
     tasks.forEach((task) => {
       // Try to get a valid date from the task
@@ -47,27 +46,25 @@ export default function TaskHistory({ tasks, workSessions, onTaskSelect, periodD
       } else if (task.createdAt) {
         taskDate = new Date(task.createdAt)
       } else {
-        console.log('⚠️ Task has no valid date:', task.id, task.title)
         return // Skip this task
       }
 
       // Check if we have a valid date
       if (isNaN(taskDate.getTime())) {
-        console.log('⚠️ Task has invalid date after fallback:', task.id, task.title)
         return // Skip this task
       }
 
       // Use local date string to avoid timezone issues (same format as above)
       const dateKey = `${taskDate.getFullYear()}-${String(taskDate.getMonth() + 1).padStart(2, '0')}-${String(taskDate.getDate()).padStart(2, '0')}`
 
-      console.log('🔍 Task date matching:', {
+      return {
         taskId: task.id,
         taskTitle: task.title,
         taskDate: taskDate.toISOString(),
         dateKey,
         hasGroup: !!groups[dateKey],
         availableKeys: Object.keys(groups),
-      })
+      }
 
       // Only add to groups that exist (within the selected period)
       if (groups[dateKey]) {

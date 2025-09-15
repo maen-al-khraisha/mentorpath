@@ -162,6 +162,7 @@ export default function CalendarPage() {
 
   // Handle add event
   const handleAddEvent = () => {
+    setSelectedDate(null) // Clear selected date for general add event
     setShowAddModal(true)
   }
 

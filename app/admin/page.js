@@ -148,7 +148,6 @@ export default function AdminPage() {
   const loadUsers = async () => {
     try {
       setLoadingData(true)
-      console.log('Loading customers from Firestore...')
 
       // Try multiple collections to find all users
       const collections = ['users', 'customers', 'profiles']
@@ -156,13 +155,10 @@ export default function AdminPage() {
 
       for (const collectionName of collections) {
         try {
-          console.log(`Checking collection: ${collectionName}`)
           const snapshot = await getDocs(collection(firestore, collectionName))
-          console.log(`Found ${snapshot.docs.length} documents in ${collectionName}`)
 
           const usersFromCollection = snapshot.docs.map((doc) => {
             const userData = doc.data()
-            console.log(`User from ${collectionName}:`, doc.id, userData)
 
             return {
               id: doc.id,
@@ -188,7 +184,7 @@ export default function AdminPage() {
 
           allUsers = [...allUsers, ...usersFromCollection]
         } catch (error) {
-          console.log(
+          console.error(
             `Collection ${collectionName} not accessible or doesn't exist:`,
             error.message
           )
@@ -200,9 +196,6 @@ export default function AdminPage() {
         (user, index, self) =>
           index === self.findIndex((u) => u.email === user.email || u.uid === user.uid)
       )
-
-      console.log('All found users:', allUsers)
-      console.log('Unique users after deduplication:', uniqueUsers)
 
       // Debug: Log each user's details
       uniqueUsers.forEach((user, index) => {
@@ -243,10 +236,6 @@ export default function AdminPage() {
 
   const loadStats = async () => {
     try {
-      console.log('loadStats called with users:', users)
-      console.log('users.length:', users.length)
-      console.log('users array:', JSON.stringify(users, null, 2))
-
       const totalCustomers = users.length
       const activeSubscriptions = users.filter((u) => u.subscription_status === 'active').length
       const customersWithPackages = users.filter((u) => u.current_package).length
@@ -294,7 +283,6 @@ export default function AdminPage() {
   const syncFirebaseAuthUsers = async () => {
     try {
       setLoadingData(true)
-      console.log('Creating Firestore documents for Firebase Auth users...')
 
       // Get current user to check if they're admin
       if (!user || user.email !== 'maen.alkhraisha@gmail.com') {
@@ -337,7 +325,6 @@ export default function AdminPage() {
         // Skip if we already have this user in Firestore
         const existingUser = users.find((u) => u.email === authUser.email)
         if (existingUser) {
-          console.log(`User ${authUser.email} already exists in Firestore`)
           continue
         }
 
@@ -361,7 +348,6 @@ export default function AdminPage() {
       }
 
       await batch.commit()
-      console.log('Successfully created Firestore documents for Firebase Auth users')
 
       // Reload users to show the new ones
       await loadUsers()
@@ -378,7 +364,6 @@ export default function AdminPage() {
   const cleanupTestData = async () => {
     try {
       setLoadingData(true)
-      console.log('Cleaning up test data...')
 
       // Get current user to check if they're admin
       if (!user || user.email !== 'maen.alkhraisha@gmail.com') {
@@ -416,11 +401,9 @@ export default function AdminPage() {
       testUsers.forEach((testUser) => {
         const userRef = doc(firestore, 'users', testUser.id)
         batch.delete(userRef)
-        console.log(`Marked for deletion: ${testUser.name} (${testUser.email})`)
       })
 
       await batch.commit()
-      console.log(`Successfully removed ${testUsers.length} test users`)
 
       // Reload users to reflect changes
       await loadUsers()
@@ -449,8 +432,6 @@ export default function AdminPage() {
 
   const createPackage = async () => {
     try {
-      console.log('Creating new package...')
-
       if (!newPackageData.name.trim()) {
         alert('Package name is required!')
         return
@@ -463,14 +444,9 @@ export default function AdminPage() {
         updated_at: new Date(),
       }
 
-      console.log('New package data:', newPackage)
-      console.log('Package ID:', newPackage.id)
-
       await setDoc(doc(firestore, 'packages', newPackage.id), newPackage)
-      console.log('Package saved to Firestore successfully')
 
       await loadPackages() // Refresh packages list
-      console.log('Packages list refreshed')
 
       // Close modal and reset form
       setShowCreatePackageModal(false)

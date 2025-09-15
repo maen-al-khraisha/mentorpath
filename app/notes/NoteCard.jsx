@@ -24,7 +24,7 @@ export default function NoteCard({ note, onDelete, onConvertToTask, onUpdate, vi
     try {
       // Import deleteNote function dynamically
       const { deleteNote } = await import('@/lib/notesApi')
-      await deleteNote(note.id)
+      await deleteNote(note.id, user?.uid)
       onDelete?.(note.id)
     } catch (error) {
       console.error('Failed to delete note:', error)

@@ -68,9 +68,6 @@ export default function TaskDetailsPanel({
 
   // Handle title editing
   const handleTitleSave = async () => {
-    console.log('handleTitleSave called with task:', task)
-    console.log('task.id:', task?.id)
-
     if (!task?.id) {
       console.error('Task ID is undefined or null:', task)
       showToast('Cannot update task: Invalid task ID', 'error')
@@ -150,12 +147,12 @@ export default function TaskDetailsPanel({
     setEditingTitleValue(task?.title || '')
   }, [task?.title])
 
-  // Debug task changes
   useEffect(() => {
-    console.log('TaskDetailsPanel: task prop changed:', task)
-    console.log('TaskDetailsPanel: task.id:', task?.id)
-    console.log('TaskDetailsPanel: task type:', typeof task)
-    console.log('TaskDetailsPanel: task keys:', task ? Object.keys(task) : 'no task')
+    if (task) {
+      setDescription(task.description || '')
+      setEditingTitleValue(task.title || '')
+      setLocalAttachments(task.attachments || [])
+    }
   }, [task])
 
   if (!task) {

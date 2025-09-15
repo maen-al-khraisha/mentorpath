@@ -46,7 +46,6 @@ export default function HabitsPage() {
   useEffect(() => {
     if (user && !loading) {
       const unsubscribe = subscribeToHabits(user.uid, (updatedHabits) => {
-        console.log('Real-time update received:', updatedHabits)
         setHabits(updatedHabits)
       })
 
@@ -117,11 +116,9 @@ export default function HabitsPage() {
   }
 
   function handleCloseModal() {
-    console.log('handleCloseModal called - setting isModalClosing to true')
     setIsModalClosing(true)
     // Wait for animation to complete before hiding modal
     setTimeout(() => {
-      console.log('Animation timeout - hiding modal')
       setShowAddModal(false)
       setIsModalClosing(false)
       setEditingHabit(null)

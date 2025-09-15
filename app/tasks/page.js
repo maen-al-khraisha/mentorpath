@@ -8,6 +8,7 @@ import {
   dayKey,
   listenTasksByDate,
   listenWorkSessionsByDate,
+  subscribeToTasks,
   toggleTaskCompleted,
   updateTask,
   startWorkSession,
@@ -63,6 +64,9 @@ export default function TasksPage() {
   const [timerTick, setTimerTick] = useState(0)
   const [priorityFilter, setPriorityFilter] = useState('All')
   const [labelFilter, setLabelFilter] = useState('All')
+  const [timeFilter, setTimeFilter] = useState('daily')
+  const [selectedMonth, setSelectedMonth] = useState(new Date())
+  const [selectedWeek, setSelectedWeek] = useState(new Date())
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState('list')
 
@@ -86,6 +90,64 @@ export default function TasksPage() {
   const [editingTaskId, setEditingTaskId] = useState(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  // Month navigation functions
+  const goToPreviousMonth = () => {
+    setSelectedMonth((prev) => {
+      const newMonth = new Date(prev)
+      newMonth.setMonth(prev.getMonth() - 1)
+      return newMonth
+    })
+  }
+
+  const goToNextMonth = () => {
+    setSelectedMonth((prev) => {
+      const newMonth = new Date(prev)
+      newMonth.setMonth(prev.getMonth() + 1)
+      return newMonth
+    })
+  }
+
+  const formatMonthYear = (date) => {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  }
+
+  // Week navigation functions
+  const goToPreviousWeek = () => {
+    setSelectedWeek((prev) => {
+      const newWeek = new Date(prev)
+      newWeek.setDate(prev.getDate() - 7)
+      return newWeek
+    })
+  }
+
+  const goToNextWeek = () => {
+    setSelectedWeek((prev) => {
+      const newWeek = new Date(prev)
+      newWeek.setDate(prev.getDate() + 7)
+      return newWeek
+    })
+  }
+
+  const formatWeekRange = (date) => {
+    const startOfWeek = new Date(date)
+    startOfWeek.setDate(date.getDate() - date.getDay()) // Start of week (Sunday)
+
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6) // End of week (Saturday)
+
+    const startMonth = startOfWeek.toLocaleDateString('en-US', { month: 'short' })
+    const endMonth = endOfWeek.toLocaleDateString('en-US', { month: 'short' })
+    const startDay = startOfWeek.getDate()
+    const endDay = endOfWeek.getDate()
+    const year = startOfWeek.getFullYear()
+
+    if (startMonth === endMonth) {
+      return `${startMonth} ${startDay}-${endDay}, ${year}`
+    } else {
+      return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`
+    }
+  }
 
   // Modal handlers
   const handleShiftToTomorrow = async () => {
@@ -226,17 +288,60 @@ export default function TasksPage() {
       setWorkSessions([])
       return
     }
-    const unsubTasks = listenTasksByDate(date, user.uid, setTasks)
-    const unsubSessions = listenWorkSessionsByDate(date, user.uid, setWorkSessions)
+
+    let unsubTasks, unsubSessions
+
+    if (timeFilter === 'monthly') {
+      // For monthly view, get all tasks and filter by selected month
+      unsubTasks = subscribeToTasks(user.uid, (allTasks) => {
+        const startOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1)
+        const endOfMonth = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0)
+
+        const monthlyTasks = allTasks.filter((task) => {
+          const taskDate = task.date?.toDate ? task.date.toDate() : new Date(task.date)
+          return taskDate >= startOfMonth && taskDate <= endOfMonth
+        })
+
+        setTasks(monthlyTasks)
+      })
+
+      // For work sessions, still use daily for now
+      unsubSessions = listenWorkSessionsByDate(date, user.uid, setWorkSessions)
+    } else if (timeFilter === 'weekly') {
+      // For weekly view, get all tasks and filter by selected week
+      unsubTasks = subscribeToTasks(user.uid, (allTasks) => {
+        const startOfWeek = new Date(selectedWeek)
+        startOfWeek.setDate(selectedWeek.getDate() - selectedWeek.getDay()) // Start of week (Sunday)
+        startOfWeek.setHours(0, 0, 0, 0)
+
+        const endOfWeek = new Date(startOfWeek)
+        endOfWeek.setDate(startOfWeek.getDate() + 6) // End of week (Saturday)
+        endOfWeek.setHours(23, 59, 59, 999)
+
+        const weeklyTasks = allTasks.filter((task) => {
+          const taskDate = task.date?.toDate ? task.date.toDate() : new Date(task.date)
+          return taskDate >= startOfWeek && taskDate <= endOfWeek
+        })
+
+        setTasks(weeklyTasks)
+      })
+
+      // For work sessions, still use daily for now
+      unsubSessions = listenWorkSessionsByDate(date, user.uid, setWorkSessions)
+    } else {
+      // For daily view, use the existing date-based loading
+      unsubTasks = listenTasksByDate(date, user.uid, setTasks)
+      unsubSessions = listenWorkSessionsByDate(date, user.uid, setWorkSessions)
+    }
+
     return () => {
       unsubTasks && unsubTasks()
       unsubSessions && unsubSessions()
     }
-  }, [user, loading, date])
+  }, [user, loading, date, timeFilter, selectedMonth, selectedWeek])
 
-  // Debug: Monitor tasks for invalid data
+  // Monitor tasks for invalid data
   useEffect(() => {
-    console.log('Tasks state changed:', tasks)
     const invalidTasks = tasks.filter((t) => !t.id)
     if (invalidTasks.length > 0) {
       console.error('Found tasks without IDs:', invalidTasks)
@@ -324,7 +429,6 @@ export default function TasksPage() {
   const completed = applyFilters(tasks.filter((t) => t.completed))
   const selectedTask = useMemo(() => {
     const found = tasks.find((t) => t.id === selectedId)
-    console.log('selectedTask useMemo:', { selectedId, tasksLength: tasks.length, found })
     return found
   }, [tasks, selectedId])
 
@@ -337,7 +441,7 @@ export default function TasksPage() {
       if (first) setSelectedId(first.id)
       else setSelectedId(null)
     }
-  }, [tasks, priorityFilter, labelFilter, searchQuery, todo, completed, selectedId])
+  }, [tasks, priorityFilter, labelFilter, searchQuery, timeFilter, todo, completed, selectedId])
 
   // Timer tick for live counter
   useEffect(() => {
@@ -541,37 +645,103 @@ export default function TasksPage() {
         {/* Enhanced Toolbar - Full Width */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-soft">
           <div className="flex flex-col lg:flex-row lg:items-center gap-2">
-            {/* Date Navigation */}
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="w-12 h-12 rounded-xl hover:bg-slate-100 transition-all duration-200"
-                onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
-                aria-label="Previous day"
-              >
-                <ChevronLeft size={28} className="text-slate-600" />
-              </Button>
-              <CustomDatePicker
-                value={date}
-                onChange={(selectedDate) => setDate(selectedDate)}
-                name="mainDate"
-                placeholder="Select date"
-                className="min-w-[180px] "
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="w-12 h-12 rounded-xl hover:bg-slate-100 transition-all duration-200"
-                onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
-                aria-label="Next day"
-              >
-                <ChevronRight size={28} className="text-slate-600" />
-              </Button>
-            </div>
+            {/* Date/Month/Week Navigation */}
+            {timeFilter === 'monthly' ? (
+              // Month Picker for Monthly View
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-12 h-12 rounded-xl hover:bg-slate-100 transition-all duration-200"
+                  onClick={goToPreviousMonth}
+                  aria-label="Previous month"
+                >
+                  <ChevronLeft size={28} className="text-slate-600" />
+                </Button>
+                <div className="min-w-[180px] h-12 px-4 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-900">
+                  {formatMonthYear(selectedMonth)}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-12 h-12 rounded-xl hover:bg-slate-100 transition-all duration-200"
+                  onClick={goToNextMonth}
+                  aria-label="Next month"
+                >
+                  <ChevronRight size={28} className="text-slate-600" />
+                </Button>
+              </div>
+            ) : timeFilter === 'weekly' ? (
+              // Week Picker for Weekly View
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-12 h-12 rounded-xl hover:bg-slate-100 transition-all duration-200"
+                  onClick={goToPreviousWeek}
+                  aria-label="Previous week"
+                >
+                  <ChevronLeft size={28} className="text-slate-600" />
+                </Button>
+                <div className="min-w-[200px] h-12 px-4 flex items-center justify-center bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-900">
+                  {formatWeekRange(selectedWeek)}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-12 h-12 rounded-xl hover:bg-slate-100 transition-all duration-200"
+                  onClick={goToNextWeek}
+                  aria-label="Next week"
+                >
+                  <ChevronRight size={28} className="text-slate-600" />
+                </Button>
+              </div>
+            ) : (
+              // Date Picker for Daily View
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-12 h-12 rounded-xl hover:bg-slate-100 transition-all duration-200"
+                  onClick={() => setDate((d) => new Date(d.getTime() - 86400000))}
+                  aria-label="Previous day"
+                >
+                  <ChevronLeft size={28} className="text-slate-600" />
+                </Button>
+                <CustomDatePicker
+                  value={date}
+                  onChange={(selectedDate) => setDate(selectedDate)}
+                  name="mainDate"
+                  placeholder="Select date"
+                  className="min-w-[180px] "
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="w-12 h-12 rounded-xl hover:bg-slate-100 transition-all duration-200"
+                  onClick={() => setDate((d) => new Date(d.getTime() + 86400000))}
+                  aria-label="Next day"
+                >
+                  <ChevronRight size={28} className="text-slate-600" />
+                </Button>
+              </div>
+            )}
 
             {/* Search and Filters */}
             <div className="flex-1 flex flex-col sm:flex-row gap-6">
+              {/* Time Filter Dropdown */}
+              <div className="flex items-center">
+                <select
+                  value={timeFilter}
+                  onChange={(e) => setTimeFilter(e.target.value)}
+                  className="h-12 px-4 rounded-xl border border-slate-200 bg-white text-sm font-body focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+
               <div className="relative flex-1 ">
                 <Search
                   size={20}
@@ -1492,7 +1662,6 @@ export default function TasksPage() {
                 isSubmittingTime
               }
               onClick={async () => {
-                console.log('=== SAVE TIME BUTTON CLICKED ===')
                 console.log('Current values:', {
                   startDate,
                   startTime,
@@ -1502,7 +1671,6 @@ export default function TasksPage() {
                 })
 
                 if (!startDate || !startTime) {
-                  console.log('❌ Missing start date or time')
                   return
                 }
 
@@ -1510,15 +1678,12 @@ export default function TasksPage() {
                 const minutes = parseInt(durationMinutes || '0', 10)
 
                 if (hours === 0 && minutes === 0) {
-                  console.log('❌ Duration is 0')
                   return
                 }
 
-                console.log('✅ All validation passed, proceeding with submission...')
                 setIsSubmittingTime(true)
 
                 try {
-                  console.log('🔄 Creating date objects...')
                   const [sy, sm, sd] = startDate.split('-').map(Number)
                   const [sh, smin] = startTime.split(':').map(Number)
                   // Convert 12-hour format to 24-hour format
@@ -1532,7 +1697,7 @@ export default function TasksPage() {
                   const mins = Math.max(0, hours * 60 + minutes)
                   const end = new Date(start.getTime() + mins * 60000)
 
-                  console.log('📅 Date objects created:', {
+                  console.log('Date objects created:', {
                     start,
                     end,
                     mins,
@@ -1541,11 +1706,8 @@ export default function TasksPage() {
                     startTimePeriod,
                   })
 
-                  console.log('🚀 Calling addManualWorkSession...')
                   await addManualWorkSession(selectedTask.id, start, end)
-                  console.log('✅ Work session created successfully')
 
-                  console.log('🔒 Closing modal and resetting form...')
                   setShowAddTime(false)
                   setStartDate('')
                   setStartTime('')
@@ -1560,7 +1722,6 @@ export default function TasksPage() {
                     name: e.name,
                   })
                 } finally {
-                  console.log('🔄 Setting isSubmittingTime to false...')
                   setIsSubmittingTime(false)
                 }
               }}

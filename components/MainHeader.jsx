@@ -31,7 +31,6 @@ export default function MainHeader() {
       try {
         const result = await getRedirectResult(authClient)
         if (result) {
-          console.log('Sign-in successful via redirect')
         }
       } catch (error) {
         console.error('Error getting redirect result:', error)
@@ -60,17 +59,13 @@ export default function MainHeader() {
 
       // Handle specific popup errors gracefully
       if (error.code === 'auth/popup-closed-by-user') {
-        console.log('Sign-in popup was closed by user')
         // You could show a user-friendly message here
       } else if (error.code === 'auth/popup-blocked') {
-        console.log('Sign-in popup was blocked by browser')
         // You could show instructions to allow popups
       } else if (error.code === 'auth/cancelled-popup-request') {
-        console.log('Sign-in popup request was cancelled')
       }
 
       // Fallback to redirect method if popup fails
-      console.log('Falling back to redirect sign-in method...')
       try {
         await signInWithRedirect(authClient, provider)
       } catch (redirectError) {

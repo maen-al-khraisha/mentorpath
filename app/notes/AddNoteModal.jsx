@@ -5,6 +5,7 @@ import { createNote } from '@/lib/notesApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import Modal from '@/components/ui/Modal'
+import UpgradeModal from '@/components/UpgradeModal'
 import { X, Plus, FileText, Tag } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useToast } from '@/components/Toast'
@@ -35,6 +36,7 @@ export default function AddNoteModal({ open, onClose }) {
   const [labels, setLabels] = useState([])
   const [labelInput, setLabelInput] = useState('')
   const [busy, setBusy] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   // Dynamically import Quill CSS when modal opens
   useEffect(() => {
@@ -82,14 +84,12 @@ export default function AddNoteModal({ open, onClose }) {
 
     try {
       setBusy(true)
-      console.log('Creating note for user:', user.uid)
       const id = await createNote({
         title,
         description,
         labels,
         userId: user.uid,
       })
-      console.log('Note created with ID:', id)
 
       // Pass the created note ID to onClose
       onClose?.(id)
@@ -97,8 +97,13 @@ export default function AddNoteModal({ open, onClose }) {
       setDescription('')
       setLabels([])
     } catch (e) {
-      console.error(e)
-      showToast('Failed to save note: ' + e.message, 'error')
+      // Check if it's a limit error
+      if (e.message.includes('note limit')) {
+        setShowUpgradeModal(true)
+      } else {
+        console.error(e)
+        showToast('Failed to save note: ' + e.message, 'error')
+      }
     } finally {
       setBusy(false)
     }
@@ -110,6 +115,14 @@ export default function AddNoteModal({ open, onClose }) {
     setDescription('')
     setLabels([])
     onClose?.()
+  }
+
+  const handleUpgrade = () => {
+    window.location.href = '/mock-payment'
+  }
+
+  const handleCloseUpgradeModal = () => {
+    setShowUpgradeModal(false)
   }
 
   function addLabel() {
@@ -256,15 +269,26 @@ export default function AddNoteModal({ open, onClose }) {
   )
 
   return (
-    <Modal
-      isOpen={open}
-      onClose={handleClose}
-      header={header}
-      content={content}
-      footer={footer}
-      size="large"
-      showCloseButton={true}
-      closeOnBackdropClick={true}
-    />
+    <>
+      <Modal
+        isOpen={open}
+        onClose={handleClose}
+        header={header}
+        content={content}
+        footer={footer}
+        size="large"
+        showCloseButton={true}
+        closeOnBackdropClick={true}
+      />
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={handleCloseUpgradeModal}
+        onUpgrade={handleUpgrade}
+        limitType="notes"
+        limitCount={5}
+        limitPeriod="month"
+      />
+    </>
   )
 }

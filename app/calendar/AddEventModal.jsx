@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createEvent } from '@/lib/eventsApi'
+import { createEvent, getEvents } from '@/lib/eventsApi'
 import { useAuth } from '@/lib/useAuth'
 import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
+import UpgradeModal from '@/components/UpgradeModal'
 import { Calendar, Clock, Link, FileText } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import Modal from '@/components/ui/Modal'
@@ -80,6 +81,7 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
   const { user } = useAuth()
   const { showToast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [formData, setFormData] = useState(() => {
     // Create a timezone-safe date string for today
     const today = new Date()
@@ -123,12 +125,12 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
     'code-block',
   ]
 
-  // Set selected date when modal opens
+  // Set selected date when modal opens or selectedDate changes
   useEffect(() => {
-    if (selectedDate) {
+    if (isOpen && selectedDate) {
       setFormData((prev) => ({ ...prev, date: selectedDate }))
     }
-  }, [selectedDate])
+  }, [isOpen, selectedDate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -136,6 +138,18 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
 
     try {
       setIsSubmitting(true)
+
+      // Check if the selected date already has an event (for free plan users)
+      const allEvents = await getEvents(user.uid)
+      const eventsForDate = allEvents.filter((event) => event.date === formData.date)
+
+      if (eventsForDate.length > 0) {
+        showToast(
+          'You already have an event scheduled for this date. Free plan allows only one event per day.',
+          'warning'
+        )
+        return
+      }
 
       const eventData = {
         name: formData.name.trim(),
@@ -151,8 +165,13 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
       resetForm()
       showToast('Event added successfully!', 'success')
     } catch (error) {
-      console.error('Failed to create event:', error)
-      showToast('Failed to add event: ' + error.message, 'error')
+      // Check if it's a limit error
+      if (error.message && error.message.includes('event limit')) {
+        setShowUpgradeModal(true)
+      } else {
+        console.error('Failed to create event:', error)
+        showToast('Failed to add event: ' + error.message, 'error')
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -170,7 +189,7 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
       name: '',
       description: '',
       link: '',
-      date: todayString,
+      date: selectedDate || todayString, // Use selectedDate if available, otherwise today
       time: '12:00',
     })
   }
@@ -178,6 +197,14 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
   const handleClose = () => {
     resetForm()
     onClose()
+  }
+
+  const handleUpgrade = () => {
+    window.location.href = '/mock-payment'
+  }
+
+  const handleCloseUpgradeModal = () => {
+    setShowUpgradeModal(false)
   }
 
   const modalHeader = {
@@ -211,7 +238,7 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
           <div>
             <label className="block text-base font-semibold text-slate-900 mb-1">Event Date</label>
             <CustomDatePicker
-              value={formData.date}
+              value={formData.date ? new Date(formData.date) : new Date()}
               onChange={(date) => {
                 // Create a timezone-safe date string (YYYY-MM-DD)
                 const year = date.getFullYear()
@@ -353,13 +380,24 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
   )
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      header={modalHeader}
-      content={modalContent}
-      footer={modalFooter}
-      size="large"
-    />
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        header={modalHeader}
+        content={modalContent}
+        footer={modalFooter}
+        size="large"
+      />
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={handleCloseUpgradeModal}
+        onUpgrade={handleUpgrade}
+        limitType="events"
+        limitCount={1}
+        limitPeriod="day"
+      />
+    </>
   )
 }

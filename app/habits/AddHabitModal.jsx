@@ -7,6 +7,7 @@ import { useToast } from '@/components/Toast'
 import Button from '@/components/Button'
 import CustomDatePicker from '@/components/CustomDatePicker'
 import Modal from '@/components/ui/Modal'
+import UpgradeModal from '@/components/UpgradeModal'
 import { Plus, Calendar, Target, Hash, TrendingUp } from 'lucide-react'
 
 export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
@@ -20,6 +21,7 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState({})
   const [showAllIcons, setShowAllIcons] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   const isEditing = !!habit
 
@@ -99,12 +101,26 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
         setShowAllIcons(false) // Reset icon view state
       }
     } catch (e) {
-      console.error(e)
-      const errorMessage = e.message || 'An unexpected error occurred'
-      showToast(`Failed to ${isEditing ? 'update' : 'create'} habit: ${errorMessage}`, 'error')
+      // Check if it's a limit error
+      if (e.message && e.message.includes('habit limit')) {
+        setShowUpgradeModal(true)
+      } else {
+        // Only log unexpected errors, not limit errors
+        console.error(e)
+        const errorMessage = e.message || 'An unexpected error occurred'
+        showToast(`Failed to ${isEditing ? 'update' : 'create'} habit: ${errorMessage}`, 'error')
+      }
     } finally {
       setBusy(false)
     }
+  }
+
+  const handleUpgrade = () => {
+    window.location.href = '/mock-payment'
+  }
+
+  const handleCloseUpgradeModal = () => {
+    setShowUpgradeModal(false)
   }
 
   if (!open) return null
@@ -288,13 +304,24 @@ export default function AddHabitModal({ open, onClose, habit = null, onSave }) {
   )
 
   return (
-    <Modal
-      isOpen={open}
-      onClose={onClose}
-      header={modalHeader}
-      content={modalContent}
-      footer={modalFooter}
-      size="default"
-    />
+    <>
+      <Modal
+        isOpen={open}
+        onClose={onClose}
+        header={modalHeader}
+        content={modalContent}
+        footer={modalFooter}
+        size="default"
+      />
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={handleCloseUpgradeModal}
+        onUpgrade={handleUpgrade}
+        limitType="habits"
+        limitCount={3}
+        limitPeriod="month"
+      />
+    </>
   )
 }
