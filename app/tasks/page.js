@@ -340,6 +340,48 @@ export default function TasksPage() {
     }
   }, [user, loading, date, timeFilter, selectedMonth, selectedWeek])
 
+  // Load all tasks for monthly count debugging
+  useEffect(() => {
+    if (!user || loading) return
+
+    const unsubscribe = subscribeToTasks(user.uid, (allTasks) => {
+      // Debug: Count tasks in last 3 months
+      const now = new Date()
+      const monthlyCounts = []
+      for (let i = 0; i < 3; i++) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
+        const monthEnd = new Date(
+          monthDate.getFullYear(),
+          monthDate.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        )
+
+        const monthTasks = allTasks.filter((task) => {
+          const createdAt = task.createdAt?.toDate
+            ? task.createdAt.toDate()
+            : new Date(task.createdAt)
+          return createdAt >= monthStart && createdAt <= monthEnd
+        })
+
+        monthlyCounts.push({
+          month: `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`,
+          count: monthTasks.length,
+        })
+      }
+
+      console.log('📅 TASK COUNTS BY MONTH (Page Load):', {
+        monthlyCounts: monthlyCounts.reverse(), // Show oldest to newest
+      })
+    })
+
+    return unsubscribe
+  }, [user, loading])
+
   // Monitor tasks for invalid data
   useEffect(() => {
     const invalidTasks = tasks.filter((t) => !t.id)

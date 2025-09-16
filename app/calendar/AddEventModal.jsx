@@ -144,10 +144,8 @@ export default function AddEventModal({ isOpen, onClose, onEventCreated, selecte
       const eventsForDate = allEvents.filter((event) => event.date === formData.date)
 
       if (eventsForDate.length > 0) {
-        showToast(
-          'You already have an event scheduled for this date. Free plan allows only one event per day.',
-          'warning'
-        )
+        // Show upgrade modal instead of toast message
+        setShowUpgradeModal(true)
         return
       }
 

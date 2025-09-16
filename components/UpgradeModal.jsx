@@ -32,6 +32,8 @@ export default function UpgradeModal({
         return `${limitCount} tasks per ${limitPeriod}`
       case 'habits':
         return `${limitCount} habits per ${limitPeriod}`
+      case 'sheets':
+        return `${limitCount} agenda sheet${limitCount > 1 ? 's' : ''} ${limitPeriod === 'total' ? 'total' : `per ${limitPeriod}`}`
       case 'events':
         return `${limitCount} event${limitCount > 1 ? 's' : ''} per ${limitPeriod === 'month' ? 'day' : limitPeriod}`
       default:
@@ -47,6 +49,8 @@ export default function UpgradeModal({
         return 'unlimited tasks'
       case 'habits':
         return 'unlimited habits'
+      case 'sheets':
+        return 'unlimited agenda sheets'
       case 'events':
         return 'unlimited events'
       default:

@@ -5,6 +5,7 @@ import { createSheet } from '@/lib/sheetsApi'
 import { useAuth } from '@/lib/useAuth'
 import Button from '@/components/Button'
 import Modal from '@/components/ui/Modal'
+import UpgradeModal from '@/components/UpgradeModal'
 import { Plus, Trash2, FileText, ListTodo } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 
@@ -19,6 +20,7 @@ export default function AddSheetModal({ open, onClose, onSave }) {
   ])
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState({})
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
 
   function validateForm() {
     const newErrors = {}
@@ -76,11 +78,26 @@ export default function AddSheetModal({ open, onClose, onSave }) {
         { name: 'Phone', type: 'text' },
       ])
     } catch (e) {
-      console.error(e)
-      showToast('Failed to create sheet: ' + e.message, 'error')
+      // Check if it's a limit error
+      if (e.message && e.message.includes('agenda limit')) {
+        setShowUpgradeModal(true)
+      } else {
+        // Only log unexpected errors, not limit errors
+        console.error(e)
+        const errorMessage = e.message || 'An unexpected error occurred'
+        showToast(`Failed to create sheet: ${errorMessage}`, 'error')
+      }
     } finally {
       setBusy(false)
     }
+  }
+
+  const handleUpgrade = () => {
+    window.location.href = '/mock-payment'
+  }
+
+  const handleCloseUpgradeModal = () => {
+    setShowUpgradeModal(false)
   }
 
   if (!open) return null
@@ -189,13 +206,24 @@ export default function AddSheetModal({ open, onClose, onSave }) {
   )
 
   return (
-    <Modal
-      isOpen={open}
-      onClose={onClose}
-      header={modalHeader}
-      content={modalContent}
-      footer={modalFooter}
-      size="default"
-    />
+    <>
+      <Modal
+        isOpen={open}
+        onClose={onClose}
+        header={modalHeader}
+        content={modalContent}
+        footer={modalFooter}
+        size="default"
+      />
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={handleCloseUpgradeModal}
+        onUpgrade={handleUpgrade}
+        limitType="sheets"
+        limitCount={2}
+        limitPeriod="total"
+      />
+    </>
   )
 }

@@ -378,11 +378,7 @@ export default function HabitsPage() {
           onSave={handleHabitSaved}
         />
       )}
-      {console.log('Modal render state:', {
-        showAddModal,
-        isModalClosing,
-        modalOpen: showAddModal && !isModalClosing,
-      })}
+
       {/* Toast container is provided globally in RootLayout via ToastProvider */}
       <DeleteConfirmModal
         isOpen={deleteModal.isOpen}

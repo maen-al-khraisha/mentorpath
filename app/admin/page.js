@@ -4,9 +4,11 @@ import { useRequireAuth } from '@/utils/protectedRoute'
 import { useEffect, useState } from 'react'
 import { firestore, auth } from '@/lib/firebaseClient'
 import { doc, getDoc, setDoc, collection, getDocs, writeBatch, deleteDoc } from 'firebase/firestore'
+import { updateUserPlan, PLAN_TYPES } from '@/lib/subscriptionApi'
 import Button from '@/components/Button'
 import Logo from '@/components/Logo'
 import Link from 'next/link'
+import Modal from '@/components/ui/Modal'
 import {
   Users,
   Package,
@@ -93,29 +95,15 @@ export default function AdminPage() {
     task_limit: 50,
     habit_limit: 10,
     sheet_limit: 5,
+    notes_limit: 10,
+    events_limit: 5,
+    insights_enabled: false,
     description: '',
   })
   const [editingUserPlan, setEditingUserPlan] = useState(null)
   const [editUserPlanData, setEditUserPlanData] = useState({})
   const [showPlanLimitsModal, setShowPlanLimitsModal] = useState(false)
-  const [planLimitsData, setPlanLimitsData] = useState({
-    free: {
-      tasks: 20,
-      notes: 5,
-      habits: 3,
-      events: 1,
-      sheets: 2,
-      insights: false,
-    },
-    pro: {
-      tasks: -1,
-      notes: -1,
-      habits: -1,
-      events: -1,
-      sheets: -1,
-      insights: true,
-    },
-  })
+  const [planLimitsData, setPlanLimitsData] = useState({})
 
   useEffect(() => {
     async function init() {
@@ -168,7 +156,8 @@ export default function AdminPage() {
                 userData.displayName || userData.name || userData.fullName || 'No display name',
               subscription_status: userData.subscription_status || userData.status || 'inactive',
               current_package: userData.current_package || userData.packageId || null,
-              package_name: userData.package_name || userData.packageName || 'No Package',
+              package_name: userData.package_name || userData.packageName,
+              plan: userData.plan || 'free', // Add plan field
               subscription_start: userData.subscription_start || userData.subscriptionStart || null,
               subscription_end: userData.subscription_end || userData.subscriptionEnd || null,
               created_at: userData.created_at || userData.createdAt || userData.created || null,
@@ -228,9 +217,70 @@ export default function AdminPage() {
         id: doc.id,
         ...doc.data(),
       }))
-      setPackages(packagesData)
+
+      // If no packages exist, create default ones
+      if (packagesData.length === 0) {
+        await createDefaultPackages()
+        // Reload packages after creating defaults
+        const newPackagesSnapshot = await getDocs(collection(firestore, 'packages'))
+        const newPackagesData = newPackagesSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        setPackages(newPackagesData)
+      } else {
+        setPackages(packagesData)
+      }
     } catch (error) {
       console.error('Error loading packages:', error)
+    }
+  }
+
+  const createDefaultPackages = async () => {
+    try {
+      const defaultPackages = [
+        {
+          id: 'free-plan',
+          name: 'Free Plan',
+          price: 0,
+          trial_period_days: 0,
+          task_limit: 20,
+          habit_limit: 3,
+          sheet_limit: 2,
+          notes_limit: 5,
+          events_limit: 1,
+          insights_enabled: false,
+          description: 'Basic features with limited usage',
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: 'pro-plan',
+          name: 'Pro Plan',
+          price: 7,
+          trial_period_days: 14,
+          task_limit: -1, // unlimited
+          habit_limit: -1, // unlimited
+          sheet_limit: -1, // unlimited
+          notes_limit: -1, // unlimited
+          events_limit: -1, // unlimited
+          insights_enabled: true,
+          description: 'Unlimited access to all features',
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ]
+
+      const batch = writeBatch(firestore)
+      defaultPackages.forEach((pkg) => {
+        const packageRef = doc(firestore, 'packages', pkg.id)
+        batch.set(packageRef, pkg)
+      })
+
+      await batch.commit()
+      console.log('Default packages created successfully')
+    } catch (error) {
+      console.error('Error creating default packages:', error)
     }
   }
 
@@ -336,7 +386,7 @@ export default function AdminPage() {
           uid: authUser.uid,
           subscription_status: 'inactive',
           current_package: null,
-          package_name: 'No Package',
+          package_name: '',
           subscription_start: null,
           subscription_end: null,
           created_at: new Date(),
@@ -417,6 +467,135 @@ export default function AdminPage() {
     }
   }
 
+  const subscribeToFree = async (userId) => {
+    try {
+      setLoadingData(true)
+
+      // Get current user to check if they're admin
+      if (!user || user.email !== 'maen.alkhraisha@gmail.com') {
+        alert('Only admin can subscribe users to free plan')
+        return
+      }
+
+      // Update the user document directly with all necessary fields
+      const userRef = doc(firestore, 'users', userId)
+      await setDoc(
+        userRef,
+        {
+          plan: PLAN_TYPES.FREE,
+          package_name: 'Free Plan',
+          current_package: 'free',
+          subscription_status: 'active',
+          subscriptionStartDate: null,
+          subscriptionEndDate: null,
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      )
+
+      alert('Successfully subscribed user to free plan!')
+      // Reload users to reflect changes
+      await loadUsers()
+    } catch (error) {
+      console.error('Error subscribing user to free plan:', error)
+      alert('Failed to subscribe user to free plan: ' + error.message)
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  const updateUserPackage = async (userId, packageId) => {
+    try {
+      setLoadingData(true)
+
+      // Get current user to check if they're admin
+      if (!user || user.email !== 'maen.alkhraisha@gmail.com') {
+        alert('Only admin can update user packages')
+        return
+      }
+
+      // Find the package details
+      const selectedPackage = packages.find((pkg) => pkg.id === packageId)
+      if (!selectedPackage) {
+        alert('Package not found')
+        return
+      }
+
+      const userRef = doc(firestore, 'users', userId)
+      await setDoc(
+        userRef,
+        {
+          current_package: packageId,
+          package_name: selectedPackage.name,
+          plan: selectedPackage.name.toLowerCase().replace(' ', '-'), // Convert to plan format
+          subscription_status: 'active',
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      )
+
+      alert(`Successfully updated user to ${selectedPackage.name} package!`)
+      // Reload users to reflect changes
+      await loadUsers()
+    } catch (error) {
+      console.error('Error updating user package:', error)
+      alert('Failed to update user package: ' + error.message)
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  const updateUserPlan = async (userId, newPlan) => {
+    try {
+      setLoadingData(true)
+
+      // Get current user to check if they're admin
+      if (!user || user.email !== 'maen.alkhraisha@gmail.com') {
+        alert('Only admin can update user plans')
+        return
+      }
+
+      const userRef = doc(firestore, 'users', userId)
+
+      let updateData = {
+        plan: newPlan,
+        updatedAt: new Date(),
+      }
+
+      // Set plan-specific data
+      if (newPlan === PLAN_TYPES.FREE) {
+        updateData = {
+          ...updateData,
+          package_name: 'Free Plan',
+          current_package: 'free',
+          subscription_status: 'active',
+          subscriptionStartDate: null,
+          subscriptionEndDate: null,
+        }
+      } else if (newPlan === PLAN_TYPES.PRO) {
+        updateData = {
+          ...updateData,
+          package_name: 'Pro Plan',
+          current_package: 'pro',
+          subscription_status: 'active',
+          subscriptionStartDate: new Date(),
+          subscriptionEndDate: null, // Pro plan doesn't expire
+        }
+      }
+
+      await setDoc(userRef, updateData, { merge: true })
+
+      alert(`Successfully updated user to ${newPlan} plan!`)
+      // Reload users to reflect changes
+      await loadUsers()
+    } catch (error) {
+      console.error('Error updating user plan:', error)
+      alert('Failed to update user plan: ' + error.message)
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
   const openCreatePackageModal = () => {
     setShowCreatePackageModal(true)
     setNewPackageData({
@@ -426,6 +605,9 @@ export default function AdminPage() {
       task_limit: 50,
       habit_limit: 10,
       sheet_limit: 5,
+      notes_limit: 10,
+      events_limit: 5,
+      insights_enabled: false,
       description: '',
     })
   }
@@ -489,6 +671,8 @@ export default function AdminPage() {
       task_limit: pkg.task_limit,
       habit_limit: pkg.habit_limit,
       sheet_limit: pkg.sheet_limit,
+      notes_limit: pkg.notes_limit,
+      events_limit: pkg.events_limit,
       description: pkg.description,
     })
   }
@@ -810,7 +994,7 @@ export default function AdminPage() {
                   Customer
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Package
+                  Plan
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                   Status
@@ -859,12 +1043,11 @@ export default function AdminPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-slate-900">
-                        {user.package_name || 'No Package'}
+                      <div className="flex items-center gap-2">
+                        {user.current_package && (
+                          <div className="text-lg text-slate-900 mt-1">{user.current_package}</div>
+                        )}
                       </div>
-                      {user.current_package && (
-                        <div className="text-xs text-slate-500">ID: {user.current_package}</div>
-                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
@@ -904,7 +1087,7 @@ export default function AdminPage() {
                           size="sm"
                           onClick={() => {
                             alert(
-                              `Customer Details:\nName: ${user.name || 'N/A'}\nEmail: ${user.email}\nPackage: ${user.package_name || 'No Package'}\nStatus: ${user.subscription_status || 'inactive'}\nCreated: ${user.created_at ? new Date(user.created_at.toDate ? user.created_at.toDate() : user.created_at).toLocaleDateString() : 'Unknown'}`
+                              `Customer Details:\nName: ${user.name || 'N/A'}\nEmail: ${user.email}\nPackage: ${user.package_name}\nStatus: ${user.subscription_status || 'inactive'}\nCreated: ${user.created_at ? new Date(user.created_at.toDate ? user.created_at.toDate() : user.created_at).toLocaleDateString() : 'Unknown'}`
                             )
                           }}
                           title="View Details"
@@ -918,19 +1101,6 @@ export default function AdminPage() {
               )}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Debug Information */}
-      <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-        <h4 className="font-medium text-slate-700 mb-2">Debug Information</h4>
-        <div className="text-sm text-slate-600">
-          <div>Total customers loaded: {users.length}</div>
-          <div>Customers with packages: {users.filter((u) => u.current_package).length}</div>
-          <div>
-            Active subscriptions: {users.filter((u) => u.subscription_status === 'active').length}
-          </div>
-          <div>Total packages available: {packages.length}</div>
         </div>
       </div>
     </div>
@@ -972,19 +1142,38 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Price ($)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={newPackageData.price}
-                  onChange={(e) =>
-                    setNewPackageData((prev) => ({
-                      ...prev,
-                      price: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                  placeholder="0.00"
-                />
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPackageData.price === 0}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          price: e.target.checked ? 0 : 7,
+                        }))
+                      }
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-600">Free Package</span>
+                  </label>
+                  {newPackageData.price !== 0 && (
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      value={newPackageData.price}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          price: parseFloat(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                      placeholder="Enter price"
+                    />
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -1005,52 +1194,176 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Task Limit</label>
-                <input
-                  type="number"
-                  value={newPackageData.task_limit}
-                  onChange={(e) =>
-                    setNewPackageData((prev) => ({
-                      ...prev,
-                      task_limit: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                  placeholder="50"
-                />
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPackageData.task_limit === -1}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          task_limit: e.target.checked ? -1 : 50,
+                        }))
+                      }
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-600">Unlimited</span>
+                  </label>
+                  {newPackageData.task_limit !== -1 && (
+                    <input
+                      type="number"
+                      min="1"
+                      value={newPackageData.task_limit}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          task_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                      placeholder="Enter limit"
+                    />
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Habit Limit</label>
-                <input
-                  type="number"
-                  value={newPackageData.habit_limit}
-                  onChange={(e) =>
-                    setNewPackageData((prev) => ({
-                      ...prev,
-                      habit_limit: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                  placeholder="10"
-                />
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPackageData.habit_limit === -1}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          habit_limit: e.target.checked ? -1 : 10,
+                        }))
+                      }
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-600">Unlimited</span>
+                  </label>
+                  {newPackageData.habit_limit !== -1 && (
+                    <input
+                      type="number"
+                      min="1"
+                      value={newPackageData.habit_limit}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          habit_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                      placeholder="Enter limit"
+                    />
+                  )}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Sheet Limit</label>
-                <input
-                  type="number"
-                  value={newPackageData.sheet_limit}
-                  onChange={(e) =>
-                    setNewPackageData((prev) => ({
-                      ...prev,
-                      sheet_limit: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                  placeholder="5"
-                />
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPackageData.sheet_limit === -1}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          sheet_limit: e.target.checked ? -1 : 5,
+                        }))
+                      }
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-600">Unlimited</span>
+                  </label>
+                  {newPackageData.sheet_limit !== -1 && (
+                    <input
+                      type="number"
+                      min="1"
+                      value={newPackageData.sheet_limit}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          sheet_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                      placeholder="Enter limit"
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-
-            <div className="mb-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Notes Limit</label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPackageData.notes_limit === -1}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          notes_limit: e.target.checked ? -1 : 10,
+                        }))
+                      }
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-600">Unlimited</span>
+                  </label>
+                  {newPackageData.notes_limit !== -1 && (
+                    <input
+                      type="number"
+                      min="1"
+                      value={newPackageData.notes_limit}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          notes_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                      placeholder="Enter limit"
+                    />
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Events Limit
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={newPackageData.events_limit === -1}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          events_limit: e.target.checked ? -1 : 5,
+                        }))
+                      }
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-600">Unlimited</span>
+                  </label>
+                  {newPackageData.events_limit !== -1 && (
+                    <input
+                      type="number"
+                      min="1"
+                      value={newPackageData.events_limit}
+                      onChange={(e) =>
+                        setNewPackageData((prev) => ({
+                          ...prev,
+                          events_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                      placeholder="Enter limit"
+                    />
+                  )}
+                </div>
+              </div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
               <textarea
                 value={newPackageData.description}
@@ -1078,12 +1391,22 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {packages.map((pkg) => (
           <div key={pkg.id} className="bg-card border border-border rounded-lg p-6 shadow-soft">
-            {editingPackage === pkg.id ? (
-              // Edit Mode
-              <div className="space-y-4">
-                <div className="flex justify-between items-start">
-                  <h4 className="text-lg font-semibold text-slate-900">Editing Package</h4>
-                  <div className="flex gap-2">
+            <div className="flex justify-between items-start mb-4">
+              {editingPackage === pkg.id ? (
+                <input
+                  type="text"
+                  value={editPackageData.name || ''}
+                  onChange={(e) =>
+                    setEditPackageData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  className="text-lg font-semibold text-slate-900 bg-transparent border-b border-slate-300 px-1 py-1 w-full"
+                />
+              ) : (
+                <h4 className="text-lg font-semibold text-slate-900">{pkg.name}</h4>
+              )}
+              <div className="flex gap-2">
+                {editingPackage === pkg.id ? (
+                  <>
                     <Button variant="ghost" size="sm" onClick={cancelPackageEdit}>
                       Cancel
                     </Button>
@@ -1095,124 +1418,9 @@ export default function AdminPage() {
                     >
                       Save
                     </Button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
-                    <input
-                      type="text"
-                      value={editPackageData.name || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({ ...prev, name: e.target.value }))
-                      }
-                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Price ($)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={editPackageData.price || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          price: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Trial Period (days)
-                    </label>
-                    <input
-                      type="number"
-                      value={editPackageData.trial_period_days || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          trial_period_days: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Task Limit
-                    </label>
-                    <input
-                      type="number"
-                      value={editPackageData.task_limit || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          task_limit: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Habit Limit
-                    </label>
-                    <input
-                      type="number"
-                      value={editPackageData.habit_limit || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          habit_limit: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Sheet Limit
-                    </label>
-                    <input
-                      type="number"
-                      value={editPackageData.sheet_limit || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          sheet_limit: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={editPackageData.description || ''}
-                    onChange={(e) =>
-                      setEditPackageData((prev) => ({ ...prev, description: e.target.value }))
-                    }
-                    rows={3}
-                    className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-            ) : (
-              // View Mode
-              <>
-                <div className="flex justify-between items-start mb-4">
-                  <h4 className="text-lg font-semibold text-slate-900">{pkg.name}</h4>
-                  <div className="flex gap-2">
+                  </>
+                ) : (
+                  <>
                     <Button variant="ghost" size="sm" onClick={() => editPackage(pkg)}>
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -1224,125 +1432,213 @@ export default function AdminPage() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                </div>
+                  </>
+                )}
+              </div>
+            </div>
 
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Price:</span>
-                    <span className="font-semibold text-slate-900">${pkg.price}</span>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-600">Price:</span>
+                {editingPackage === pkg.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editPackageData.price || ''}
+                      onChange={(e) =>
+                        setEditPackageData((prev) => ({
+                          ...prev,
+                          price: parseFloat(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                    />
+                    <span className="text-sm text-slate-600">$</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Trial:</span>
-                    <span className="text-slate-900">{pkg.trial_period_days} days</span>
+                ) : (
+                  <span className="font-semibold text-slate-900">
+                    {pkg.price === 0 ? 'Free' : `$${pkg.price}`}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-600">Trial:</span>
+                {editingPackage === pkg.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      value={editPackageData.trial_period_days || ''}
+                      onChange={(e) =>
+                        setEditPackageData((prev) => ({
+                          ...prev,
+                          trial_period_days: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-16 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                    />
+                    <span className="text-sm text-slate-600">days</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Task Limit:</span>
-                    <span className="text-slate-900">{pkg.task_limit}</span>
+                ) : (
+                  <span className="text-slate-900">{pkg.trial_period_days} days</span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-600">Task Limit:</span>
+                {editingPackage === pkg.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="-1"
+                      value={editPackageData.task_limit || ''}
+                      onChange={(e) =>
+                        setEditPackageData((prev) => ({
+                          ...prev,
+                          task_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                      placeholder={editPackageData.task_limit === -1 ? '∞' : ''}
+                    />
+                    {editPackageData.task_limit === -1 && (
+                      <span className="text-sm text-slate-600">∞</span>
+                    )}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Habit Limit:</span>
-                    <span className="text-slate-900">{pkg.habit_limit}</span>
+                ) : (
+                  <span className="text-slate-900">
+                    {pkg.task_limit === -1 ? 'Unlimited' : pkg.task_limit}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-600">Notes Limit:</span>
+                {editingPackage === pkg.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="-1"
+                      value={editPackageData.notes_limit || ''}
+                      onChange={(e) =>
+                        setEditPackageData((prev) => ({
+                          ...prev,
+                          notes_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                      placeholder={editPackageData.notes_limit === -1 ? '∞' : ''}
+                    />
+                    {editPackageData.notes_limit === -1 && (
+                      <span className="text-sm text-slate-600">∞</span>
+                    )}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-slate-600">Sheet Limit:</span>
-                    <span className="text-slate-900">{pkg.sheet_limit}</span>
+                ) : (
+                  <span className="text-slate-900">
+                    {pkg.notes_limit === -1 ? 'Unlimited' : pkg.notes_limit}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-600">Events Limit:</span>
+                {editingPackage === pkg.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="-1"
+                      value={editPackageData.events_limit || ''}
+                      onChange={(e) =>
+                        setEditPackageData((prev) => ({
+                          ...prev,
+                          events_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                      placeholder={editPackageData.events_limit === -1 ? '∞' : ''}
+                    />
+                    {editPackageData.events_limit === -1 && (
+                      <span className="text-sm text-slate-600">∞</span>
+                    )}
                   </div>
-                </div>
+                ) : (
+                  <span className="text-slate-900">
+                    {pkg.events_limit === -1 ? 'Unlimited' : pkg.events_limit}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-600">Habit Limit:</span>
+                {editingPackage === pkg.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="-1"
+                      value={editPackageData.habit_limit || ''}
+                      onChange={(e) =>
+                        setEditPackageData((prev) => ({
+                          ...prev,
+                          habit_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                      placeholder={editPackageData.habit_limit === -1 ? '∞' : ''}
+                    />
+                    {editPackageData.habit_limit === -1 && (
+                      <span className="text-sm text-slate-600">∞</span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-slate-900">
+                    {pkg.habit_limit === -1 ? 'Unlimited' : pkg.habit_limit}
+                  </span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-slate-600">Sheet Limit:</span>
+                {editingPackage === pkg.id ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="-1"
+                      value={editPackageData.sheet_limit || ''}
+                      onChange={(e) =>
+                        setEditPackageData((prev) => ({
+                          ...prev,
+                          sheet_limit: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                      placeholder={editPackageData.sheet_limit === -1 ? '∞' : ''}
+                    />
+                    {editPackageData.sheet_limit === -1 && (
+                      <span className="text-sm text-slate-600">∞</span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-slate-900">
+                    {pkg.sheet_limit === -1 ? 'Unlimited' : pkg.sheet_limit}
+                  </span>
+                )}
+              </div>
+            </div>
 
-                <p className="text-sm text-slate-600 mt-4">{pkg.description}</p>
-              </>
-            )}
+            <div className="mt-3">
+              <h2 className="text-lg font-semibold text-slate-900">Description</h2>
+              {editingPackage === pkg.id ? (
+                <textarea
+                  value={editPackageData.description || ''}
+                  onChange={(e) =>
+                    setEditPackageData((prev) => ({ ...prev, description: e.target.value }))
+                  }
+                  rows={3}
+                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm mt-1"
+                />
+              ) : (
+                <p className="text-sm text-slate-600 mt-1">{pkg.description}</p>
+              )}
+            </div>
           </div>
         ))}
-      </div>
-    </div>
-  )
-
-  const renderSettingsTab = () => (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-slate-900">System Settings</h3>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section className="bg-card border border-border rounded-lg p-6 shadow-soft">
-          <h4 className="font-semibold mb-4">App Configuration</h4>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Trial Duration (days)
-              </label>
-              <input
-                type="number"
-                value={app.trialDuration}
-                onChange={(e) =>
-                  setApp((prev) => ({ ...prev, trialDuration: parseInt(e.target.value) || 0 }))
-                }
-                className="w-full border border-slate-200 rounded-md px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Max Users</label>
-              <input
-                type="number"
-                value={app.maxUsers}
-                onChange={(e) =>
-                  setApp((prev) => ({ ...prev, maxUsers: parseInt(e.target.value) || 0 }))
-                }
-                className="w-full border border-slate-200 rounded-md px-3 py-2"
-              />
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="enableAnalytics"
-                checked={app.enableAnalytics}
-                onChange={(e) => setApp((prev) => ({ ...prev, enableAnalytics: e.target.checked }))}
-                className="mr-2"
-              />
-              <label htmlFor="enableAnalytics" className="text-sm text-slate-700">
-                Enable Analytics
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="enableExport"
-                checked={app.enableExport}
-                onChange={(e) => setApp((prev) => ({ ...prev, enableExport: e.target.checked }))}
-                className="mr-2"
-              />
-              <label htmlFor="enableExport" className="text-sm text-slate-700">
-                Enable Data Export
-              </label>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-card border border-border rounded-lg p-6 shadow-soft">
-          <h4 className="font-semibold mb-4">Habit Settings</h4>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <label className="w-32 text-sm text-slate-700">Default streak</label>
-              <input
-                type="number"
-                value={app.habitDefault}
-                onChange={(e) =>
-                  setApp((prev) => ({ ...prev, habitDefault: parseInt(e.target.value) || 0 }))
-                }
-                className="border border-slate-200 rounded-md px-2 py-1 text-sm w-24"
-              />
-              <span className="text-slate-700">/</span>
-              <input
-                type="number"
-                value={app.habitGoal}
-                onChange={(e) =>
-                  setApp((prev) => ({ ...prev, habitGoal: parseInt(e.target.value) || 0 }))
-                }
-                className="border border-slate-200 rounded-md px-2 py-1 text-sm w-24"
-              />
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   )
@@ -1486,6 +1782,8 @@ export default function AdminPage() {
     setEditingUserPlan(user)
     setEditUserPlanData({
       plan: user.plan || 'free',
+      current_package: user.current_package || 'free-plan',
+      package_name: user.package_name || 'Free Plan',
       trialEndDate: user.trialEndDate
         ? new Date(user.trialEndDate).toISOString().split('T')[0]
         : '',
@@ -1497,8 +1795,20 @@ export default function AdminPage() {
       setBusy(true)
       const { updateUserPlan } = await import('@/lib/subscriptionApi')
 
+      // Determine package based on plan selection
+      const selectedPackage = packages.find((pkg) => {
+        if (editUserPlanData.plan === 'free') {
+          return pkg.id === 'free-plan'
+        } else if (editUserPlanData.plan === 'pro') {
+          return pkg.id === 'pro-plan'
+        }
+        return false
+      })
+
       const updateData = {
         plan: editUserPlanData.plan,
+        current_package: selectedPackage?.id || 'free-plan',
+        package_name: selectedPackage?.name || 'Free Plan',
       }
 
       if (editUserPlanData.trialEndDate) {
@@ -1539,75 +1849,63 @@ export default function AdminPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-slate-900">Plan Management</h3>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => setShowPlanLimitsModal(true)}>
-            <Settings className="h-4 w-4 mr-2" />
-            Edit Plan Limits
-          </Button>
-        </div>
       </div>
 
-      {/* Plan Limits Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-soft">
-          <h4 className="text-lg font-semibold text-slate-900 mb-4">Free Plan Limits</h4>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-slate-600">Tasks per month:</span>
-              <span className="font-medium">{planLimitsData.free.tasks}</span>
+      {/* Package-based Plan Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {packages.map((pkg) => (
+          <div key={pkg.id} className="bg-white border border-slate-200 rounded-lg p-6 shadow-soft">
+            <div className="flex justify-between items-start mb-4">
+              <h4 className="text-lg font-semibold text-slate-900">{pkg.name}</h4>
+              <span className="text-lg font-bold text-slate-900">${pkg.price}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Notes per month:</span>
-              <span className="font-medium">{planLimitsData.free.notes}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Habits per month:</span>
-              <span className="font-medium">{planLimitsData.free.habits}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Events per day:</span>
-              <span className="font-medium">{planLimitsData.free.events}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Agenda sheets:</span>
-              <span className="font-medium">{planLimitsData.free.sheets}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Insights dashboard:</span>
-              <span className="font-medium">{planLimitsData.free.insights ? 'Yes' : 'No'}</span>
-            </div>
-          </div>
-        </div>
 
-        <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-soft">
-          <h4 className="text-lg font-semibold text-slate-900 mb-4">Pro Plan Features</h4>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-slate-600">Tasks:</span>
-              <span className="font-medium text-green-600">Unlimited</span>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-slate-600">Tasks per month:</span>
+                <span className="font-medium">
+                  {pkg.task_limit === -1 ? 'Unlimited' : pkg.task_limit}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Notes per month:</span>
+                <span className="font-medium">
+                  {pkg.notes_limit === -1 ? 'Unlimited' : pkg.notes_limit}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Habits per month:</span>
+                <span className="font-medium">
+                  {pkg.habit_limit === -1 ? 'Unlimited' : pkg.habit_limit}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Events per day:</span>
+                <span className="font-medium">
+                  {pkg.events_limit === -1 ? 'Unlimited' : pkg.events_limit}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Agenda sheets:</span>
+                <span className="font-medium">
+                  {pkg.sheet_limit === -1 ? 'Unlimited' : pkg.sheet_limit}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Insights dashboard:</span>
+                <span className="font-medium">{pkg.insights_enabled ? 'Yes' : 'No'}</span>
+              </div>
+              {pkg.trial_period_days > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Trial period:</span>
+                  <span className="font-medium">{pkg.trial_period_days} days</span>
+                </div>
+              )}
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Notes:</span>
-              <span className="font-medium text-green-600">Unlimited</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Habits:</span>
-              <span className="font-medium text-green-600">Unlimited</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Events:</span>
-              <span className="font-medium text-green-600">Unlimited</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Agenda sheets:</span>
-              <span className="font-medium text-green-600">Unlimited</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Insights dashboard:</span>
-              <span className="font-medium text-green-600">Yes</span>
-            </div>
+            <h2 className="mt-3 text-lg font-semibold text-slate-900">Description</h2>
+            <p className="text-sm text-slate-600 mt-1">{pkg.description}</p>
           </div>
-        </div>
+        ))}
       </div>
 
       {/* User Plan Management */}
@@ -1619,8 +1917,7 @@ export default function AdminPage() {
               <tr className="border-b border-slate-200">
                 <th className="text-left py-2">User</th>
                 <th className="text-left py-2">Email</th>
-                <th className="text-left py-2">Current Plan</th>
-                <th className="text-left py-2">Trial End</th>
+                <th className="text-left py-2">Current Package</th>
                 <th className="text-left py-2">Actions</th>
               </tr>
             </thead>
@@ -1630,20 +1927,31 @@ export default function AdminPage() {
                   <td className="py-2">{user.name || 'N/A'}</td>
                   <td className="py-2">{user.email}</td>
                   <td className="py-2">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        user.plan === 'pro'
-                          ? 'bg-green-100 text-green-800'
-                          : user.plan === 'trial'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {user.plan || 'free'}
-                    </span>
-                  </td>
-                  <td className="py-2">
-                    {user.trialEndDate ? new Date(user.trialEndDate).toLocaleDateString() : 'N/A'}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-slate-900">
+                        {user.package_name || 'No Package'}
+                      </span>
+                      <select
+                        className="text-xs border border-slate-200 rounded px-2 py-1 bg-white"
+                        value={user.current_package || 'free-plan'}
+                        onChange={(e) => {
+                          if (
+                            confirm(
+                              `Are you sure you want to change ${user.name || user.email}'s package to ${packages.find((p) => p.id === e.target.value)?.name}?`
+                            )
+                          ) {
+                            updateUserPackage(user.id, e.target.value)
+                          }
+                        }}
+                        disabled={loadingData}
+                      >
+                        {packages.map((pkg) => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </td>
                   <td className="py-2">
                     <Button variant="outline" size="sm" onClick={() => handleEditUserPlan(user)}>
@@ -1656,170 +1964,107 @@ export default function AdminPage() {
           </table>
         </div>
       </div>
+    </div>
+  )
 
-      {/* Plan Limits Modal */}
-      {showPlanLimitsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h3 className="text-lg font-semibold mb-4">Edit Plan Limits</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium mb-2">Free Plan</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-xs text-slate-600">Tasks per month</label>
-                      <input
-                        type="number"
-                        value={planLimitsData.free.tasks}
-                        onChange={(e) =>
-                          setPlanLimitsData((prev) => ({
-                            ...prev,
-                            free: { ...prev.free, tasks: parseInt(e.target.value) || 0 },
-                          }))
-                        }
-                        className="w-full border border-slate-200 rounded px-2 py-1 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-600">Notes per month</label>
-                      <input
-                        type="number"
-                        value={planLimitsData.free.notes}
-                        onChange={(e) =>
-                          setPlanLimitsData((prev) => ({
-                            ...prev,
-                            free: { ...prev.free, notes: parseInt(e.target.value) || 0 },
-                          }))
-                        }
-                        className="w-full border border-slate-200 rounded px-2 py-1 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-600">Habits per month</label>
-                      <input
-                        type="number"
-                        value={planLimitsData.free.habits}
-                        onChange={(e) =>
-                          setPlanLimitsData((prev) => ({
-                            ...prev,
-                            free: { ...prev.free, habits: parseInt(e.target.value) || 0 },
-                          }))
-                        }
-                        className="w-full border border-slate-200 rounded px-2 py-1 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-600">Events per day</label>
-                      <input
-                        type="number"
-                        value={planLimitsData.free.events}
-                        onChange={(e) =>
-                          setPlanLimitsData((prev) => ({
-                            ...prev,
-                            free: { ...prev.free, events: parseInt(e.target.value) || 0 },
-                          }))
-                        }
-                        className="w-full border border-slate-200 rounded px-2 py-1 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-600">Agenda sheets</label>
-                      <input
-                        type="number"
-                        value={planLimitsData.free.sheets}
-                        onChange={(e) =>
-                          setPlanLimitsData((prev) => ({
-                            ...prev,
-                            free: { ...prev.free, sheets: parseInt(e.target.value) || 0 },
-                          }))
-                        }
-                        className="w-full border border-slate-200 rounded px-2 py-1 text-sm"
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={planLimitsData.free.insights}
-                        onChange={(e) =>
-                          setPlanLimitsData((prev) => ({
-                            ...prev,
-                            free: { ...prev.free, insights: e.target.checked },
-                          }))
-                        }
-                        className="mr-2"
-                      />
-                      <label className="text-xs text-slate-600">Enable insights</label>
-                    </div>
-                  </div>
-                </div>
-              </div>
+  const renderSettingsTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">System Settings</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between py-3 border-b border-slate-100">
+            <div>
+              <h4 className="font-medium text-slate-900">Database Status</h4>
+              <p className="text-sm text-slate-600">Check database connectivity and collections</p>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setShowPlanLimitsModal(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleSavePlanLimits} disabled={busy}>
-                Save Changes
-              </Button>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-slate-600">Connected</span>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* User Plan Edit Modal */}
-      {editingUserPlan && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Edit User Plan</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">User</label>
-                <p className="text-sm text-slate-600">
-                  {editingUserPlan.name} ({editingUserPlan.email})
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Plan</label>
-                <select
-                  value={editUserPlanData.plan}
-                  onChange={(e) =>
-                    setEditUserPlanData((prev) => ({ ...prev, plan: e.target.value }))
-                  }
-                  className="w-full border border-slate-200 rounded px-3 py-2"
-                >
-                  <option value="free">Free</option>
-                  <option value="trial">Trial</option>
-                  <option value="pro">Pro</option>
-                </select>
-              </div>
-              {editUserPlanData.plan === 'trial' && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Trial End Date
-                  </label>
-                  <input
-                    type="date"
-                    value={editUserPlanData.trialEndDate}
-                    onChange={(e) =>
-                      setEditUserPlanData((prev) => ({ ...prev, trialEndDate: e.target.value }))
-                    }
-                    className="w-full border border-slate-200 rounded px-3 py-2"
-                  />
-                </div>
-              )}
+          <div className="flex items-center justify-between py-3 border-b border-slate-100">
+            <div>
+              <h4 className="font-medium text-slate-900">Package Management</h4>
+              <p className="text-sm text-slate-600">Manage subscription packages and limits</p>
             </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setEditingUserPlan(null)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleSaveUserPlan} disabled={busy}>
-                Save Changes
-              </Button>
+            <div className="text-sm text-slate-600">{packages.length} packages configured</div>
+          </div>
+
+          <div className="flex items-center justify-between py-3 border-b border-slate-100">
+            <div>
+              <h4 className="font-medium text-slate-900">User Management</h4>
+              <p className="text-sm text-slate-600">Manage user accounts and subscriptions</p>
             </div>
+            <div className="text-sm text-slate-600">{users.length} users registered</div>
+          </div>
+
+          <div className="flex items-center justify-between py-3">
+            <div>
+              <h4 className="font-medium text-slate-900">System Information</h4>
+              <p className="text-sm text-slate-600">Application version and environment</p>
+            </div>
+            <div className="text-sm text-slate-600">v1.0.0 - Production</div>
           </div>
         </div>
-      )}
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button
+            onClick={() => setActiveTab('packages')}
+            className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"
+          >
+            <div className="flex items-center space-x-3">
+              <Package className="w-5 h-5 text-purple-600" />
+              <div>
+                <h4 className="font-medium text-slate-900">Manage Packages</h4>
+                <p className="text-sm text-slate-600">Create and edit subscription packages</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('users')}
+            className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"
+          >
+            <div className="flex items-center space-x-3">
+              <Users className="w-5 h-5 text-green-600" />
+              <div>
+                <h4 className="font-medium text-slate-900">Manage Users</h4>
+                <p className="text-sm text-slate-600">View and manage user accounts</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('plans')}
+            className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"
+          >
+            <div className="flex items-center space-x-3">
+              <Shield className="w-5 h-5 text-yellow-600" />
+              <div>
+                <h4 className="font-medium text-slate-900">Plan Management</h4>
+                <p className="text-sm text-slate-600">Assign packages to users</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"
+          >
+            <div className="flex items-center space-x-3">
+              <BarChart3 className="w-5 h-5 text-blue-600" />
+              <div>
+                <h4 className="font-medium text-slate-900">View Analytics</h4>
+                <p className="text-sm text-slate-600">Check system statistics</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
   )
 
@@ -1905,6 +2150,101 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {/* User Plan Edit Modal */}
+      {editingUserPlan && (
+        <Modal
+          isOpen={!!editingUserPlan}
+          onClose={() => {
+            setEditingUserPlan(null)
+            setEditUserPlanData({})
+          }}
+          header={{
+            title: `Edit Plan for ${editingUserPlan.name || editingUserPlan.email}`,
+            subtitle: 'Update user subscription and package details',
+          }}
+          content={
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Plan Type</label>
+                <select
+                  value={editUserPlanData.plan || 'free'}
+                  onChange={(e) =>
+                    setEditUserPlanData((prev) => ({
+                      ...prev,
+                      plan: e.target.value,
+                    }))
+                  }
+                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                >
+                  <option value="free">Free</option>
+                  <option value="pro">Pro</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Package Assignment
+                </label>
+                <select
+                  value={editUserPlanData.current_package || 'free-plan'}
+                  onChange={(e) => {
+                    const selectedPkg = packages.find((pkg) => pkg.id === e.target.value)
+                    setEditUserPlanData((prev) => ({
+                      ...prev,
+                      current_package: e.target.value,
+                      package_name: selectedPkg?.name || 'Free Plan',
+                      plan: selectedPkg?.id === 'pro-plan' ? 'pro' : 'free',
+                    }))
+                  }}
+                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                >
+                  {packages.map((pkg) => (
+                    <option key={pkg.id} value={pkg.id}>
+                      {pkg.name} - ${pkg.price}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Trial End Date (Optional)
+                </label>
+                <input
+                  type="date"
+                  value={editUserPlanData.trialEndDate || ''}
+                  onChange={(e) =>
+                    setEditUserPlanData((prev) => ({
+                      ...prev,
+                      trialEndDate: e.target.value,
+                    }))
+                  }
+                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          }
+          footer={
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditingUserPlan(null)
+                  setEditUserPlanData({})
+                }}
+                disabled={busy}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleSaveUserPlan} disabled={busy}>
+                {busy ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          }
+          size="default"
+        />
+      )}
     </AppShell>
   )
 }

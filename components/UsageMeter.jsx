@@ -23,7 +23,7 @@ export default function UsageMeter() {
 
         if (userSubscription && userSubscription.plan === 'free') {
           const currentUsage = await getCurrentMonthUsage(user.uid)
-          const limits = getPlanLimits('free')
+          const limits = await getPlanLimits(user.uid)
 
           setUsage(currentUsage)
           setPlanLimits(limits)
