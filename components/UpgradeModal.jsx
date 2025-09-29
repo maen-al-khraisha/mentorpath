@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Modal from '@/components/ui/Modal'
 import Button from '@/components/Button'
 import { Crown, AlertTriangle } from 'lucide-react'
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore'
+import { firestore } from '@/lib/firebaseClient'
 
 export default function UpgradeModal({
   isOpen,
@@ -14,6 +16,70 @@ export default function UpgradeModal({
   limitPeriod = 'month',
 }) {
   const [isUpgrading, setIsUpgrading] = useState(false)
+  const [proPlan, setProPlan] = useState(null)
+  const [loadingPlan, setLoadingPlan] = useState(false)
+
+  // Fetch Pro plan data when modal opens
+  useEffect(() => {
+    if (isOpen && !proPlan) {
+      fetchProPlan()
+    }
+  }, [isOpen, proPlan])
+
+  const fetchProPlan = async () => {
+    try {
+      setLoadingPlan(true)
+      // Try to find Pro plan - look for plans with unlimited features
+      const possibleProIds = ['basic_plan', 'pro-plan', 'pro_plan', 'pro']
+
+      for (const planId of possibleProIds) {
+        try {
+          const planDoc = await getDoc(doc(firestore, 'packages', planId))
+          if (planDoc.exists()) {
+            const planData = planDoc.data()
+            // Check if this looks like a Pro plan (has price > 0 and unlimited features)
+            if (planData.price > 0 && (planData.task_limit === -1 || planData.habit_limit === -1)) {
+              setProPlan(planData)
+              return
+            }
+          }
+        } catch (error) {
+          console.log(`Plan ${planId} not found, trying next...`)
+        }
+      }
+
+      // If no specific Pro plan found, try to find any plan with unlimited features
+      try {
+        const packagesSnapshot = await getDocs(collection(firestore, 'packages'))
+        for (const docSnapshot of packagesSnapshot.docs) {
+          const planData = docSnapshot.data()
+          if (planData.price > 0 && (planData.task_limit === -1 || planData.habit_limit === -1)) {
+            setProPlan(planData)
+            return
+          }
+        }
+      } catch (error) {
+        console.log('Error searching all packages:', error)
+      }
+
+      // Fallback to default Pro plan if none found
+      setProPlan({
+        name: 'Pro Plan',
+        price: 7,
+        description: 'Unlimited access to all features',
+      })
+    } catch (error) {
+      console.error('Error fetching Pro plan:', error)
+      // Fallback to default Pro plan
+      setProPlan({
+        name: 'Pro Plan',
+        price: 7,
+        description: 'Unlimited access to all features',
+      })
+    } finally {
+      setLoadingPlan(false)
+    }
+  }
 
   const handleUpgrade = async () => {
     setIsUpgrading(true)
@@ -70,39 +136,54 @@ export default function UpgradeModal({
 
   const content = (
     <div className="space-y-6">
-      {/* Pro Benefits */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center mb-3">
-          <Crown className="h-5 w-5 text-yellow-500 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900">Upgrade to Pro</h3>
+      {loadingPlan ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading plan details...</p>
         </div>
+      ) : (
+        <>
+          {/* Pro Benefits */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center mb-3">
+              <Crown className="h-5 w-5 text-yellow-500 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                Upgrade to {proPlan?.name || 'Pro'}
+              </h3>
+            </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-            <span className="text-gray-700">Get {getFeatureText()}</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-            <span className="text-gray-700">Advanced insights dashboard</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-            <span className="text-gray-700">Priority support</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-            <span className="text-gray-700">Export your data</span>
-          </div>
-        </div>
-      </div>
+            {proPlan?.description && <p className="text-gray-600 mb-4">{proPlan.description}</p>}
 
-      {/* Pricing */}
-      <div className="text-center">
-        <div className="text-3xl font-bold text-gray-900 mb-1">$7</div>
-        <div className="text-gray-600">per month</div>
-        <div className="text-sm text-blue-600 font-medium mt-2">Cancel anytime • No commitment</div>
-      </div>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <span className="text-gray-700">Get {getFeatureText()}</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <span className="text-gray-700">Advanced insights dashboard</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <span className="text-gray-700">Priority support</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <span className="text-gray-700">Export your data</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-900 mb-1">${proPlan?.price || 7}</div>
+            <div className="text-gray-600">per month</div>
+            <div className="text-sm text-blue-600 font-medium mt-2">
+              Cancel anytime • No commitment
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 
@@ -122,7 +203,7 @@ export default function UpgradeModal({
           ) : (
             <div className="flex items-center justify-center">
               <Crown className="h-4 w-4 mr-2" />
-              Upgrade to Pro
+              Upgrade to {proPlan?.name || 'Pro'}
             </div>
           )}
         </Button>

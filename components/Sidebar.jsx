@@ -68,28 +68,6 @@ export default function Sidebar({
     }
   }
 
-  const handleDowngrade = async () => {
-    const confirmed = window.confirm(
-      'Are you sure you want to downgrade to the Free plan? You will lose access to unlimited features and advanced insights.'
-    )
-
-    if (confirmed) {
-      try {
-        const { downgradeToFree } = await import('@/lib/subscriptionApi')
-        await downgradeToFree(user.uid)
-
-        // Refresh subscription data
-        const userSubscription = await getUserSubscription(user.uid)
-        setSubscription(userSubscription)
-
-        alert('Successfully downgraded to Free plan!')
-      } catch (error) {
-        console.error('Downgrade failed:', error)
-        alert('Failed to downgrade. Please try again.')
-      }
-    }
-  }
-
   const handleShare = async () => {
     const shareData = {
       title: 'Check out MentorPath!',
@@ -258,16 +236,6 @@ export default function Sidebar({
                 <span className="text-sm font-medium text-green-600 ml-2">Pro Active</span>
               )}
             </div>
-            {!collapsed && (
-              <Button
-                variant="outline"
-                onClick={handleDowngrade}
-                className="w-full text-red-600 border-red-300 hover:bg-red-50 text-xs"
-                size="sm"
-              >
-                Downgrade
-              </Button>
-            )}
           </div>
         ) : (
           <Button

@@ -30,6 +30,20 @@ import {
   Shield,
 } from 'lucide-react'
 
+// Helper function to get package name by ID
+async function getPackageName(packageId) {
+  try {
+    const packageDoc = await getDoc(doc(firestore, 'packages', packageId))
+    if (packageDoc.exists()) {
+      return packageDoc.data().name
+    }
+    return 'Unknown Package'
+  } catch (error) {
+    console.error('Error fetching package name:', error)
+    return 'Unknown Package'
+  }
+}
+
 const COLOR_KEYS = [
   'primary',
   'accent',
@@ -483,8 +497,8 @@ export default function AdminPage() {
         userRef,
         {
           plan: PLAN_TYPES.FREE,
-          package_name: 'Free Plan',
-          current_package: 'free',
+          package_name: await getPackageName('basic-plan'),
+          current_package: 'basic-plan',
           subscription_status: 'active',
           subscriptionStartDate: null,
           subscriptionEndDate: null,
@@ -575,8 +589,8 @@ export default function AdminPage() {
       } else if (newPlan === PLAN_TYPES.PRO) {
         updateData = {
           ...updateData,
-          package_name: 'Pro Plan',
-          current_package: 'pro',
+          package_name: await getPackageName('basic_plan'),
+          current_package: 'basic_plan',
           subscription_status: 'active',
           subscriptionStartDate: new Date(),
           subscriptionEndDate: null, // Pro plan doesn't expire
@@ -1931,26 +1945,6 @@ export default function AdminPage() {
                       <span className="text-sm font-medium text-slate-900">
                         {user.package_name || 'No Package'}
                       </span>
-                      <select
-                        className="text-xs border border-slate-200 rounded px-2 py-1 bg-white"
-                        value={user.current_package || 'free-plan'}
-                        onChange={(e) => {
-                          if (
-                            confirm(
-                              `Are you sure you want to change ${user.name || user.email}'s package to ${packages.find((p) => p.id === e.target.value)?.name}?`
-                            )
-                          ) {
-                            updateUserPackage(user.id, e.target.value)
-                          }
-                        }}
-                        disabled={loadingData}
-                      >
-                        {packages.map((pkg) => (
-                          <option key={pkg.id} value={pkg.id}>
-                            {pkg.name}
-                          </option>
-                        ))}
-                      </select>
                     </div>
                   </td>
                   <td className="py-2">
