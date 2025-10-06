@@ -78,6 +78,7 @@ const THEME_SECTIONS = {
 export default function AdminPage() {
   const { user, loading } = useRequireAuth()
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeSubTab, setActiveSubTab] = useState('users')
   const [theme, setTheme] = useState({})
   const [app, setApp] = useState({
     habitDefault: 40,
@@ -476,6 +477,50 @@ export default function AdminPage() {
     } catch (error) {
       console.error('Error cleaning up test data:', error)
       alert('Failed to cleanup test data: ' + error.message)
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
+  const fixUserPackageData = async () => {
+    try {
+      setLoadingData(true)
+
+      // Get current user to check if they're admin
+      if (!user || user.email !== 'maen.alkhraisha@gmail.com') {
+        alert('Only admin can fix user package data')
+        return
+      }
+
+      // Find the specific user
+      const targetUser = users.find((u) => u.email === 'maen.khraisha92@gmail.com')
+
+      if (!targetUser) {
+        alert('User maen.khraisha92@gmail.com not found')
+        return
+      }
+
+      // Fix the user's package data
+      const userRef = doc(firestore, 'users', targetUser.id)
+      await setDoc(
+        userRef,
+        {
+          plan: 'free',
+          current_package: 'free-plan',
+          package_name: 'Free Plan',
+          subscription_status: 'active',
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      )
+
+      // Reload users to reflect changes
+      await loadUsers()
+
+      alert('Successfully fixed user package data!')
+    } catch (error) {
+      console.error('Error fixing user package data:', error)
+      alert('Failed to fix user package data: ' + error.message)
     } finally {
       setLoadingData(false)
     }
@@ -886,13 +931,9 @@ export default function AdminPage() {
             <Download className="h-4 w-4 mr-2" />
             Export Data
           </Button>
-          <Button variant="primary" onClick={() => setActiveTab('users')}>
+          <Button variant="primary" onClick={() => setActiveTab('user-management')}>
             <Users className="h-4 w-4 mr-2" />
-            Manage Users
-          </Button>
-          <Button variant="primary" onClick={() => setActiveTab('packages')}>
-            <Package className="h-4 w-4 mr-2" />
-            Manage Packages
+            User Management
           </Button>
         </div>
       </div>
@@ -911,6 +952,10 @@ export default function AdminPage() {
           <Button variant="primary" onClick={syncFirebaseAuthUsers} disabled={loadingData}>
             <Users className="h-4 w-4 mr-2" />
             Sync Auth Users
+          </Button>
+          <Button variant="outline" onClick={fixUserPackageData} disabled={loadingData}>
+            <Settings className="h-4 w-4 mr-2" />
+            Fix Package Data
           </Button>
         </div>
       </div>
@@ -1008,7 +1053,7 @@ export default function AdminPage() {
                   Customer
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Plan
+                  Current Package
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                   Status
@@ -1058,9 +1103,23 @@ export default function AdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        {user.current_package && (
-                          <div className="text-lg text-slate-900 mt-1">{user.current_package}</div>
-                        )}
+                        <span
+                          className={`text-sm font-medium px-3 py-1 rounded-full ${
+                            user.package_name?.toLowerCase().includes('free') ||
+                            user.package_name?.toLowerCase().includes('basic')
+                              ? 'bg-green-100 text-green-800'
+                              : user.package_name?.toLowerCase().includes('pro') ||
+                                  user.package_name?.toLowerCase().includes('premium')
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {user.package_name ||
+                            (() => {
+                              const pkg = packages.find((p) => p.id === user.current_package)
+                              return pkg ? pkg.name : 'No Package'
+                            })()}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -1096,6 +1155,13 @@ export default function AdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditUserPlan(user)}
+                        >
+                          Edit Plan
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1798,38 +1864,35 @@ export default function AdminPage() {
       plan: user.plan || 'free',
       current_package: user.current_package || 'free-plan',
       package_name: user.package_name || 'Free Plan',
-      trialEndDate: user.trialEndDate
-        ? new Date(user.trialEndDate).toISOString().split('T')[0]
-        : '',
     })
   }
 
   const handleSaveUserPlan = async () => {
     try {
       setBusy(true)
-      const { updateUserPlan } = await import('@/lib/subscriptionApi')
 
-      // Determine package based on plan selection
-      const selectedPackage = packages.find((pkg) => {
-        if (editUserPlanData.plan === 'free') {
-          return pkg.id === 'free-plan'
-        } else if (editUserPlanData.plan === 'pro') {
-          return pkg.id === 'pro-plan'
-        }
-        return false
-      })
+      // Get the selected package directly from the dropdown
+      const selectedPackage = packages.find((pkg) => pkg.id === editUserPlanData.current_package)
 
-      const updateData = {
-        plan: editUserPlanData.plan,
-        current_package: selectedPackage?.id || 'free-plan',
-        package_name: selectedPackage?.name || 'Free Plan',
+      if (!selectedPackage) {
+        alert('Please select a valid package')
+        return
       }
 
-      if (editUserPlanData.trialEndDate) {
-        updateData.trialEndDate = new Date(editUserPlanData.trialEndDate)
-      }
+      // Update the user document directly in Firestore
+      const userRef = doc(firestore, 'users', editingUserPlan.uid)
+      await setDoc(
+        userRef,
+        {
+          plan: editUserPlanData.plan,
+          current_package: selectedPackage.id,
+          package_name: selectedPackage.name,
+          subscription_status: 'active',
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      )
 
-      await updateUserPlan(editingUserPlan.uid, editUserPlanData.plan, updateData)
       setEditingUserPlan(null)
       setEditUserPlanData({})
       await loadUsers()
@@ -1857,6 +1920,46 @@ export default function AdminPage() {
     } finally {
       setBusy(false)
     }
+  }
+
+  const renderUserManagementTab = () => {
+    const subTabs = [
+      { id: 'users', label: 'Users', icon: Users },
+      { id: 'packages', label: 'Packages', icon: Package },
+    ]
+
+    return (
+      <div className="space-y-6">
+        {/* Sub-navigation */}
+        <div className="border-b border-slate-200">
+          <nav className="flex space-x-8">
+            {subTabs.map((subTab) => {
+              const Icon = subTab.icon
+              return (
+                <button
+                  key={subTab.id}
+                  onClick={() => setActiveSubTab(subTab.id)}
+                  className={`flex items-center gap-2 py-3 px-1 border-b-2 font-medium text-sm transition-all duration-200 ${
+                    activeSubTab === subTab.id
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <Icon size={16} />
+                  {subTab.label}
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+
+        {/* Sub-tab Content */}
+        <div className="min-h-[600px]">
+          {activeSubTab === 'users' && renderUsersTab()}
+          {activeSubTab === 'packages' && renderPackagesTab()}
+        </div>
+      </div>
+    )
   }
 
   const renderPlansTab = () => (
@@ -1938,16 +2041,26 @@ export default function AdminPage() {
             <tbody>
               {users.map((user) => (
                 <tr key={user.uid} className="border-b border-slate-100">
-                  <td className="py-2">{user.name || 'N/A'}</td>
-                  <td className="py-2">{user.email}</td>
-                  <td className="py-2">
+                  <td className="py-2 text-lg">{user.name || 'N/A'}</td>
+                  <td className="py-2 text-lg">{user.email}</td>
+                  <td className="py-2 text-lg">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-slate-900">
+                      <span
+                        className={`text-lg font-medium px-3 py-1 rounded-full ${
+                          user.package_name?.toLowerCase().includes('free') ||
+                          user.package_name?.toLowerCase().includes('basic')
+                            ? 'bg-green-100 text-green-800'
+                            : user.package_name?.toLowerCase().includes('pro') ||
+                                user.package_name?.toLowerCase().includes('premium')
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
                         {user.package_name || 'No Package'}
                       </span>
                     </div>
                   </td>
-                  <td className="py-2">
+                  <td className="py-2 text-lg">
                     <Button variant="outline" size="sm" onClick={() => handleEditUserPlan(user)}>
                       Edit Plan
                     </Button>
@@ -2007,40 +2120,14 @@ export default function AdminPage() {
         <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
-            onClick={() => setActiveTab('packages')}
-            className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"
-          >
-            <div className="flex items-center space-x-3">
-              <Package className="w-5 h-5 text-purple-600" />
-              <div>
-                <h4 className="font-medium text-slate-900">Manage Packages</h4>
-                <p className="text-sm text-slate-600">Create and edit subscription packages</p>
-              </div>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('users')}
+            onClick={() => setActiveTab('user-management')}
             className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"
           >
             <div className="flex items-center space-x-3">
               <Users className="w-5 h-5 text-green-600" />
               <div>
-                <h4 className="font-medium text-slate-900">Manage Users</h4>
-                <p className="text-sm text-slate-600">View and manage user accounts</p>
-              </div>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('plans')}
-            className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"
-          >
-            <div className="flex items-center space-x-3">
-              <Shield className="w-5 h-5 text-yellow-600" />
-              <div>
-                <h4 className="font-medium text-slate-900">Plan Management</h4>
-                <p className="text-sm text-slate-600">Assign packages to users</p>
+                <h4 className="font-medium text-slate-900">User Management</h4>
+                <p className="text-sm text-slate-600">Manage users, packages, and plans</p>
               </div>
             </div>
           </button>
@@ -2066,12 +2153,8 @@ export default function AdminPage() {
     switch (activeTab) {
       case 'dashboard':
         return renderDashboardTab()
-      case 'users':
-        return renderUsersTab()
-      case 'packages':
-        return renderPackagesTab()
-      case 'plans':
-        return renderPlansTab()
+      case 'user-management':
+        return renderUserManagementTab()
       case 'settings':
         return renderSettingsTab()
       case 'theme':
@@ -2083,9 +2166,7 @@ export default function AdminPage() {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3, color: 'bg-blue-100' },
-    { id: 'users', label: 'Users', icon: Users, color: 'bg-green-100' },
-    { id: 'packages', label: 'Packages', icon: Package, color: 'bg-purple-100' },
-    { id: 'plans', label: 'Plan Management', icon: Shield, color: 'bg-yellow-100' },
+    { id: 'user-management', label: 'User Management', icon: Users, color: 'bg-green-100' },
     { id: 'settings', label: 'Settings', icon: Settings, color: 'bg-orange-100' },
     { id: 'theme', label: 'Theme', icon: Palette, color: 'bg-pink-100' },
   ]
@@ -2160,23 +2241,6 @@ export default function AdminPage() {
           content={
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Plan Type</label>
-                <select
-                  value={editUserPlanData.plan || 'free'}
-                  onChange={(e) =>
-                    setEditUserPlanData((prev) => ({
-                      ...prev,
-                      plan: e.target.value,
-                    }))
-                  }
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                >
-                  <option value="free">Free</option>
-                  <option value="pro">Pro</option>
-                </select>
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Package Assignment
                 </label>
@@ -2199,23 +2263,9 @@ export default function AdminPage() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Trial End Date (Optional)
-                </label>
-                <input
-                  type="date"
-                  value={editUserPlanData.trialEndDate || ''}
-                  onChange={(e) =>
-                    setEditUserPlanData((prev) => ({
-                      ...prev,
-                      trialEndDate: e.target.value,
-                    }))
-                  }
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"
-                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Select the package that defines the user's subscription limits and features
+                </p>
               </div>
             </div>
           }
