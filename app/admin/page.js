@@ -289,7 +289,9 @@ export default function AdminPage() {
       const batch = writeBatch(firestore)
       defaultPackages.forEach((pkg) => {
         const packageRef = doc(firestore, 'packages', pkg.id)
-        batch.set(packageRef, pkg)
+        // Remove the id field from the document data since it's already the document ID
+        const { id, ...packageData } = pkg
+        batch.set(packageRef, packageData)
       })
 
       await batch.commit()
@@ -526,6 +528,63 @@ export default function AdminPage() {
     }
   }
 
+  const deleteAllPackages = async () => {
+    try {
+      setLoadingData(true)
+
+      // Get current user to check if they're admin
+      if (!user || user.email !== 'maen.alkhraisha@gmail.com') {
+        alert('Only admin can delete all packages')
+        return
+      }
+
+      // Confirm deletion
+      if (
+        !confirm(
+          'Are you sure you want to delete ALL packages? This will give all users unlimited access. This action cannot be undone.'
+        )
+      ) {
+        return
+      }
+
+      // Delete all packages
+      const packagesSnapshot = await getDocs(collection(firestore, 'packages'))
+      const batch = writeBatch(firestore)
+
+      packagesSnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref)
+      })
+
+      await batch.commit()
+
+      // Reset all users to unlimited access (remove package references)
+      const usersSnapshot = await getDocs(collection(firestore, 'users'))
+      const userBatch = writeBatch(firestore)
+
+      usersSnapshot.docs.forEach((doc) => {
+        userBatch.update(doc.ref, {
+          current_package: null,
+          package_name: null,
+          plan: 'unlimited',
+          updatedAt: new Date(),
+        })
+      })
+
+      await userBatch.commit()
+
+      // Reload data
+      await loadPackages()
+      await loadUsers()
+
+      alert('All packages deleted! All users now have unlimited access.')
+    } catch (error) {
+      console.error('Error deleting packages:', error)
+      alert('Failed to delete packages: ' + error.message)
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
   const subscribeToFree = async (userId) => {
     try {
       setLoadingData(true)
@@ -679,13 +738,13 @@ export default function AdminPage() {
       }
 
       const newPackage = {
-        id: `package-${Date.now()}`,
         ...newPackageData,
         created_at: new Date(),
         updated_at: new Date(),
       }
 
-      await setDoc(doc(firestore, 'packages', newPackage.id), newPackage)
+      const packageId = `pkg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      await setDoc(doc(firestore, 'packages', packageId), newPackage)
 
       await loadPackages() // Refresh packages list
 
@@ -1190,10 +1249,16 @@ export default function AdminPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-slate-900">Package Management</h3>
-        <Button variant="primary" onClick={openCreatePackageModal}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Package
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="primary" onClick={openCreatePackageModal}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Package
+          </Button>
+          <Button variant="outline" onClick={deleteAllPackages} disabled={loadingData}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete All Packages
+          </Button>
+        </div>
       </div>
 
       {/* Create Package Modal */}
