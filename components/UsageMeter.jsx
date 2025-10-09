@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/useAuth'
-import { getUserSubscription, getCurrentMonthUsage, getPlanLimits } from '@/lib/subscriptionApi'
+import {
+  getUserSubscription,
+  getCurrentMonthUsage,
+  getPlanLimits,
+  listenToUserSubscription,
+} from '@/lib/subscriptionApi'
 import Button from '@/components/Button'
 import { BarChart3, AlertTriangle, CheckCircle } from 'lucide-react'
 
@@ -14,27 +19,39 @@ export default function UsageMeter() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    async function loadUsageData() {
-      if (!user) return
+    if (!user) return
 
-      try {
-        const userSubscription = await getUserSubscription(user.uid)
-        setSubscription(userSubscription)
+    // Set up real-time listener for subscription changes
+    const unsubscribe = listenToUserSubscription(user.uid, async (userData) => {
+      if (userData) {
+        setSubscription(userData)
 
-        if (userSubscription && userSubscription.plan === 'free') {
-          const currentUsage = await getCurrentMonthUsage(user.uid)
-          const limits = await getPlanLimits(user.uid)
+        if (userData.plan === 'free') {
+          try {
+            const currentUsage = await getCurrentMonthUsage(user.uid)
+            const limits = await getPlanLimits(user.uid)
 
-          setUsage(currentUsage)
-          setPlanLimits(limits)
-          setIsVisible(true)
+            setUsage(currentUsage)
+            setPlanLimits(limits)
+            setIsVisible(true)
+          } catch (error) {
+            console.error('Error loading usage data:', error)
+          }
+        } else {
+          setIsVisible(false)
         }
-      } catch (error) {
-        console.error('Error loading usage data:', error)
+      } else {
+        setSubscription(null)
+        setIsVisible(false)
+      }
+    })
+
+    // Cleanup listener on unmount
+    return () => {
+      if (unsubscribe) {
+        unsubscribe()
       }
     }
-
-    loadUsageData()
   }, [user])
 
   if (!isVisible || !subscription || subscription.plan !== 'free' || !usage || !planLimits) {

@@ -233,19 +233,7 @@ export default function AdminPage() {
         ...doc.data(),
       }))
 
-      // If no packages exist, create default ones
-      if (packagesData.length === 0) {
-        await createDefaultPackages()
-        // Reload packages after creating defaults
-        const newPackagesSnapshot = await getDocs(collection(firestore, 'packages'))
-        const newPackagesData = newPackagesSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        setPackages(newPackagesData)
-      } else {
-        setPackages(packagesData)
-      }
+      setPackages(packagesData)
     } catch (error) {
       console.error('Error loading packages:', error)
     }
@@ -484,6 +472,45 @@ export default function AdminPage() {
     }
   }
 
+  const debugUserData = async () => {
+    try {
+      setLoadingData(true)
+
+      // Get current user to check if they're admin
+      if (!user || user.email !== 'maen.alkhraisha@gmail.com') {
+        alert('Only admin can debug user data')
+        return
+      }
+
+      // Find the specific user
+      const targetUser = users.find((u) => u.email === 'maen.khraisha92@gmail.com')
+
+      if (!targetUser) {
+        alert('User maen.khraisha92@gmail.com not found')
+        return
+      }
+
+      // Get the actual user document from Firestore
+      const userRef = doc(firestore, 'users', targetUser.uid)
+      const userDoc = await getDoc(userRef)
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data()
+        console.log('Current user data from Firestore:', userData)
+        alert(
+          `User data:\nPlan: ${userData.plan}\nPackage: ${userData.current_package}\nPackage Name: ${userData.package_name}\nCheck console for full data`
+        )
+      } else {
+        alert('User document not found in Firestore')
+      }
+    } catch (error) {
+      console.error('Error debugging user data:', error)
+      alert('Failed to debug user data: ' + error.message)
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
   const fixUserPackageData = async () => {
     try {
       setLoadingData(true)
@@ -503,13 +530,13 @@ export default function AdminPage() {
       }
 
       // Fix the user's package data
-      const userRef = doc(firestore, 'users', targetUser.id)
+      const userRef = doc(firestore, 'users', targetUser.uid)
       await setDoc(
         userRef,
         {
           plan: 'free',
-          current_package: 'free-plan',
-          package_name: 'Free Plan',
+          current_package: null,
+          package_name: null,
           subscription_status: 'active',
           updatedAt: new Date(),
         },
@@ -1012,6 +1039,10 @@ export default function AdminPage() {
             <Users className="h-4 w-4 mr-2" />
             Sync Auth Users
           </Button>
+          <Button variant="outline" onClick={debugUserData} disabled={loadingData}>
+            <Eye className="h-4 w-4 mr-2" />
+            Debug User Data
+          </Button>
           <Button variant="outline" onClick={fixUserPackageData} disabled={loadingData}>
             <Settings className="h-4 w-4 mr-2" />
             Fix Package Data
@@ -1253,6 +1284,10 @@ export default function AdminPage() {
           <Button variant="primary" onClick={openCreatePackageModal}>
             <Plus className="h-4 w-4 mr-2" />
             Create Package
+          </Button>
+          <Button variant="secondary" onClick={createDefaultPackages} disabled={loadingData}>
+            <Package className="h-4 w-4 mr-2" />
+            Create Default Packages
           </Button>
           <Button variant="outline" onClick={deleteAllPackages} disabled={loadingData}>
             <Trash2 className="h-4 w-4 mr-2" />
@@ -1533,258 +1568,281 @@ export default function AdminPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {packages.map((pkg) => (
-          <div key={pkg.id} className="bg-card border border-border rounded-lg p-6 shadow-soft">
-            <div className="flex justify-between items-start mb-4">
-              {editingPackage === pkg.id ? (
-                <input
-                  type="text"
-                  value={editPackageData.name || ''}
-                  onChange={(e) =>
-                    setEditPackageData((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  className="text-lg font-semibold text-slate-900 bg-transparent border-b border-slate-300 px-1 py-1 w-full"
-                />
-              ) : (
-                <h4 className="text-lg font-semibold text-slate-900">{pkg.name}</h4>
-              )}
-              <div className="flex gap-2">
-                {editingPackage === pkg.id ? (
-                  <>
-                    <Button variant="ghost" size="sm" onClick={cancelPackageEdit}>
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={savePackageEdit}
-                      disabled={loadingData}
-                    >
-                      Save
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="ghost" size="sm" onClick={() => editPackage(pkg)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deletePackage(pkg.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-slate-600">Price:</span>
-                {editingPackage === pkg.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={editPackageData.price || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          price: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
-                    />
-                    <span className="text-sm text-slate-600">$</span>
-                  </div>
-                ) : (
-                  <span className="font-semibold text-slate-900">
-                    {pkg.price === 0 ? 'Free' : `$${pkg.price}`}
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-slate-600">Trial:</span>
-                {editingPackage === pkg.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      value={editPackageData.trial_period_days || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          trial_period_days: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-16 border border-slate-200 rounded px-2 py-1 text-sm text-right"
-                    />
-                    <span className="text-sm text-slate-600">days</span>
-                  </div>
-                ) : (
-                  <span className="text-slate-900">{pkg.trial_period_days} days</span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-slate-600">Task Limit:</span>
-                {editingPackage === pkg.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="-1"
-                      value={editPackageData.task_limit || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          task_limit: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
-                      placeholder={editPackageData.task_limit === -1 ? '∞' : ''}
-                    />
-                    {editPackageData.task_limit === -1 && (
-                      <span className="text-sm text-slate-600">∞</span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-slate-900">
-                    {pkg.task_limit === -1 ? 'Unlimited' : pkg.task_limit}
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-slate-600">Notes Limit:</span>
-                {editingPackage === pkg.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="-1"
-                      value={editPackageData.notes_limit || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          notes_limit: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
-                      placeholder={editPackageData.notes_limit === -1 ? '∞' : ''}
-                    />
-                    {editPackageData.notes_limit === -1 && (
-                      <span className="text-sm text-slate-600">∞</span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-slate-900">
-                    {pkg.notes_limit === -1 ? 'Unlimited' : pkg.notes_limit}
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-slate-600">Events Limit:</span>
-                {editingPackage === pkg.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="-1"
-                      value={editPackageData.events_limit || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          events_limit: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
-                      placeholder={editPackageData.events_limit === -1 ? '∞' : ''}
-                    />
-                    {editPackageData.events_limit === -1 && (
-                      <span className="text-sm text-slate-600">∞</span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-slate-900">
-                    {pkg.events_limit === -1 ? 'Unlimited' : pkg.events_limit}
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-slate-600">Habit Limit:</span>
-                {editingPackage === pkg.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="-1"
-                      value={editPackageData.habit_limit || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          habit_limit: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
-                      placeholder={editPackageData.habit_limit === -1 ? '∞' : ''}
-                    />
-                    {editPackageData.habit_limit === -1 && (
-                      <span className="text-sm text-slate-600">∞</span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-slate-900">
-                    {pkg.habit_limit === -1 ? 'Unlimited' : pkg.habit_limit}
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-slate-600">Sheet Limit:</span>
-                {editingPackage === pkg.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="-1"
-                      value={editPackageData.sheet_limit || ''}
-                      onChange={(e) =>
-                        setEditPackageData((prev) => ({
-                          ...prev,
-                          sheet_limit: parseInt(e.target.value) || 0,
-                        }))
-                      }
-                      className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
-                      placeholder={editPackageData.sheet_limit === -1 ? '∞' : ''}
-                    />
-                    {editPackageData.sheet_limit === -1 && (
-                      <span className="text-sm text-slate-600">∞</span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-slate-900">
-                    {pkg.sheet_limit === -1 ? 'Unlimited' : pkg.sheet_limit}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-3">
-              <h2 className="text-lg font-semibold text-slate-900">Description</h2>
-              {editingPackage === pkg.id ? (
-                <textarea
-                  value={editPackageData.description || ''}
-                  onChange={(e) =>
-                    setEditPackageData((prev) => ({ ...prev, description: e.target.value }))
-                  }
-                  rows={3}
-                  className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm mt-1"
-                />
-              ) : (
-                <p className="text-sm text-slate-600 mt-1">{pkg.description}</p>
-              )}
-            </div>
+      {packages.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-lg p-8 text-center shadow-soft">
+          <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">No Packages Found</h3>
+          <p className="text-slate-600 mb-4">
+            No packages are currently defined. All users have unlimited access by default.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button variant="primary" onClick={openCreatePackageModal}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create First Package
+            </Button>
+            <Button variant="secondary" onClick={createDefaultPackages}>
+              <Package className="h-4 w-4 mr-2" />
+              Create Default Packages
+            </Button>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {packages.map((pkg) => (
+            <div key={pkg.id} className="bg-card border border-border rounded-lg p-6 shadow-soft">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  {editingPackage === pkg.id ? (
+                    <input
+                      type="text"
+                      value={editPackageData.name || ''}
+                      onChange={(e) =>
+                        setEditPackageData((prev) => ({ ...prev, name: e.target.value }))
+                      }
+                      className="text-lg font-semibold text-slate-900 bg-transparent border-b border-slate-300 px-1 py-1 w-full"
+                    />
+                  ) : (
+                    <h4 className="text-lg font-semibold text-slate-900">{pkg.name}</h4>
+                  )}
+                  <p className="text-xs text-slate-500 mt-1">ID: {pkg.id}</p>
+                </div>
+                <div className="flex gap-2">
+                  {editingPackage === pkg.id ? (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={cancelPackageEdit}>
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={savePackageEdit}
+                        disabled={loadingData}
+                      >
+                        Save
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="ghost" size="sm" onClick={() => editPackage(pkg)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deletePackage(pkg.id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Price:</span>
+                  {editingPackage === pkg.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={editPackageData.price || ''}
+                        onChange={(e) =>
+                          setEditPackageData((prev) => ({
+                            ...prev,
+                            price: parseFloat(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                      />
+                      <span className="text-sm text-slate-600">$</span>
+                    </div>
+                  ) : (
+                    <span className="font-semibold text-slate-900">
+                      {pkg.price === 0 ? 'Free' : `$${pkg.price}`}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Trial:</span>
+                  {editingPackage === pkg.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        value={editPackageData.trial_period_days || ''}
+                        onChange={(e) =>
+                          setEditPackageData((prev) => ({
+                            ...prev,
+                            trial_period_days: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-16 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                      />
+                      <span className="text-sm text-slate-600">days</span>
+                    </div>
+                  ) : (
+                    <span className="text-slate-900">{pkg.trial_period_days} days</span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Task Limit:</span>
+                  {editingPackage === pkg.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="-1"
+                        value={editPackageData.task_limit || ''}
+                        onChange={(e) =>
+                          setEditPackageData((prev) => ({
+                            ...prev,
+                            task_limit: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                        placeholder={editPackageData.task_limit === -1 ? '∞' : ''}
+                      />
+                      {editPackageData.task_limit === -1 && (
+                        <span className="text-sm text-slate-600">∞</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-slate-900">
+                      {pkg.task_limit === -1 ? 'Unlimited' : pkg.task_limit}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Notes Limit:</span>
+                  {editingPackage === pkg.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="-1"
+                        value={editPackageData.notes_limit || ''}
+                        onChange={(e) =>
+                          setEditPackageData((prev) => ({
+                            ...prev,
+                            notes_limit: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                        placeholder={editPackageData.notes_limit === -1 ? '∞' : ''}
+                      />
+                      {editPackageData.notes_limit === -1 && (
+                        <span className="text-sm text-slate-600">∞</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-slate-900">
+                      {pkg.notes_limit === -1 ? 'Unlimited' : pkg.notes_limit}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Events Limit:</span>
+                  {editingPackage === pkg.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="-1"
+                        value={editPackageData.events_limit || ''}
+                        onChange={(e) =>
+                          setEditPackageData((prev) => ({
+                            ...prev,
+                            events_limit: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                        placeholder={editPackageData.events_limit === -1 ? '∞' : ''}
+                      />
+                      {editPackageData.events_limit === -1 && (
+                        <span className="text-sm text-slate-600">∞</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-slate-900">
+                      {pkg.events_limit === -1 ? 'Unlimited' : pkg.events_limit}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Habit Limit:</span>
+                  {editingPackage === pkg.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="-1"
+                        value={editPackageData.habit_limit || ''}
+                        onChange={(e) =>
+                          setEditPackageData((prev) => ({
+                            ...prev,
+                            habit_limit: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                        placeholder={editPackageData.habit_limit === -1 ? '∞' : ''}
+                      />
+                      {editPackageData.habit_limit === -1 && (
+                        <span className="text-sm text-slate-600">∞</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-slate-900">
+                      {pkg.habit_limit === -1 ? 'Unlimited' : pkg.habit_limit}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Sheet Limit:</span>
+                  {editingPackage === pkg.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="-1"
+                        value={editPackageData.sheet_limit || ''}
+                        onChange={(e) =>
+                          setEditPackageData((prev) => ({
+                            ...prev,
+                            sheet_limit: parseInt(e.target.value) || 0,
+                          }))
+                        }
+                        className="w-20 border border-slate-200 rounded px-2 py-1 text-sm text-right"
+                        placeholder={editPackageData.sheet_limit === -1 ? '∞' : ''}
+                      />
+                      {editPackageData.sheet_limit === -1 && (
+                        <span className="text-sm text-slate-600">∞</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-slate-900">
+                      {pkg.sheet_limit === -1 ? 'Unlimited' : pkg.sheet_limit}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <h2 className="text-lg font-semibold text-slate-900">Description</h2>
+                {editingPackage === pkg.id ? (
+                  <textarea
+                    value={editPackageData.description || ''}
+                    onChange={(e) =>
+                      setEditPackageData((prev) => ({ ...prev, description: e.target.value }))
+                    }
+                    rows={3}
+                    className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm mt-1"
+                  />
+                ) : (
+                  <p className="text-sm text-slate-600 mt-1">{pkg.description}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 
@@ -2038,7 +2096,10 @@ export default function AdminPage() {
         {packages.map((pkg) => (
           <div key={pkg.id} className="bg-white border border-slate-200 rounded-lg p-6 shadow-soft">
             <div className="flex justify-between items-start mb-4">
-              <h4 className="text-lg font-semibold text-slate-900">{pkg.name}</h4>
+              <div>
+                <h4 className="text-lg font-semibold text-slate-900">{pkg.name}</h4>
+                <p className="text-xs text-slate-500">ID: {pkg.id}</p>
+              </div>
               <span className="text-lg font-bold text-slate-900">${pkg.price}</span>
             </div>
 
@@ -2317,7 +2378,7 @@ export default function AdminPage() {
                       ...prev,
                       current_package: e.target.value,
                       package_name: selectedPkg?.name || 'Free Plan',
-                      plan: selectedPkg?.id === 'pro-plan' ? 'pro' : 'free',
+                      plan: selectedPkg?.name?.toLowerCase().includes('pro') ? 'pro' : 'free',
                     }))
                   }}
                   className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm"

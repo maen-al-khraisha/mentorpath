@@ -4,7 +4,7 @@ import React, { useEffect, useCallback, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/lib/useAuth'
-import { getUserSubscription } from '@/lib/subscriptionApi'
+import { getUserSubscription, listenToUserSubscription } from '@/lib/subscriptionApi'
 import {
   ChevronsLeft,
   ChevronsRight,
@@ -37,25 +37,40 @@ export default function Sidebar({
   const [subscription, setSubscription] = useState(null)
   const [subscriptionLoading, setSubscriptionLoading] = useState(true)
 
-  // Load subscription data
+  // Load subscription data with real-time updates
   useEffect(() => {
-    async function loadSubscription() {
-      if (!user) {
-        setSubscriptionLoading(false)
-        return
-      }
-
-      try {
-        const userSubscription = await getUserSubscription(user.uid)
-        setSubscription(userSubscription)
-      } catch (error) {
-        console.error('Error loading subscription:', error)
-      } finally {
-        setSubscriptionLoading(false)
-      }
+    if (!user) {
+      setSubscriptionLoading(false)
+      return
     }
 
-    loadSubscription()
+    setSubscriptionLoading(true)
+
+    // Set up real-time listener for subscription changes
+    const unsubscribe = listenToUserSubscription(user.uid, (userData) => {
+      if (userData) {
+        console.log('Sidebar received subscription data:', userData)
+        console.log(
+          'Plan:',
+          userData.plan,
+          'Package:',
+          userData.current_package,
+          'Package Name:',
+          userData.package_name
+        )
+        setSubscription(userData)
+      } else {
+        setSubscription(null)
+      }
+      setSubscriptionLoading(false)
+    })
+
+    // Cleanup listener on unmount
+    return () => {
+      if (unsubscribe) {
+        unsubscribe()
+      }
+    }
   }, [user])
 
   const handleSignOut = async () => {
